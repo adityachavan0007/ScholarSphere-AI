@@ -1,1 +1,2 @@
 # ScholarSphere-AI
+- Hackathon Project
