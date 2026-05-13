@@ -19,13 +19,14 @@ import AuthModal from "./AuthModal";
 import LiveTicker from "./LiveTicker";
 import TerminalDemo from "./TerminalDemo";
 import Profile from "./Profile";
+import AICopilot from "./AICopilot"; // NEW: Imported the AI Copilot
 
 export default function Home() {
   // --- STATE MANAGEMENT ---
-  // Controls which page is currently visible
-  const [currentPage, setCurrentPage] = useState<"home" | "profile">("home");
+  // NEW: Added "copilot" to the allowed pages
+  const [currentPage, setCurrentPage] = useState<"home" | "profile" | "copilot">("home");
 
-  // NEW: Tracks if the user is authenticated to update the Navbar UI
+  // Tracks if the user is authenticated to update the Navbar UI
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // State for the Developer Auth Modal
@@ -57,11 +58,13 @@ export default function Home() {
   if (currentPage === "profile") {
     return (
       <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
-        {/* Navbar now receives isLoggedIn state and navigation logic */}
+        {/* Navbar receives isLoggedIn state and ALL navigation logic */}
         <Navbar
           onOpenAuth={handleOpenAuth}
           isLoggedIn={isLoggedIn}
           onNavigateProfile={() => setCurrentPage("profile")}
+          onNavigateHome={() => setCurrentPage("home")}
+          onNavigateCopilot={() => setCurrentPage("copilot")}
         />
 
         {/* Render the high-end Developer Profile */}
@@ -81,7 +84,27 @@ export default function Home() {
   }
 
   // ==========================================
-  // VIEW 2: THE HOME PAGE
+  // VIEW 2: THE AI COPILOT PAGE (NEW)
+  // ==========================================
+  if (currentPage === "copilot") {
+    return (
+      <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
+        <Navbar
+          onOpenAuth={handleOpenAuth}
+          isLoggedIn={isLoggedIn}
+          onNavigateProfile={() => setCurrentPage("profile")}
+          onNavigateHome={() => setCurrentPage("home")}
+          onNavigateCopilot={() => setCurrentPage("copilot")}
+        />
+
+        {/* Render the Full-Screen AI Chatbot */}
+        <AICopilot />
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW 3: THE HOME PAGE
   // ==========================================
   return (
     <div className="relative w-full bg-[#030712] flex flex-col items-center overflow-x-hidden selection:bg-sky-500/30 font-sans">
@@ -91,6 +114,8 @@ export default function Home() {
         onOpenAuth={handleOpenAuth}
         isLoggedIn={isLoggedIn}
         onNavigateProfile={() => setCurrentPage("profile")}
+        onNavigateHome={() => setCurrentPage("home")}
+        onNavigateCopilot={() => setCurrentPage("copilot")}
       />
 
       {/* 2. Smooth Infinite Floating Animated Background Orbs */}
@@ -341,4 +366,4 @@ export default function Home() {
 
     </div>
   );
-} 
+}
