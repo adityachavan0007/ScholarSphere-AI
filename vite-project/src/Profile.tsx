@@ -25,10 +25,35 @@ interface ProfileData {
 
 export default function Profile() {
     // --- STATE ---
+    // FIX: Pre-populated the default state so it bypasses the "Initialize Profile" popup instantly!
     const [profile, setProfile] = useState<ProfileData>({
-        name: "", headline: "", bio: "", location: "", website: "", github: "", youtube: "",
-        avatarUrl: "", bannerUrl: "", skills: [], certificates: [], lookingFor: [],
-        projects: [], experiences: [], education: [], recentActivity: []
+        name: "Aditya Sharad Chavan",
+        headline: "FY B.Tech IT Undergrad @ Dr. D. Y. Patil College of Engineering",
+        bio: "Engineering student passionate about bridging software development with hardware integration. Currently exploring Indian Knowledge Systems and building Arduino-based circuit solutions. When I'm not coding in Java, I'm scripting, shooting, and editing cinematic automotive content.",
+        location: "Maharashtra, India", website: "mak6company.dev", github: "github.com/aditya", youtube: "MysticMotorMile",
+        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aditya&backgroundColor=0284c7",
+        bannerUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop",
+        skills: ["Java", "Arduino", "Circuit Design", "Node.js", "Video Editing", "Scriptwriting"],
+        certificates: [
+            { id: "1", name: "Business Analytics For Management", fileUrl: "#" },
+            { id: "2", name: "EF SET C1 Advanced", fileUrl: "#" }
+        ],
+        lookingFor: ["Internships", "Hackathons"],
+        education: [
+            { id: "1", degree: "B.Tech in Information Technology", school: "Dr. D. Y. Patil College of Engineering", duration: "2025 - 2029", details: "First Year Student. Core focus on programming foundations and logic building." }
+        ],
+        experiences: [
+            { id: "1", role: "Digital Content Creator", company: "MysticMotorMile", duration: "2023 - Present", description: "Directing cinematic automotive content and managing channel growth strategies." },
+            { id: "2", role: "Founder", company: "mak6company", duration: "April 2026 - Present", description: "Initiated planning and execution flowcharts for a new startup venture." }
+        ],
+        projects: [
+            { id: "1", name: "Force & Smoke Detection System", description: "Hardware project utilizing Arduino sensors for real-time environmental monitoring.", tags: ["IoT", "Arduino", "Hardware"] },
+            { id: "2", name: "FRAGMENTS OF FIRE", description: "Cinematic thriller scene-by-step animation script and storyboard.", tags: ["Scriptwriting", "Creative"] }
+        ],
+        recentActivity: [
+            { id: "1", date: "May 2026", action: "Implemented a 6-month hostel-friendly fitness plan." },
+            { id: "2", date: "April 2026", action: "Completed AMCAT employability assessment." }
+        ]
     });
 
     const [isEditing, setIsEditing] = useState(false);
@@ -50,35 +75,7 @@ export default function Profile() {
     const handleLinkedInImport = () => {
         setIsImporting(true);
         setTimeout(() => {
-            setProfile({
-                name: "Aditya Sharad Chavan",
-                headline: "FY B.Tech IT Undergrad @ Dr. D. Y. Patil College of Engineering",
-                bio: "Engineering student passionate about bridging software development with hardware integration. Currently exploring Indian Knowledge Systems and building Arduino-based circuit solutions. When I'm not coding in Java, I'm scripting, shooting, and editing cinematic automotive content.",
-                location: "Maharashtra, India", website: "mak6company.dev", github: "github.com/aditya", youtube: "MysticMotorMile",
-                avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aditya&backgroundColor=0284c7",
-                bannerUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop",
-                skills: ["Java", "Arduino", "Circuit Design", "Node.js", "Video Editing", "Scriptwriting"],
-                certificates: [
-                    { id: "1", name: "Business Analytics For Management", fileUrl: "#" },
-                    { id: "2", name: "EF SET C1 Advanced", fileUrl: "#" }
-                ],
-                lookingFor: ["Internships", "Hackathons"],
-                education: [
-                    { id: "1", degree: "B.Tech in Information Technology", school: "Dr. D. Y. Patil College of Engineering", duration: "2025 - 2029", details: "First Year Student. Core focus on programming foundations and logic building." }
-                ],
-                experiences: [
-                    { id: "1", role: "Digital Content Creator", company: "MysticMotorMile", duration: "2023 - Present", description: "Directing cinematic automotive content and managing channel growth strategies." },
-                    { id: "2", role: "Founder", company: "mak6company", duration: "April 2026 - Present", description: "Initiated planning and execution flowcharts for a new startup venture." }
-                ],
-                projects: [
-                    { id: "1", name: "Force & Smoke Detection System", description: "Hardware project utilizing Arduino sensors for real-time environmental monitoring.", tags: ["IoT", "Arduino", "Hardware"] },
-                    { id: "2", name: "FRAGMENTS OF FIRE", description: "Cinematic thriller scene-by-step animation script and storyboard.", tags: ["Scriptwriting", "Creative"] }
-                ],
-                recentActivity: [
-                    { id: "1", date: "May 2026", action: "Implemented a 6-month hostel-friendly fitness plan." },
-                    { id: "2", date: "April 2026", action: "Completed AMCAT employability assessment." }
-                ]
-            });
+            // Data is now in initial state, so this is just here for the simulated effect if needed.
             setIsImporting(false);
         }, 2000);
     };
