@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Sparkles, FileText, LayoutDashboard, GraduationCap, Target,
   CheckCircle2, Code, Globe, Briefcase, ChevronDown, BrainCircuit,
-  User as UserIcon, ArrowRight, Loader2, ChevronRight // <--- CHEVRONRIGHT IS HERE! NO MORE CRASHES.
+  User as UserIcon, ArrowRight, Loader2, ChevronRight
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
@@ -29,30 +29,28 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [authView, setAuthView] = useState<"login" | "signup">("signup");
 
+  // --- QUICK PROMPT STATE ---
+  const [initialAiPrompt, setInitialAiPrompt] = useState("");
+  const [quickPromptText, setQuickPromptText] = useState("");
+
   // --- CRASH-PROOF AUTH LISTENERS ---
   useEffect(() => {
     let authSubscription: any = null;
 
     const initAuth = async () => {
       try {
-        // 1. Check initial session safely
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
+        if (session) setIsLoggedIn(true);
 
-        if (session) {
-          setIsLoggedIn(true);
-        }
-
-        // 2. Listen for changes safely
         const { data } = supabase.auth.onAuthStateChange((_event, session) => {
           setIsLoggedIn(!!session);
         });
         authSubscription = data.subscription;
-
       } catch (error) {
         console.error("Supabase Connection Error:", error);
       } finally {
-        setIsCheckingSession(false); // Always stop the loading screen, even if backend fails
+        setIsCheckingSession(false);
       }
     };
 
@@ -70,7 +68,7 @@ export default function App() {
     }
   }, [isLoggedIn, currentPage]);
 
-  // --- AUTH HANDLERS ---
+  // --- HANDLERS ---
   const handleOpenAuth = (view: "login" | "signup") => {
     setAuthView(view);
     setIsModalOpen(true);
@@ -79,7 +77,7 @@ export default function App() {
   const handleAuthSuccess = () => {
     setIsLoggedIn(true);
     setIsModalOpen(false);
-    setCurrentPage("profile");
+    setCurrentPage("profile"); // Takes them to profile after they log in
   };
 
   const handleSignOut = async () => {
@@ -92,8 +90,30 @@ export default function App() {
     }
   };
 
-  // --- LOADING SCREEN ---
-  // Prevents the UI from flashing a "logged out" state while Supabase boots up
+  // ==========================================
+  // THE SECURITY CHECKPOINT
+  // ==========================================
+  const handleSecureNavigation = (targetPage: PageState) => {
+    if (isLoggedIn) {
+      setCurrentPage(targetPage); // Let them through
+    } else {
+      handleOpenAuth("login"); // Block them and force the Login popup
+    }
+  };
+
+  const handleQuickPrompt = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+      handleOpenAuth("login"); // Block the quick prompt if not logged in
+      return;
+    }
+    if (quickPromptText.trim()) {
+      setInitialAiPrompt(quickPromptText);
+      setCurrentPage("copilot");
+      setQuickPromptText("");
+    }
+  };
+
   if (isCheckingSession) {
     return (
       <div className="min-h-screen bg-[#030712] flex items-center justify-center font-mono text-sky-500">
@@ -106,7 +126,6 @@ export default function App() {
   // VIEW ROUTING ENGINE
   // ==========================================
   const renderCurrentPage = () => {
-
     if (currentPage === "profile") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
@@ -123,7 +142,7 @@ export default function App() {
     if (currentPage === "copilot") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
-          <AICopilot />
+          <AICopilot initialPrompt={initialAiPrompt} />
           <div className="fixed bottom-6 right-6 z-50 lg:hidden">
             <button onClick={handleSignOut} className="px-4 py-2 font-mono text-xs text-red-400 bg-red-900/10 border border-red-900/50 rounded-lg hover:bg-red-900/30 transition-colors shadow-[0_0_15px_rgba(153,27,27,0.3)]">
               Sign Out
@@ -133,35 +152,14 @@ export default function App() {
       );
     }
 
-    if (currentPage === "hackathons") {
-      return (
-        <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
-          <Hackathons />
-        </div>
-      );
-    }
+    if (currentPage === "hackathons") return <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans"><Hackathons /></div>;
+    if (currentPage === "scholarships") return <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans"><Scholarships /></div>;
+    if (currentPage === "internships") return <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans"><Internships /></div>;
 
-    if (currentPage === "scholarships") {
-      return (
-        <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
-          <Scholarships />
-        </div>
-      );
-    }
-
-    if (currentPage === "internships") {
-      return (
-        <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
-          <Internships />
-        </div>
-      );
-    }
-
-    // HOME PAGE (Default)
+    // HOME PAGE
     return (
       <div className="relative w-full bg-[#030712] flex flex-col items-center overflow-x-hidden selection:bg-sky-500/30 font-sans">
 
-        {/* Floating Animated Background Orbs */}
         <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15], x: [0, 40, 0], y: [0, -50, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[-5%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-sky-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
         <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.25, 0.1], x: [0, -50, 0], y: [0, 40, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
 
@@ -192,7 +190,7 @@ export default function App() {
                 </motion.button>
               ) : (
                 <>
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setCurrentPage("copilot")} className="group flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:shadow-[0_0_60px_rgba(147,51,234,0.6)] border border-purple-500/30 transition-all font-mono">
+                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { setInitialAiPrompt(""); setCurrentPage("copilot"); }} className="group flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:shadow-[0_0_60px_rgba(147,51,234,0.6)] border border-purple-500/30 transition-all font-mono">
                     <BrainCircuit className="w-5 h-5 animate-pulse" /> Launch Copilot <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </motion.button>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setCurrentPage("profile")} className="flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-[#21262d] text-slate-200 font-bold text-base sm:text-lg rounded-full border border-[#30363d] hover:bg-[#30363d] hover:text-white transition-all font-mono shadow-xl">
@@ -209,12 +207,9 @@ export default function App() {
           </motion.div>
         </div>
 
-        <div className="w-full z-20 relative">
-          <LiveTicker />
-        </div>
+        <div className="w-full z-20 relative"><LiveTicker /></div>
 
         <div className="relative z-10 flex flex-col items-center w-full px-4 pb-32 sm:px-6 lg:px-8">
-
           <TerminalDemo />
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.15 } } }} className="grid w-full max-w-6xl grid-cols-1 gap-6 mt-20 md:grid-cols-3 sm:gap-8">
@@ -228,8 +223,8 @@ export default function App() {
               <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 group-hover:text-slate-300 transition-colors">Discover opportunities ranked by an AI fit score tailored entirely to your unique student profile.</p>
             </motion.div>
 
-            {/* THE AI GATEWAY CARD */}
-            <motion.div onClick={() => isLoggedIn ? setCurrentPage("copilot") : handleOpenAuth("signup")} variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className={`bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-purple-500/50 transition-all group shadow-2xl relative overflow-hidden cursor-pointer`}>
+            {/* THE SECURE AI QUICK PROMPT CARD */}
+            <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-purple-500/50 transition-all group shadow-2xl relative overflow-hidden flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="flex justify-between items-start mb-6 relative z-10">
@@ -242,11 +237,38 @@ export default function App() {
               </div>
 
               <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10">AI Copilot Engine</h3>
-              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 mb-4 group-hover:text-slate-300 transition-colors">Click here to access your personal AI. It reads your profile matrix to draft cover letters and fetch opportunities.</p>
+              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 mb-6 group-hover:text-slate-300 transition-colors flex-grow">Command your personal AI. Draft cover letters, analyze skills, or fetch real-time opportunities directly from the mainframe.</p>
 
-              <span className="text-xs font-mono font-bold text-purple-400 group-hover:text-purple-300 flex items-center gap-1 transition-colors">
-                {isLoggedIn ? "Open Engine Sandbox" : "Log In to Access"} <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-              </span>
+              <form onSubmit={handleQuickPrompt} className="relative z-10 mt-auto">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-500 font-mono font-bold">{">"}</span>
+                  <input
+                    type="text"
+                    value={quickPromptText}
+                    onChange={(e) => setQuickPromptText(e.target.value)}
+                    placeholder={isLoggedIn ? "Type a command..." : "Click here to Log In..."}
+                    className="w-full pl-8 pr-12 py-3 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-purple-500/50 transition-colors shadow-inner cursor-pointer"
+                    onClick={(e) => {
+                      if (!isLoggedIn) {
+                        e.preventDefault();
+                        handleOpenAuth("login"); // <--- BLOCKS CLICKS IF NOT LOGGED IN
+                      }
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className={`absolute right-1.5 top-1.5 bottom-1.5 aspect-square flex items-center justify-center rounded-lg transition-colors ${isLoggedIn ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.3)]' : 'bg-[#30363d] text-slate-500 hover:text-white cursor-pointer'}`}
+                    onClick={(e) => {
+                      if (!isLoggedIn) {
+                        e.preventDefault();
+                        handleOpenAuth("login"); // <--- BLOCKS CLICKS IF NOT LOGGED IN
+                      }
+                    }}
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
             </motion.div>
 
             <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-indigo-500/50 transition-all group shadow-2xl relative overflow-hidden">
@@ -295,17 +317,6 @@ export default function App() {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.8, type: "spring" }} className="w-full max-w-4xl mt-32 text-center">
-            <h3 className="mb-8 text-xl font-bold text-white sm:text-2xl font-mono">Curated Opportunities Across Top Domains</h3>
-            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-              <motion.span whileHover={{ y: -4, scale: 1.05, backgroundColor: "rgba(56,189,248,0.1)", borderColor: "rgba(56,189,248,0.5)", color: "#38bdf8" }} className="flex items-center gap-2 px-4 py-2 text-sm transition-colors border rounded-full cursor-default sm:px-6 sm:py-3 bg-[#0d1117] border-[#30363d] text-slate-300 sm:text-base font-mono shadow-lg"><Code className="w-4 h-4" /> AI/ML</motion.span>
-              <motion.span whileHover={{ y: -4, scale: 1.05, backgroundColor: "rgba(59,130,246,0.1)", borderColor: "rgba(59,130,246,0.5)", color: "#3b82f6" }} className="flex items-center gap-2 px-4 py-2 text-sm transition-colors border rounded-full cursor-default sm:px-6 sm:py-3 bg-[#0d1117] border-[#30363d] text-slate-300 sm:text-base font-mono shadow-lg"><Globe className="w-4 h-4" /> SDE/Web</motion.span>
-              <motion.span whileHover={{ y: -4, scale: 1.05, backgroundColor: "rgba(99,102,241,0.1)", borderColor: "rgba(99,102,241,0.5)", color: "#6366f1" }} className="flex items-center gap-2 px-4 py-2 text-sm transition-colors border rounded-full cursor-default sm:px-6 sm:py-3 bg-[#0d1117] border-[#30363d] text-slate-300 sm:text-base font-mono shadow-lg"><LayoutDashboard className="w-4 h-4" /> Data/Analytics</motion.span>
-              <motion.span whileHover={{ y: -4, scale: 1.05, backgroundColor: "rgba(168,85,247,0.1)", borderColor: "rgba(168,85,247,0.5)", color: "#a855f7" }} className="flex items-center gap-2 px-4 py-2 text-sm transition-colors border rounded-full cursor-default sm:px-6 sm:py-3 bg-[#0d1117] border-[#30363d] text-slate-300 sm:text-base font-mono shadow-lg"><Target className="w-4 h-4" /> Core Engineering</motion.span>
-              <motion.span whileHover={{ y: -4, scale: 1.05, backgroundColor: "rgba(236,72,153,0.1)", borderColor: "rgba(236,72,153,0.5)", color: "#ec4899" }} className="flex items-center gap-2 px-4 py-2 text-sm transition-colors border rounded-full cursor-default sm:px-6 sm:py-3 bg-[#0d1117] border-[#30363d] text-slate-300 sm:text-base font-mono shadow-lg"><Briefcase className="w-4 h-4" /> Management</motion.span>
-            </div>
-          </motion.div>
-
         </div>
       </div>
     );
@@ -316,12 +327,12 @@ export default function App() {
       <Navbar
         onOpenAuth={handleOpenAuth}
         isLoggedIn={isLoggedIn}
-        onNavigateProfile={() => setCurrentPage("profile")}
-        onNavigateHome={() => setCurrentPage("home")}
-        onNavigateCopilot={() => setCurrentPage("copilot")}
-        onNavigateHackathons={() => setCurrentPage("hackathons")}
-        onNavigateScholarships={() => setCurrentPage("scholarships")}
-        onNavigateInternships={() => setCurrentPage("internships")}
+        onNavigateProfile={() => handleSecureNavigation("profile")}
+        onNavigateHome={() => setCurrentPage("home")} // Home is always accessible!
+        onNavigateCopilot={() => { setInitialAiPrompt(""); handleSecureNavigation("copilot"); }}
+        onNavigateHackathons={() => handleSecureNavigation("hackathons")}
+        onNavigateScholarships={() => handleSecureNavigation("scholarships")}
+        onNavigateInternships={() => handleSecureNavigation("internships")}
       />
 
       {renderCurrentPage()}
