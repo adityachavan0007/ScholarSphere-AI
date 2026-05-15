@@ -105,12 +105,7 @@ export default function Profile() {
             setAiMatches([]);
 
             try {
-<<<<<<< HEAD
                 const response = await fetch("http://localhost:3001/api/analyze-profile", {
-=======
-                // Fetch to your real backend AI route
-                const response = await fetch("/api/analyze-profile", {
->>>>>>> f8b490a4ad8e25a6314792c851deba253c563ba8
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ profileData: profile })
