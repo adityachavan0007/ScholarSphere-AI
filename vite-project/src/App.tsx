@@ -330,9 +330,9 @@ export default function App() {
         onNavigateProfile={() => handleSecureNavigation("profile")}
         onNavigateHome={() => setCurrentPage("home")} // Home is always accessible!
         onNavigateCopilot={() => { setInitialAiPrompt(""); handleSecureNavigation("copilot"); }}
-        onNavigateHackathons={() => handleSecureNavigation("hackathons")}
-        onNavigateScholarships={() => handleSecureNavigation("scholarships")}
-        onNavigateInternships={() => handleSecureNavigation("internships")}
+        onNavigateHackathons={() => setCurrentPage("hackathons")}
+        onNavigateScholarships={() => setCurrentPage("scholarships")}
+        onNavigateInternships={() => setCurrentPage("internships")}
       />
 
       {renderCurrentPage()}

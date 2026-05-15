@@ -111,7 +111,7 @@ export default function Profile() {
 
             try {
                 // Fetch to your real backend AI route
-                const response = await fetch("http://localhost:3000/api/analyze-profile", {
+                const response = await fetch("/api/analyze-profile", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ profileData: profile })

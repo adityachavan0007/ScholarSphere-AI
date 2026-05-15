@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:backend": "next dev -p 3001",
-    "build": "tsc && vite build",
+    "build": "vite build && node scripts/post-build.js && next build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
