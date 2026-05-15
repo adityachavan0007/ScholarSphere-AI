@@ -3,6 +3,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 /**
  * AI Layer Wrapper for ScholarSphere AI
  */
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export interface StudentProfile {
   name: string;
@@ -78,6 +82,7 @@ export async function generateDraftAnswers(
   return drafts;
 }
 
+<<<<<<< HEAD
 const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ 
     model: "gemini-1.5-flash",
@@ -97,4 +102,25 @@ export async function chatWithAI(prompt: string, history: { role: string; conten
 
   const result = await chat.sendMessage(prompt);
   return result.response.text();
+=======
+/**
+ * Generates a chat response using Gemini.
+ */
+export async function generateChatResponse(prompt: string, history: { role: string, content: string }[]) {
+  try {
+    const chatSession = model.startChat({
+      history: history.map(msg => ({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: msg.content }]
+      })),
+    });
+
+    const result = await chatSession.sendMessage(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error: any) {
+    console.error("AI Generation Error:", error.message);
+    throw new Error("Failed to generate AI response.");
+  }
+>>>>>>> f8b490a4ad8e25a6314792c851deba253c563ba8
 }

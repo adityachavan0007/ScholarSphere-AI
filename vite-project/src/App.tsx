@@ -45,7 +45,6 @@ export default function App() {
 
         const { data } = supabase.auth.onAuthStateChange((_event, session) => {
           setIsLoggedIn(!!session);
-          if (!session && currentPage !== "home") setCurrentPage("home");
         });
         authSubscription = data.subscription;
       } catch (error) {
@@ -56,8 +55,18 @@ export default function App() {
     };
 
     initAuth();
-    return () => { if (authSubscription) authSubscription.unsubscribe(); };
-  }, [currentPage]);
+
+    return () => {
+      if (authSubscription) authSubscription.unsubscribe();
+    };
+  }, []); // Only run once on mount
+
+  // Kick back to home if user logs out while on a private page
+  useEffect(() => {
+    if (!isLoggedIn && (currentPage === "profile" || currentPage === "copilot")) {
+      setCurrentPage("home");
+    }
+  }, [isLoggedIn, currentPage]);
 
   // --- HANDLERS ---
   const handleOpenAuth = (view: "login" | "signup") => {
@@ -332,9 +341,9 @@ export default function App() {
         onNavigateProfile={() => handleSecureNavigation("profile")}
         onNavigateHome={() => setCurrentPage("home")} // Home is always accessible!
         onNavigateCopilot={() => { setInitialAiPrompt(""); handleSecureNavigation("copilot"); }}
-        onNavigateHackathons={() => handleSecureNavigation("hackathons")}
-        onNavigateScholarships={() => handleSecureNavigation("scholarships")}
-        onNavigateInternships={() => handleSecureNavigation("internships")}
+        onNavigateHackathons={() => setCurrentPage("hackathons")}
+        onNavigateScholarships={() => setCurrentPage("scholarships")}
+        onNavigateInternships={() => setCurrentPage("internships")}
       />
 
       {renderCurrentPage()}

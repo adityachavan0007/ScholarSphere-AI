@@ -125,7 +125,12 @@ export default function AICopilot({ initialPrompt }: CopilotProps) {
             setMessages(prev => [...prev, telemetryMsg]);
 
             // --- REAL BACKEND CONNECTION ---
+<<<<<<< HEAD
             const response = await fetch("http://localhost:3001/api/ai-chat", {
+=======
+            // Adjust this URL to match wherever your backend is running!
+            const response = await fetch("/api/ai-chat", {
+>>>>>>> f8b490a4ad8e25a6314792c851deba253c563ba8
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -174,7 +179,7 @@ export default function AICopilot({ initialPrompt }: CopilotProps) {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 sender: "ai",
-                text: "ERROR: Neural connection to backend interrupted. Ensure the backend server is running on port 3000."
+                text: "ERROR: Neural connection to backend interrupted. Ensure the backend server is running on port 3001."
             }]);
         } finally {
             setIsProcessing(false);
