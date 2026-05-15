@@ -46,10 +46,6 @@ export default function App() {
         // 2. Listen for changes safely
         const { data } = supabase.auth.onAuthStateChange((_event, session) => {
           setIsLoggedIn(!!session);
-          // If they log out, kick them back to the home page securely
-          if (!session && currentPage !== "home") {
-            setCurrentPage("home");
-          }
         });
         authSubscription = data.subscription;
 
@@ -65,7 +61,14 @@ export default function App() {
     return () => {
       if (authSubscription) authSubscription.unsubscribe();
     };
-  }, [currentPage]);
+  }, []); // Only run once on mount
+
+  // Kick back to home if user logs out while on a private page
+  useEffect(() => {
+    if (!isLoggedIn && (currentPage === "profile" || currentPage === "copilot")) {
+      setCurrentPage("home");
+    }
+  }, [isLoggedIn, currentPage]);
 
   // --- AUTH HANDLERS ---
   const handleOpenAuth = (view: "login" | "signup") => {

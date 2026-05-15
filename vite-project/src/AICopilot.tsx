@@ -119,7 +119,7 @@ export default function AICopilot() {
 
             // --- REAL BACKEND CONNECTION ---
             // Adjust this URL to match wherever your backend is running!
-            const response = await fetch("http://localhost:3000/api/ai-chat", {
+            const response = await fetch("http://localhost:3001/api/ai-chat", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
