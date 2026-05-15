@@ -4,22 +4,23 @@ import {
     Briefcase, MapPin, DollarSign, Clock, Building2, Zap, ExternalLink,
     Activity, Search, Filter, SlidersHorizontal, Loader2, Code, Terminal, CheckCircle2
 } from "lucide-react";
+import { supabase } from "./lib/supabaseClient";
 
 // --- MOCK DATABASE ---
-// BACKEND DEV: Replace this array with a real database fetch.
 const MASTER_INTERNSHIPS = [
-    { id: 1, role: "Backend Engineering Intern", company: "TechNova Systems", location: "Pune, India (Hybrid)", stipend: "₹45,000/mo", duration: "6 Months", matchScore: 98, tags: ["Java", "Node.js", "API Design"], status: "Actively Hiring", type: "Hybrid", tier: "Enterprise" },
-    { id: 2, role: "IoT & Hardware Intern", company: "Aura Robotics", location: "Remote", stipend: "$1,200/mo", duration: "3 Months", matchScore: 95, tags: ["Arduino", "Sensors", "C++"], status: "Actively Hiring", type: "Remote", tier: "Startup" },
-    { id: 3, role: "Software Engineering Intern", company: "Google", location: "Bangalore, India", stipend: "₹1,20,000/mo", duration: "2 Months", matchScore: 82, tags: ["Backend", "Distributed Systems"], status: "Reviewing", type: "On-site", tier: "FAANG" },
-    { id: 4, role: "Automotive Embedded Intern", company: "DriveTech Core", location: "Mumbai, India", stipend: "₹35,000/mo", duration: "6 Months", matchScore: 91, tags: ["Circuit Design", "IoT", "Automotive"], status: "Closing Soon", type: "On-site", tier: "Enterprise" },
-    { id: 5, role: "Full Stack Developer Intern", company: "WebFlow Inc.", location: "Remote", stipend: "$2,000/mo", duration: "4 Months", matchScore: 78, tags: ["React", "Node.js", "MongoDB"], status: "Actively Hiring", type: "Remote", tier: "Startup" },
-    { id: 6, role: "Cloud Infrastructure Intern", company: "Amazon Web Services", location: "Hyderabad, India", stipend: "₹1,00,000/mo", duration: "3 Months", matchScore: 71, tags: ["AWS", "Java", "Linux"], status: "Upcoming", type: "On-site", tier: "FAANG" },
+    { id: "m1", role: "Backend Engineering Intern", company: "TechNova Systems", location: "Pune, India (Hybrid)", stipend: "₹45,000/mo", duration: "6 Months", matchScore: 98, tags: ["Java", "Node.js", "API Design"], status: "Actively Hiring", type: "Hybrid", tier: "Enterprise" },
+    { id: "m2", role: "IoT & Hardware Intern", company: "Aura Robotics", location: "Remote", stipend: "$1,200/mo", duration: "3 Months", matchScore: 95, tags: ["Arduino", "Sensors", "C++"], status: "Actively Hiring", type: "Remote", tier: "Startup" },
+    { id: "m3", role: "Software Engineering Intern", company: "Google", location: "Bangalore, India", stipend: "₹1,20,000/mo", duration: "2 Months", matchScore: 82, tags: ["Backend", "Distributed Systems"], status: "Reviewing", type: "On-site", tier: "FAANG" },
+    { id: "m4", role: "Automotive Embedded Intern", company: "DriveTech Core", location: "Mumbai, India", stipend: "₹35,000/mo", duration: "6 Months", matchScore: 91, tags: ["Circuit Design", "IoT", "Automotive"], status: "Closing Soon", type: "On-site", tier: "Enterprise" },
+    { id: "m5", role: "Full Stack Developer Intern", company: "WebFlow Inc.", location: "Remote", stipend: "$2,000/mo", duration: "4 Months", matchScore: 78, tags: ["React", "Node.js", "MongoDB"], status: "Actively Hiring", type: "Remote", tier: "Startup" },
+    { id: "m6", role: "Cloud Infrastructure Intern", company: "Amazon Web Services", location: "Hyderabad, India", stipend: "₹1,00,000/mo", duration: "3 Months", matchScore: 71, tags: ["AWS", "Java", "Linux"], status: "Upcoming", type: "On-site", tier: "FAANG" },
 ];
 
 export default function Internships() {
     // --- STATE MANAGEMENT ---
     const [isBooting, setIsBooting] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
+    const [internships, setInternships] = useState<any[]>([]);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
@@ -31,10 +32,43 @@ export default function Internships() {
     const filters = ["All", "Remote", "Hybrid", "On-site", "Startup", "FAANG"];
     const sortOptions = ["Match Score", "Stipend (High-Low)", "Duration (Short-Long)"];
 
-    // --- INITIAL BOOT SEQUENCE ---
+    // --- INITIAL DATA FETCH ---
     useEffect(() => {
-        const timer = setTimeout(() => setIsBooting(false), 1200);
-        return () => clearTimeout(timer);
+        async function fetchInternships() {
+            try {
+                const { data, error } = await supabase
+                    .from('opportunities')
+                    .select('*')
+                    .eq('type', 'internship');
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const transformed = data.map(i => ({
+                        id: i.id,
+                        role: i.title,
+                        company: i.domain_tag || "Partner Company",
+                        location: i.eligible_states?.[0] || "Remote",
+                        stipend: i.reward_summary || "TBD",
+                        duration: "3-6 Months",
+                        matchScore: Math.floor(Math.random() * 20) + 80, // Simulation for now
+                        tags: i.eligible_degrees || [],
+                        status: "Actively Hiring",
+                        type: i.type === 'internship' ? 'Remote' : i.type,
+                        tier: "Startup"
+                    }));
+                    setInternships([...transformed, ...MASTER_INTERNSHIPS]);
+                } else {
+                    setInternships(MASTER_INTERNSHIPS);
+                }
+            } catch (err) {
+                console.error("Error fetching internships:", err);
+                setInternships(MASTER_INTERNSHIPS);
+            } finally {
+                setIsBooting(false);
+            }
+        }
+        fetchInternships();
     }, []);
 
     // --- SIMULATE BACKEND SEARCH DELAY ---
@@ -51,10 +85,10 @@ export default function Internships() {
     // --- CORE FILTERING & SORTING ENGINE ---
     const processedData = useMemo(() => {
         // 1. Filter by Search Query
-        let data = MASTER_INTERNSHIPS.filter(i =>
+        let data = internships.filter(i =>
             i.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
             i.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            i.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+            i.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
         );
 
         // 2. Filter by Tags/Type/Tier

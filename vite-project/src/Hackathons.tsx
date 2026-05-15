@@ -4,22 +4,23 @@ import {
     Trophy, Code, Calendar, MapPin, Zap, ExternalLink,
     Activity, Search, Filter, Cpu, Users, SlidersHorizontal, Loader2
 } from "lucide-react";
+import { supabase } from "./lib/supabaseClient";
 
 // --- MOCK DATABASE ---
-// BACKEND DEV: You will replace this array with a real database fetch.
 const MASTER_DATABASE = [
-    { id: 1, title: "Smart India Hackathon 2026", organizer: "Ministry of Education", date: "Aug 15 - Aug 17, 2026", mode: "Offline", matchScore: 98, tags: ["Hardware", "IoT", "Open Innovation"], status: "Live", participants: 12500 },
-    { id: 2, title: "ETHGlobal Pune", organizer: "ETHGlobal", date: "Sep 10 - Sep 12, 2026", mode: "Hybrid", matchScore: 85, tags: ["Web3", "Blockchain"], status: "Registering", participants: 1500 },
-    { id: 3, title: "HackNITR 5.0", organizer: "NIT Rourkela", date: "Oct 05 - Oct 06, 2026", mode: "Online", matchScore: 92, tags: ["AI/ML", "Node.js"], status: "Upcoming", participants: 3200 },
-    { id: 4, title: "Hardware Conclave Hack", organizer: "Arduino Foundation", date: "Nov 20 - Nov 22, 2026", mode: "Offline", matchScore: 99, tags: ["Hardware", "Arduino", "Circuit Design"], status: "Upcoming", participants: 850 },
-    { id: 5, title: "TensorFlow AI Challenge", organizer: "Google Labs", date: "Dec 01 - Dec 03, 2026", mode: "Online", matchScore: 75, tags: ["AI/ML", "Python"], status: "Upcoming", participants: 5000 },
-    { id: 6, title: "Polygon Buildathon", organizer: "Polygon", date: "Dec 15 - Dec 17, 2026", mode: "Online", matchScore: 60, tags: ["Web3", "Smart Contracts"], status: "Upcoming", participants: 2100 },
+    { id: "m1", title: "Smart India Hackathon 2026", organizer: "Ministry of Education", date: "Aug 15 - Aug 17, 2026", mode: "Offline", matchScore: 98, tags: ["Hardware", "IoT", "Open Innovation"], status: "Live", participants: 12500 },
+    { id: "m2", title: "ETHGlobal Pune", organizer: "ETHGlobal", date: "Sep 10 - Sep 12, 2026", mode: "Hybrid", matchScore: 85, tags: ["Web3", "Blockchain"], status: "Registering", participants: 1500 },
+    { id: "m3", title: "HackNITR 5.0", organizer: "NIT Rourkela", date: "Oct 05 - Oct 06, 2026", mode: "Online", matchScore: 92, tags: ["AI/ML", "Node.js"], status: "Upcoming", participants: 3200 },
+    { id: "m4", title: "Hardware Conclave Hack", organizer: "Arduino Foundation", date: "Nov 20 - Nov 22, 2026", mode: "Offline", matchScore: 99, tags: ["Hardware", "Arduino", "Circuit Design"], status: "Upcoming", participants: 850 },
+    { id: "m5", title: "TensorFlow AI Challenge", organizer: "Google Labs", date: "Dec 01 - Dec 03, 2026", mode: "Online", matchScore: 75, tags: ["AI/ML", "Python"], status: "Upcoming", participants: 5000 },
+    { id: "m6", title: "Polygon Buildathon", organizer: "Polygon", date: "Dec 15 - Dec 17, 2026", mode: "Online", matchScore: 60, tags: ["Web3", "Smart Contracts"], status: "Upcoming", participants: 2100 },
 ];
 
 export default function Hackathons() {
     // --- STATE MANAGEMENT ---
     const [isBooting, setIsBooting] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
+    const [hackathons, setHackathons] = useState<any[]>([]);
 
     // Search, Filter, and Sort States
     const [searchQuery, setSearchQuery] = useState("");
@@ -33,14 +34,44 @@ export default function Hackathons() {
     const filters = ["All", "Hardware", "Web3", "AI/ML", "Online", "Offline"];
     const sortOptions = ["Match Score", "Participants", "Date"];
 
-    // --- INITIAL BOOT SEQUENCE ---
+    // --- INITIAL DATA FETCH ---
     useEffect(() => {
-        const timer = setTimeout(() => setIsBooting(false), 1200);
-        return () => clearTimeout(timer);
+        async function fetchHackathons() {
+            try {
+                const { data, error } = await supabase
+                    .from('opportunities')
+                    .select('*')
+                    .eq('type', 'hackathon');
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const transformed = data.map(h => ({
+                        id: h.id,
+                        title: h.title,
+                        organizer: h.domain_tag || "Partner Org",
+                        date: h.deadline_date ? new Date(h.deadline_date).toLocaleDateString() : "Upcoming",
+                        mode: h.eligible_states?.[0] || "Online",
+                        matchScore: Math.floor(Math.random() * 20) + 80,
+                        tags: h.eligible_degrees || [],
+                        status: "Registering",
+                        participants: Math.floor(Math.random() * 5000) + 1000
+                    }));
+                    setHackathons([...transformed, ...MASTER_DATABASE]);
+                } else {
+                    setHackathons(MASTER_DATABASE);
+                }
+            } catch (err) {
+                console.error("Error fetching hackathons:", err);
+                setHackathons(MASTER_DATABASE);
+            } finally {
+                setIsBooting(false);
+            }
+        }
+        fetchHackathons();
     }, []);
 
     // --- SIMULATE BACKEND SEARCH DELAY ---
-    // When you type, it shows a tiny loading spinner to simulate an API request
     useEffect(() => {
         if (isBooting) return;
         setIsSearching(true);
@@ -52,11 +83,9 @@ export default function Hackathons() {
     }, [searchQuery, activeFilter, sortBy]);
 
     // --- CORE FILTERING & SORTING ENGINE ---
-    // BACKEND DEV: This logic should happen on the server using SQL/NoSQL queries!
-    // Example API call: fetch(`/api/hackathons?search=${searchQuery}&tag=${activeFilter}&sort=${sortBy}&page=${page}&limit=${ITEMS_PER_PAGE}`)
     const processedData = useMemo(() => {
         // 1. Filter by Search Query
-        let data = MASTER_DATABASE.filter(h =>
+        let data = hackathons.filter(h =>
             h.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             h.organizer.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -75,7 +104,7 @@ export default function Hackathons() {
         });
 
         return data;
-    }, [searchQuery, activeFilter, sortBy]);
+    }, [searchQuery, activeFilter, sortBy, hackathons]);
 
     // 4. Apply Pagination (Slice the array)
     const displayedHackathons = processedData.slice(0, page * ITEMS_PER_PAGE);

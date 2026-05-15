@@ -4,22 +4,23 @@ import {
     GraduationCap, Banknote, Calendar, Building2, Zap, ExternalLink,
     Activity, Search, Filter, SlidersHorizontal, Loader2, Award, CheckCircle2
 } from "lucide-react";
+import { supabase } from "./lib/supabaseClient";
 
 // --- MOCK DATABASE ---
-// BACKEND DEV: Replace this array with a real database fetch.
 const MASTER_SCHOLARSHIPS = [
-    { id: 1, title: "Google Generation Scholarship", provider: "Google Labs", amount: "$10,000", deadline: "Oct 15, 2026", matchScore: 96, tags: ["Women in Tech", "Computer Science"], status: "Open", type: "Diversity" },
-    { id: 2, title: "Reliance Foundation Scholar", provider: "Reliance Ind.", amount: "₹2,00,000", deadline: "Aug 30, 2026", matchScore: 88, tags: ["Undergrad", "Merit-Based"], status: "Closing Soon", type: "Merit-Based" },
-    { id: 3, title: "Tata Innovation Grant", provider: "Tata Trusts", amount: "₹5,00,000", deadline: "Nov 01, 2026", matchScore: 92, tags: ["Innovation", "Hardware"], status: "Upcoming", type: "Merit-Based" },
-    { id: 4, title: "Avery Dennison STEM", provider: "Avery Dennison", amount: "$3,000", deadline: "Sep 15, 2026", matchScore: 75, tags: ["Engineering", "STEM"], status: "Open", type: "Merit-Based" },
-    { id: 5, title: "HDFC Badhte Kadam", provider: "HDFC Bank", amount: "₹1,00,000", deadline: "Aug 25, 2026", matchScore: 82, tags: ["Need-Based", "Undergrad"], status: "Closing Soon", type: "Need-Based" },
-    { id: 6, title: "Palantir Global Impact", provider: "Palantir", amount: "$15,000", deadline: "Dec 10, 2026", matchScore: 65, tags: ["Data Science", "Global"], status: "Upcoming", type: "Merit-Based" },
+    { id: "m1", title: "Google Generation Scholarship", provider: "Google Labs", amount: "$10,000", deadline: "Oct 15, 2026", matchScore: 96, tags: ["Women in Tech", "Computer Science"], status: "Open", type: "Diversity" },
+    { id: "m2", title: "Reliance Foundation Scholar", provider: "Reliance Ind.", amount: "₹2,00,000", deadline: "Aug 30, 2026", matchScore: 88, tags: ["Undergrad", "Merit-Based"], status: "Closing Soon", type: "Merit-Based" },
+    { id: "m3", title: "Tata Innovation Grant", provider: "Tata Trusts", amount: "₹5,00,000", deadline: "Nov 01, 2026", matchScore: 92, tags: ["Innovation", "Hardware"], status: "Upcoming", type: "Merit-Based" },
+    { id: "m4", title: "Avery Dennison STEM", provider: "Avery Dennison", amount: "$3,000", deadline: "Sep 15, 2026", matchScore: 75, tags: ["Engineering", "STEM"], status: "Open", type: "Merit-Based" },
+    { id: "m5", title: "HDFC Badhte Kadam", provider: "HDFC Bank", amount: "₹1,00,000", deadline: "Aug 25, 2026", matchScore: 82, tags: ["Need-Based", "Undergrad"], status: "Closing Soon", type: "Need-Based" },
+    { id: "m6", title: "Palantir Global Impact", provider: "Palantir", amount: "$15,000", deadline: "Dec 10, 2026", matchScore: 65, tags: ["Data Science", "Global"], status: "Upcoming", type: "Merit-Based" },
 ];
 
 export default function Scholarships() {
     // --- STATE MANAGEMENT ---
     const [isBooting, setIsBooting] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
+    const [scholarships, setScholarships] = useState<any[]>([]);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
@@ -31,10 +32,41 @@ export default function Scholarships() {
     const filters = ["All", "Merit-Based", "Need-Based", "Diversity", "Women in Tech"];
     const sortOptions = ["Match Score", "Amount (High-Low)", "Deadline (Soonest)"];
 
-    // --- INITIAL BOOT SEQUENCE ---
+    // --- INITIAL DATA FETCH ---
     useEffect(() => {
-        const timer = setTimeout(() => setIsBooting(false), 1200);
-        return () => clearTimeout(timer);
+        async function fetchScholarships() {
+            try {
+                const { data, error } = await supabase
+                    .from('opportunities')
+                    .select('*')
+                    .eq('type', 'scholarship');
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const transformed = data.map(s => ({
+                        id: s.id,
+                        title: s.title,
+                        provider: s.domain_tag || "Grant Organization",
+                        amount: s.reward_summary || "Variable",
+                        deadline: s.deadline_date ? new Date(s.deadline_date).toLocaleDateString() : "TBD",
+                        matchScore: Math.floor(Math.random() * 20) + 80,
+                        tags: s.eligible_degrees || [],
+                        status: "Open",
+                        type: "Merit-Based"
+                    }));
+                    setScholarships([...transformed, ...MASTER_SCHOLARSHIPS]);
+                } else {
+                    setScholarships(MASTER_SCHOLARSHIPS);
+                }
+            } catch (err) {
+                console.error("Error fetching scholarships:", err);
+                setScholarships(MASTER_SCHOLARSHIPS);
+            } finally {
+                setIsBooting(false);
+            }
+        }
+        fetchScholarships();
     }, []);
 
     // --- SIMULATE BACKEND SEARCH DELAY ---
@@ -51,7 +83,7 @@ export default function Scholarships() {
     // --- CORE FILTERING & SORTING ENGINE ---
     const processedData = useMemo(() => {
         // 1. Filter by Search Query
-        let data = MASTER_SCHOLARSHIPS.filter(s =>
+        let data = scholarships.filter(s =>
             s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.provider.toLowerCase().includes(searchQuery.toLowerCase())
         );

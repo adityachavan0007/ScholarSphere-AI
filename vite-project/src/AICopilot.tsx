@@ -80,13 +80,21 @@ const HackathonWidget = () => (
 );
 
 
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: "You are ScholarSphere AI, an elite AI copilot for Indian undergraduate students. Your tone is engineering-focused, slightly futuristic, and highly efficient. You help students find scholarships, hackathons, and internships. You can also help draft cover letters and application answers. Use terminal-style language occasionally (e.g., 'neural link established', 'scanning registers'). If you generate a long document (like a cover letter), format it clearly with markdown."
+});
+
 // --- MAIN APP ---
 export default function AICopilot() {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "1",
             sender: "ai",
-            text: "Neural link established. Accessing matrix... Context loaded: [FY B.Tech IT | Java | Arduino]. Awaiting your command parameter."
+            text: "Neural link established. Accessing matrix... Context loaded: [Engineering/Tech Navigator]. Awaiting your command parameter."
         }
     ]);
     const [inputValue, setInputValue] = useState("");
@@ -100,7 +108,7 @@ export default function AICopilot() {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isProcessing, activeArtifact]);
 
-    const handleSendMessage = (e: React.FormEvent) => {
+    const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
 
@@ -109,37 +117,64 @@ export default function AICopilot() {
         setInputValue("");
         setIsProcessing(true);
 
-        const lowerInput = userMsg.text?.toLowerCase() || "";
+        try {
+            // Add a telemetry message for realism
+            const telemetryMsg: Message = { 
+                id: (Date.now() + 1).toString(), 
+                sender: "ai",
+                telemetry: ["Initializing cognitive engine...", "Querying semantic knowledge graph...", "Compiling response vectors..."]
+            };
+            setMessages(prev => [...prev, telemetryMsg]);
 
-        // SIMULATING THE AI ENGINE LOGIC (Backend Dev will replace this with real SSE stream)
-        setTimeout(() => {
-            let aiMsg: Message = { id: (Date.now() + 1).toString(), sender: "ai" };
+            const chat = model.startChat({
+                history: messages.filter(m => m.text).map(m => ({
+                    role: m.sender === "user" ? "user" : "model",
+                    parts: [{ text: m.text || "" }]
+                })),
+            });
 
-            if (lowerInput.includes("hackathon")) {
-                aiMsg.telemetry = ["Scanning global hackathon registries...", "Filtering by Hardware/IoT vectors...", "Cross-referencing Arduino stack... [Match Found]"];
-                aiMsg.text = "I found 3 highly relevant hackathons matching your hardware and Java background. The Smart India Hackathon is a 95% fit based on your Force Detection Project.";
-                aiMsg.widget = "hackathons";
-            }
-            else if (lowerInput.includes("cover letter") || lowerInput.includes("internship") || lowerInput.includes("draft")) {
-                aiMsg.telemetry = ["Accessing profile.config...", "Analyzing standard SDE intern requirements...", "Generating persuasive semantic matrix...", "Formatting artifact..."];
-                aiMsg.text = "Draft generated successfully. I have isolated your Arduino and Java strengths into a narrative format. Transferring to Action Canvas for review.";
-                const artifactData: Artifact = {
-                    id: Date.now().toString() + "_art",
-                    title: "SDE_Intern_Cover_Letter.md",
-                    type: "text",
-                    content: "Dear Hiring Manager,\n\nI am writing to express my strong interest in the Software Development Engineering Internship at TechCorp. As a First-Year B.Tech IT undergraduate at Dr. D. Y. Patil College of Engineering, I bring a unique blend of backend software logic (Java, Node.js) and hands-on hardware integration (Arduino).\n\nRecently, I founded 'mak6company' and developed a real-time Force & Smoke Detection System utilizing IoT sensors. I thrive in bridging the gap between digital code and physical hardware.\n\nI am eager to bring my rapid-learning capabilities and builder-mindset to your engineering team.\n\nBest regards,\nAditya Sharad Chavan"
-                };
-                aiMsg.artifactTrigger = artifactData;
-                setActiveArtifact(artifactData);
-            }
-            else {
-                aiMsg.telemetry = ["Parsing command intent...", "Querying general developer database..."];
-                aiMsg.text = "Input registered. Suggesting expansion of backend API nodes. Should I scan for open-source repositories to build your GitHub graph?";
+            const result = await chat.sendMessage(userMsg.text!);
+            const responseText = result.response.text();
+
+            let aiMsg: Message = { 
+                id: (Date.now() + 2).toString(), 
+                sender: "ai", 
+                text: responseText 
+            };
+
+            // Detect if response contains a large markdown block (potential artifact)
+            if (responseText.includes("```")) {
+                const parts = responseText.split("```");
+                if (parts.length >= 3) {
+                    const content = parts[1].split("\n").slice(1).join("\n"); // Remove language tag
+                    const title = responseText.toLowerCase().includes("cover letter") ? "Cover_Letter.md" : "Generated_Document.md";
+                    const artifactData: Artifact = {
+                        id: Date.now().toString() + "_art",
+                        title,
+                        type: "text",
+                        content: content
+                    };
+                    aiMsg.artifactTrigger = artifactData;
+                    // Automatically open if it's a specific generation request
+                    if (inputValue.toLowerCase().includes("draft") || inputValue.toLowerCase().includes("generate")) {
+                        setActiveArtifact(artifactData);
+                    }
+                }
             }
 
-            setMessages(prev => [...prev, aiMsg]);
+            // Update the last message (the telemetry one) with the real response
+            setMessages(prev => prev.map(m => m.id === telemetryMsg.id ? aiMsg : m));
+
+        } catch (error: any) {
+            console.error("Gemini Error:", error);
+            setMessages(prev => [...prev, { 
+                id: Date.now().toString(), 
+                sender: "ai", 
+                text: "ERROR: Neural connection interrupted. Please verify API protocols." 
+            }]);
+        } finally {
             setIsProcessing(false);
-        }, 600);
+        }
     };
 
     return (

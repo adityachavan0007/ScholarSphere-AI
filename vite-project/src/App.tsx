@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Sparkles, FileText, LayoutDashboard, GraduationCap, Target,
   CheckCircle2, Code, Globe, Briefcase, ChevronDown, BrainCircuit,
   User as UserIcon, ArrowRight
 } from "lucide-react";
+import { supabase } from "./lib/supabaseClient";
 
 // --- CUSTOM COMPONENTS ---
 import Navbar from "./Navbar";
@@ -23,14 +24,30 @@ type PageState = "home" | "profile" | "copilot" | "hackathons" | "scholarships" 
 export default function Home() {
   // --- STATE MANAGEMENT ---
   const [currentPage, setCurrentPage] = useState<PageState>("home");
-
-  // Read from localStorage so login is SAVED even if the user refreshes the page
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem("scholarSphereAuth") === "true";
-  });
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [authView, setAuthView] = useState<"login" | "signup">("signup");
+
+  // --- AUTH LISTENERS ---
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+      if (session) setCurrentPage("profile");
+    });
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+      if (session) {
+        setCurrentPage("profile");
+      } else {
+        setCurrentPage("home");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // --- AUTH HANDLERS ---
   const handleOpenAuth = (view: "login" | "signup") => {
@@ -39,16 +56,12 @@ export default function Home() {
   };
 
   const handleAuthSuccess = () => {
-    setIsLoggedIn(true);
-    localStorage.setItem("scholarSphereAuth", "true");
     setIsModalOpen(false);
-    setCurrentPage("profile");
+    // State will be updated by the listener
   };
 
-  const handleSignOut = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem("scholarSphereAuth");
-    setCurrentPage("home");
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
   };
 
   // ==========================================
