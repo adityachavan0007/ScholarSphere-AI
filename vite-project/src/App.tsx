@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Sparkles, FileText, LayoutDashboard, GraduationCap, Target,
   CheckCircle2, Code, Globe, Briefcase, ChevronDown, BrainCircuit,
-  User as UserIcon, ArrowRight
+  User as UserIcon, ArrowRight, Loader2, ChevronRight // <--- CHEVRONRIGHT IS HERE! NO MORE CRASHES.
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
@@ -21,33 +21,51 @@ import Internships from "./Internships";
 // --- TYPES ---
 type PageState = "home" | "profile" | "copilot" | "hackathons" | "scholarships" | "internships";
 
-export default function Home() {
+export default function App() {
   // --- STATE MANAGEMENT ---
   const [currentPage, setCurrentPage] = useState<PageState>("home");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [authView, setAuthView] = useState<"login" | "signup">("signup");
 
-  // --- AUTH LISTENERS ---
+  // --- CRASH-PROOF AUTH LISTENERS ---
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session);
-      if (session) setCurrentPage("profile");
-    });
+    let authSubscription: any = null;
 
-    // Listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session);
-      if (session) {
-        setCurrentPage("profile");
-      } else {
-        setCurrentPage("home");
+    const initAuth = async () => {
+      try {
+        // 1. Check initial session safely
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        if (session) {
+          setIsLoggedIn(true);
+        }
+
+        // 2. Listen for changes safely
+        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+          setIsLoggedIn(!!session);
+          // If they log out, kick them back to the home page securely
+          if (!session && currentPage !== "home") {
+            setCurrentPage("home");
+          }
+        });
+        authSubscription = data.subscription;
+
+      } catch (error) {
+        console.error("Supabase Connection Error:", error);
+      } finally {
+        setIsCheckingSession(false); // Always stop the loading screen, even if backend fails
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
-  }, []);
+    initAuth();
+
+    return () => {
+      if (authSubscription) authSubscription.unsubscribe();
+    };
+  }, [currentPage]);
 
   // --- AUTH HANDLERS ---
   const handleOpenAuth = (view: "login" | "signup") => {
@@ -56,20 +74,36 @@ export default function Home() {
   };
 
   const handleAuthSuccess = () => {
+    setIsLoggedIn(true);
     setIsModalOpen(false);
-    // State will be updated by the listener
+    setCurrentPage("profile");
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+      setIsLoggedIn(false);
+      setCurrentPage("home");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
+
+  // --- LOADING SCREEN ---
+  // Prevents the UI from flashing a "logged out" state while Supabase boots up
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center font-mono text-sky-500">
+        <Loader2 className="w-6 h-6 animate-spin mr-3" /> Establishing Secure Connection...
+      </div>
+    );
+  }
 
   // ==========================================
   // VIEW ROUTING ENGINE
   // ==========================================
   const renderCurrentPage = () => {
 
-    // 1. PROFILE PAGE
     if (currentPage === "profile") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
@@ -83,7 +117,6 @@ export default function Home() {
       );
     }
 
-    // 2. AI COPILOT PAGE
     if (currentPage === "copilot") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
@@ -97,55 +130,31 @@ export default function Home() {
       );
     }
 
-    // 3. HACKATHONS PAGE
     if (currentPage === "hackathons") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
           <Hackathons />
-          {isLoggedIn && (
-            <div className="fixed bottom-6 right-6 z-50 lg:hidden">
-              <button onClick={handleSignOut} className="px-4 py-2 font-mono text-xs text-red-400 bg-red-900/10 border border-red-900/50 rounded-lg hover:bg-red-900/30 transition-colors shadow-[0_0_15px_rgba(153,27,27,0.3)]">
-                Sign Out
-              </button>
-            </div>
-          )}
         </div>
       );
     }
 
-    // 4. SCHOLARSHIPS PAGE
     if (currentPage === "scholarships") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
           <Scholarships />
-          {isLoggedIn && (
-            <div className="fixed bottom-6 right-6 z-50 lg:hidden">
-              <button onClick={handleSignOut} className="px-4 py-2 font-mono text-xs text-red-400 bg-red-900/10 border border-red-900/50 rounded-lg hover:bg-red-900/30 transition-colors shadow-[0_0_15px_rgba(153,27,27,0.3)]">
-                Sign Out
-              </button>
-            </div>
-          )}
         </div>
       );
     }
 
-    // 5. INTERNSHIPS PAGE
     if (currentPage === "internships") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
           <Internships />
-          {isLoggedIn && (
-            <div className="fixed bottom-6 right-6 z-50 lg:hidden">
-              <button onClick={handleSignOut} className="px-4 py-2 font-mono text-xs text-red-400 bg-red-900/10 border border-red-900/50 rounded-lg hover:bg-red-900/30 transition-colors shadow-[0_0_15px_rgba(153,27,27,0.3)]">
-                Sign Out
-              </button>
-            </div>
-          )}
         </div>
       );
     }
 
-    // 6. HOME PAGE (Default)
+    // HOME PAGE (Default)
     return (
       <div className="relative w-full bg-[#030712] flex flex-col items-center overflow-x-hidden selection:bg-sky-500/30 font-sans">
 
@@ -153,7 +162,6 @@ export default function Home() {
         <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15], x: [0, 40, 0], y: [0, -50, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[-5%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-sky-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
         <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.25, 0.1], x: [0, -50, 0], y: [0, 40, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
 
-        {/* --- FULL SCREEN HERO SECTION --- */}
         <div className="relative z-10 w-full min-h-[100dvh] flex flex-col items-center justify-center px-4 pt-20 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, type: "spring", stiffness: 80, damping: 20 }} className="w-full max-w-5xl space-y-8 text-center">
 
@@ -174,7 +182,6 @@ export default function Home() {
               Stop endlessly scrolling through portals. We match you with the best opportunities based on your profile and even help you draft the perfect application.
             </motion.p>
 
-            {/* DYNAMIC CALL TO ACTION BUTTONS */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7 }} className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-5">
               {!isLoggedIn ? (
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleOpenAuth("signup")} className="group inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-sky-600 to-blue-700 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_0_40px_rgba(2,132,199,0.5)] hover:shadow-[0_0_60px_rgba(2,132,199,0.7)] border border-white/10 transition-all font-mono">
@@ -199,12 +206,10 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* --- LIVE TICKER --- */}
         <div className="w-full z-20 relative">
           <LiveTicker />
         </div>
 
-        {/* --- CONTENT BELOW THE FOLD --- */}
         <div className="relative z-10 flex flex-col items-center w-full px-4 pb-32 sm:px-6 lg:px-8">
 
           <TerminalDemo />
@@ -220,14 +225,25 @@ export default function Home() {
               <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 group-hover:text-slate-300 transition-colors">Discover opportunities ranked by an AI fit score tailored entirely to your unique student profile.</p>
             </motion.div>
 
-            <motion.div onClick={() => isLoggedIn ? setCurrentPage("copilot") : handleOpenAuth("signup")} variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className={`bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-purple-500/50 transition-all group shadow-2xl relative overflow-hidden ${isLoggedIn ? 'cursor-pointer' : ''}`}>
+            {/* THE AI GATEWAY CARD */}
+            <motion.div onClick={() => isLoggedIn ? setCurrentPage("copilot") : handleOpenAuth("signup")} variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className={`bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-purple-500/50 transition-all group shadow-2xl relative overflow-hidden cursor-pointer`}>
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="flex items-center justify-center mb-6 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#21262d] border border-[#30363d] group-hover:scale-110 group-hover:-rotate-3 group-hover:border-purple-500/30 group-hover:bg-purple-500/10 relative z-10">
-                <BrainCircuit className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
+
+              <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className="flex items-center justify-center transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#21262d] border border-[#30363d] group-hover:scale-110 group-hover:-rotate-3 group-hover:border-purple-500/30 group-hover:bg-purple-500/10">
+                  <BrainCircuit className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
+                </div>
+                <span className="text-[10px] font-mono text-purple-400 border border-purple-500/30 bg-purple-500/10 px-2 py-1 rounded-md flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span> LIVE BACKEND
+                </span>
               </div>
-              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10">AI Copilot</h3>
-              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 mb-4 group-hover:text-slate-300 transition-colors">Beat writer's block. Generate personalized draft answers for common application questions.</p>
-              {isLoggedIn && <span className="text-xs font-mono text-purple-400 group-hover:text-purple-300 flex items-center gap-1 transition-colors">Launch Now <ChevronDown className="w-3 h-3 -rotate-90" /></span>}
+
+              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10">AI Copilot Engine</h3>
+              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 mb-4 group-hover:text-slate-300 transition-colors">Click here to access your personal AI. It reads your profile matrix to draft cover letters and fetch opportunities.</p>
+
+              <span className="text-xs font-mono font-bold text-purple-400 group-hover:text-purple-300 flex items-center gap-1 transition-colors">
+                {isLoggedIn ? "Open Engine Sandbox" : "Log In to Access"} <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+              </span>
             </motion.div>
 
             <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-indigo-500/50 transition-all group shadow-2xl relative overflow-hidden">
@@ -294,7 +310,6 @@ export default function Home() {
 
   return (
     <>
-      {/* GLOBAL NAVBAR */}
       <Navbar
         onOpenAuth={handleOpenAuth}
         isLoggedIn={isLoggedIn}
@@ -306,10 +321,8 @@ export default function Home() {
         onNavigateInternships={() => setCurrentPage("internships")}
       />
 
-      {/* RENDER THE CURRENT PAGE */}
       {renderCurrentPage()}
 
-      {/* GLOBAL AUTH MODAL */}
       <AuthModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

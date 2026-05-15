@@ -1,21 +1,27 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Lock, User, Github, Command, Linkedin } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
 
 interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialView?: "login" | "signup";
-    // NEW: We add an onSuccess prop to trigger the page change!
     onSuccess: () => void;
 }
 
 export default function AuthModal({ isOpen, onClose, initialView = "signup", onSuccess }: AuthModalProps) {
     const [view, setView] = useState<"login" | "signup">(initialView);
-
-    // Simulated authentication loader
     const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+    // --- THE BUG FIX ---
+    // This forces the modal to sync with the Navbar button you clicked every time it opens!
+    useEffect(() => {
+        if (isOpen && initialView) {
+            setView(initialView);
+            setIsAuthenticating(false); // Reset loading state when opened
+        }
+    }, [isOpen, initialView]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,8 +90,11 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="w-full max-w-md pointer-events-auto bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden"
+                            className="w-full max-w-md pointer-events-auto bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden relative"
                         >
+                            {/* Dynamic Glowing Edge */}
+                            <div className={`absolute top-0 left-0 w-full h-1 ${view === "login" ? "bg-gradient-to-r from-sky-500 to-blue-600" : "bg-gradient-to-r from-purple-500 to-indigo-600"}`}></div>
+
                             {/* Terminal Header */}
                             <div className="flex items-center justify-between px-4 py-3 bg-[#161b22] border-b border-[#30363d]">
                                 <div className="flex gap-2">
@@ -132,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                                     <button
                                         type="submit"
                                         disabled={isAuthenticating}
-                                        className="w-full py-3 mt-6 text-sm font-semibold text-white transition-all duration-300 rounded-lg bg-sky-600 hover:bg-sky-500 hover:shadow-[0_0_20px_rgba(2,132,199,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full py-3 mt-6 text-sm font-semibold text-white transition-all duration-300 rounded-lg bg-sky-600 hover:bg-sky-500 hover:shadow-[0_0_20px_rgba(2,132,199,0.4)] disabled:opacity-50 disabled:cursor-not-allowed font-mono"
                                     >
                                         {isAuthenticating ? "Processing..." : (view === "login" ? "Execute Login" : "Initialize Account")}
                                     </button>
@@ -140,7 +149,7 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
 
                                 <div className="flex items-center gap-4 my-6">
                                     <div className="flex-1 h-px bg-[#30363d]"></div>
-                                    <span className="text-xs font-mono text-slate-500">OR</span>
+                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">OR</span>
                                     <div className="flex-1 h-px bg-[#30363d]"></div>
                                 </div>
 
@@ -148,14 +157,14 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                                     <button
                                         onClick={() => handleOAuthSignIn('github')}
                                         disabled={isAuthenticating}
-                                        className="flex items-center justify-center gap-3 py-3 text-sm font-medium text-white transition-all bg-[#21262d] border border-[#30363d] rounded-lg hover:bg-[#30363d] disabled:opacity-50"
+                                        className="flex items-center justify-center gap-3 py-3 text-sm font-medium text-white transition-all bg-[#21262d] border border-[#30363d] rounded-lg hover:bg-[#30363d] disabled:opacity-50 font-mono"
                                     >
                                         <Github size={18} /> GitHub
                                     </button>
                                     <button
                                         onClick={() => handleOAuthSignIn('linkedin')}
                                         disabled={isAuthenticating}
-                                        className="flex items-center justify-center gap-3 py-3 text-sm font-medium text-white transition-all bg-[#21262d] border border-[#30363d] rounded-lg hover:bg-[#30363d] disabled:opacity-50"
+                                        className="flex items-center justify-center gap-3 py-3 text-sm font-medium text-white transition-all bg-[#21262d] border border-[#30363d] rounded-lg hover:bg-[#30363d] disabled:opacity-50 font-mono"
                                     >
                                         <Linkedin size={18} className="text-[#0a66c2]" /> LinkedIn
                                     </button>

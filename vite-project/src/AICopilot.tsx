@@ -79,15 +79,6 @@ const HackathonWidget = () => (
     </motion.div>
 );
 
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    systemInstruction: "You are ScholarSphere AI, an elite AI copilot for Indian undergraduate students. Your tone is engineering-focused, slightly futuristic, and highly efficient. You help students find scholarships, hackathons, and internships. You can also help draft cover letters and application answers. Use terminal-style language occasionally (e.g., 'neural link established', 'scanning registers'). If you generate a long document (like a cover letter), format it clearly with markdown."
-});
-
 // --- MAIN APP ---
 export default function AICopilot() {
     const [messages, setMessages] = useState<Message[]>([
@@ -118,31 +109,45 @@ export default function AICopilot() {
         setIsProcessing(true);
 
         try {
-            // Add a telemetry message for realism
-            const telemetryMsg: Message = { 
-                id: (Date.now() + 1).toString(), 
+            // Add a telemetry message for realism while waiting for backend
+            const telemetryMsg: Message = {
+                id: (Date.now() + 1).toString(),
                 sender: "ai",
-                telemetry: ["Initializing cognitive engine...", "Querying semantic knowledge graph...", "Compiling response vectors..."]
+                telemetry: ["Initializing cognitive engine...", "Querying semantic backend node...", "Compiling response vectors..."]
             };
             setMessages(prev => [...prev, telemetryMsg]);
 
-            const chat = model.startChat({
-                history: messages.filter(m => m.text).map(m => ({
-                    role: m.sender === "user" ? "user" : "model",
-                    parts: [{ text: m.text || "" }]
-                })),
+            // --- REAL BACKEND CONNECTION ---
+            // Adjust this URL to match wherever your backend is running!
+            const response = await fetch("http://localhost:3000/api/ai-chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    prompt: userMsg.text,
+                    // Sending history so your backend AI knows what was said previously
+                    history: messages.filter(m => m.text).map(m => ({
+                        role: m.sender === "user" ? "user" : "model",
+                        content: m.text || ""
+                    }))
+                })
             });
 
-            const result = await chat.sendMessage(userMsg.text!);
-            const responseText = result.response.text();
+            if (!response.ok) {
+                throw new Error("Backend server rejected the connection.");
+            }
 
-            let aiMsg: Message = { 
-                id: (Date.now() + 2).toString(), 
-                sender: "ai", 
-                text: responseText 
+            const data = await response.json();
+            const responseText = data.text; // Assumes your backend responds with { "text": "AI's response here" }
+
+            let aiMsg: Message = {
+                id: (Date.now() + 2).toString(),
+                sender: "ai",
+                text: responseText
             };
 
-            // Detect if response contains a large markdown block (potential artifact)
+            // Detect if response contains a large markdown block to automatically trigger the Action Canvas
             if (responseText.includes("```")) {
                 const parts = responseText.split("```");
                 if (parts.length >= 3) {
@@ -155,22 +160,22 @@ export default function AICopilot() {
                         content: content
                     };
                     aiMsg.artifactTrigger = artifactData;
-                    // Automatically open if it's a specific generation request
-                    if (inputValue.toLowerCase().includes("draft") || inputValue.toLowerCase().includes("generate")) {
+
+                    if (userMsg.text?.toLowerCase().includes("draft") || userMsg.text?.toLowerCase().includes("generate")) {
                         setActiveArtifact(artifactData);
                     }
                 }
             }
 
-            // Update the last message (the telemetry one) with the real response
+            // Replace the telemetry loading message with the final real response
             setMessages(prev => prev.map(m => m.id === telemetryMsg.id ? aiMsg : m));
 
         } catch (error: any) {
-            console.error("Gemini Error:", error);
-            setMessages(prev => [...prev, { 
-                id: Date.now().toString(), 
-                sender: "ai", 
-                text: "ERROR: Neural connection interrupted. Please verify API protocols." 
+            console.error("Backend Connection Error:", error);
+            setMessages(prev => [...prev, {
+                id: Date.now().toString(),
+                sender: "ai",
+                text: "ERROR: Neural connection to backend interrupted. Ensure the backend server is running on port 3000."
             }]);
         } finally {
             setIsProcessing(false);
@@ -186,7 +191,7 @@ export default function AICopilot() {
             {/* --- THE SPLIT SCREEN ENGINE --- */}
             <div className="flex w-full h-[calc(100vh-4rem)] relative z-10">
 
-                {/* LEFT: CHAT INTERFACE (Shrinks when Canvas is open on desktop, hides completely on mobile if canvas is open) */}
+                {/* LEFT: CHAT INTERFACE */}
                 <motion.div
                     layout
                     className={`flex flex-col h-full bg-[#030712] transition-all duration-500 ease-in-out ${activeArtifact
@@ -281,7 +286,7 @@ export default function AICopilot() {
                     </div>
                 </motion.div>
 
-                {/* RIGHT: THE ACTION CANVAS (Slides in automatically) */}
+                {/* RIGHT: THE ACTION CANVAS */}
                 <AnimatePresence>
                     {activeArtifact && (
                         <motion.div
