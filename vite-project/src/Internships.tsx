@@ -6,16 +6,6 @@ import {
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
-// --- MOCK DATABASE ---
-const MASTER_INTERNSHIPS = [
-    { id: "m1", role: "Backend Engineering Intern", company: "TechNova Systems", location: "Pune, India (Hybrid)", stipend: "₹45,000/mo", duration: "6 Months", matchScore: 98, tags: ["Java", "Node.js", "API Design"], status: "Actively Hiring", type: "Hybrid", tier: "Enterprise" },
-    { id: "m2", role: "IoT & Hardware Intern", company: "Aura Robotics", location: "Remote", stipend: "$1,200/mo", duration: "3 Months", matchScore: 95, tags: ["Arduino", "Sensors", "C++"], status: "Actively Hiring", type: "Remote", tier: "Startup" },
-    { id: "m3", role: "Software Engineering Intern", company: "Google", location: "Bangalore, India", stipend: "₹1,20,000/mo", duration: "2 Months", matchScore: 82, tags: ["Backend", "Distributed Systems"], status: "Reviewing", type: "On-site", tier: "FAANG" },
-    { id: "m4", role: "Automotive Embedded Intern", company: "DriveTech Core", location: "Mumbai, India", stipend: "₹35,000/mo", duration: "6 Months", matchScore: 91, tags: ["Circuit Design", "IoT", "Automotive"], status: "Closing Soon", type: "On-site", tier: "Enterprise" },
-    { id: "m5", role: "Full Stack Developer Intern", company: "WebFlow Inc.", location: "Remote", stipend: "$2,000/mo", duration: "4 Months", matchScore: 78, tags: ["React", "Node.js", "MongoDB"], status: "Actively Hiring", type: "Remote", tier: "Startup" },
-    { id: "m6", role: "Cloud Infrastructure Intern", company: "Amazon Web Services", location: "Hyderabad, India", stipend: "₹1,00,000/mo", duration: "3 Months", matchScore: 71, tags: ["AWS", "Java", "Linux"], status: "Upcoming", type: "On-site", tier: "FAANG" },
-];
-
 export default function Internships() {
     // --- STATE MANAGEMENT ---
     const [isBooting, setIsBooting] = useState(true);
@@ -29,10 +19,10 @@ export default function Internships() {
     const [page, setPage] = useState(1);
     const ITEMS_PER_PAGE = 4;
 
-    const filters = ["All", "Remote", "Hybrid", "On-site", "Startup", "FAANG"];
+    const filters = ["All", "Remote", "Hybrid", "On-site", "Startup", "FAANG", "Enterprise"];
     const sortOptions = ["Match Score", "Stipend (High-Low)", "Duration (Short-Long)"];
 
-    // --- INITIAL DATA FETCH ---
+    // --- REAL BACKEND DATA FETCH ---
     useEffect(() => {
         async function fetchInternships() {
             try {
@@ -46,24 +36,26 @@ export default function Internships() {
                 if (data && data.length > 0) {
                     const transformed = data.map(i => ({
                         id: i.id,
-                        role: i.title,
+                        role: i.title || "Untitled Role",
                         company: i.domain_tag || "Partner Company",
                         location: i.eligible_states?.[0] || "Remote",
                         stipend: i.reward_summary || "TBD",
-                        duration: "3-6 Months",
-                        matchScore: Math.floor(Math.random() * 20) + 80, // Simulation for now
+                        duration: i.duration || "3-6 Months",
+                        // Real match score from DB. Safely defaults to 0 if missing.
+                        matchScore: i.match_score || 0,
                         tags: i.eligible_degrees || [],
-                        status: "Actively Hiring",
-                        type: i.type === 'internship' ? 'Remote' : i.type,
-                        tier: "Startup"
+                        status: i.status || "Actively Hiring",
+                        type: i.work_mode || "Remote", // Remote, Hybrid, On-site
+                        tier: i.tier || "Startup",
+                        link: i.link || "#"
                     }));
-                    setInternships([...transformed, ...MASTER_INTERNSHIPS]);
+                    setInternships(transformed);
                 } else {
-                    setInternships(MASTER_INTERNSHIPS);
+                    setInternships([]); // Empty state if DB has no internships
                 }
             } catch (err) {
-                console.error("Error fetching internships:", err);
-                setInternships(MASTER_INTERNSHIPS);
+                console.error("Error fetching internships from Supabase:", err);
+                setInternships([]); // Failsafe
             } finally {
                 setIsBooting(false);
             }
@@ -71,7 +63,7 @@ export default function Internships() {
         fetchInternships();
     }, []);
 
-    // --- SIMULATE BACKEND SEARCH DELAY ---
+    // --- SIMULATE SEARCH DELAY (UX Polish) ---
     useEffect(() => {
         if (isBooting) return;
         setIsSearching(true);
@@ -96,19 +88,24 @@ export default function Internships() {
             data = data.filter(i => i.type === activeFilter || i.tier === activeFilter);
         }
 
-        // 3. Sort the Data
+        // 3. Sort the Data safely
         data.sort((a, b) => {
-            if (sortBy === "Match Score") return b.matchScore - a.matchScore;
-            if (sortBy === "Duration (Short-Long)") return parseInt(a.duration) - parseInt(b.duration);
+            if (sortBy === "Match Score") return (b.matchScore || 0) - (a.matchScore || 0);
+
+            if (sortBy === "Duration (Short-Long)") {
+                const getDurationNum = (val: string) => parseInt(val.replace(/[^0-9]/g, ''), 10) || 0;
+                return getDurationNum(a.duration) - getDurationNum(b.duration);
+            }
+
             if (sortBy === "Stipend (High-Low)") {
-                const parseStipend = (val: string) => parseInt(val.replace(/[^0-9]/g, ''), 10);
+                const parseStipend = (val: string) => parseInt(val.replace(/[^0-9]/g, ''), 10) || 0;
                 return parseStipend(b.stipend) - parseStipend(a.stipend);
             }
             return 0;
         });
 
         return data;
-    }, [searchQuery, activeFilter, sortBy]);
+    }, [searchQuery, activeFilter, sortBy, internships]);
 
     const displayedInternships = processedData.slice(0, page * ITEMS_PER_PAGE);
     const hasMoreData = displayedInternships.length < processedData.length;
@@ -140,7 +137,7 @@ export default function Internships() {
                     <div className="flex items-center gap-4 bg-[#0d1117] border border-[#30363d] px-4 py-2 rounded-xl shadow-lg">
                         <div className="flex items-center gap-2">
                             <Activity className="w-4 h-4 text-indigo-400" />
-                            <span className="text-xs font-mono text-slate-300">ATS Ping: <span className="text-indigo-400">{isSearching ? "..." : "24ms"}</span></span>
+                            <span className="text-xs font-mono text-slate-300">API Sync: <span className="text-indigo-400">{isSearching ? "..." : "Live"}</span></span>
                         </div>
                         <div className="w-px h-4 bg-[#30363d]"></div>
                         <div className="flex items-center gap-2">
@@ -148,7 +145,7 @@ export default function Internships() {
                                 <span className={`absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75 ${isSearching ? 'animate-pulse' : 'animate-ping'}`}></span>
                                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
                             </span>
-                            <span className="text-xs font-mono text-indigo-400">CONNECTED</span>
+                            <span className="text-xs font-mono text-indigo-400">DATABASE</span>
                         </div>
                     </div>
                 </motion.div>
@@ -204,15 +201,15 @@ export default function Internships() {
                 {isBooting ? (
                     <div className="flex flex-col items-center justify-center py-32 space-y-4">
                         <div className="w-12 h-12 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin shadow-[0_0_30px_rgba(99,102,241,0.3)]"></div>
-                        <p className="text-indigo-400 font-mono animate-pulse text-sm">Compiling Employer Matrices...</p>
+                        <p className="text-indigo-400 font-mono animate-pulse text-sm">Compiling Employer Matrices from Supabase...</p>
                     </div>
                 ) : isSearching && displayedInternships.length === 0 ? (
                     <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-indigo-500 animate-spin" /></div>
                 ) : displayedInternships.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-[#050b14]/50">
                         <Code className="w-10 h-10 text-slate-600 mb-4" />
-                        <h3 className="text-white font-mono font-bold text-lg">No Roles Found</h3>
-                        <p className="text-slate-500 font-mono text-sm mt-2">Adjust your tech stack filters or search query.</p>
+                        <h3 className="text-white font-mono font-bold text-lg">No Roles Found in Database</h3>
+                        <p className="text-slate-500 font-mono text-sm mt-2">Adjust your tech stack filters or check if the backend has data.</p>
                         <button onClick={() => { setSearchQuery(""); setActiveFilter("All"); }} className="mt-4 px-4 py-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-mono hover:bg-indigo-500/20">Clear Filters</button>
                     </div>
                 ) : (
@@ -240,13 +237,16 @@ export default function Internships() {
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${internship.status === 'Actively Hiring' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                                                            internship.status === 'Reviewing' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
-                                                                'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                                        internship.status === 'Reviewing' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                                                            'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                                                         }`}>
                                                         {internship.status}
                                                     </span>
                                                     <span className="text-[10px] font-mono text-slate-500 border border-[#30363d] px-1.5 py-0.5 rounded">
                                                         {internship.tier}
+                                                    </span>
+                                                    <span className="text-[10px] font-mono text-slate-500">
+                                                        ID: {internship.id.toString().substring(0, 6)}...
                                                     </span>
                                                 </div>
                                                 <h2 className="text-lg sm:text-xl font-bold text-white font-mono group-hover:text-indigo-300 transition-colors leading-tight">{internship.role}</h2>
@@ -294,7 +294,7 @@ export default function Internships() {
 
                                     {/* TECH STACK TAGS */}
                                     <div className="flex flex-wrap gap-2 mt-auto mb-6">
-                                        {internship.tags.map(tag => (
+                                        {internship.tags.map((tag: string) => (
                                             <span key={tag} className="px-2.5 py-1 text-[11px] font-mono text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-md flex items-center gap-1">
                                                 <Code className="w-3 h-3 opacity-70" /> {tag}
                                             </span>
@@ -310,9 +310,9 @@ export default function Internships() {
                                             <button className="flex items-center justify-center w-10 h-10 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-lg hover:bg-indigo-500/20 transition-colors group-hover:border-indigo-400">
                                                 <Zap className="w-4 h-4" />
                                             </button>
-                                            <button className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold font-mono hover:bg-indigo-500 transition-colors group-hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]">
+                                            <a href={internship.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold font-mono hover:bg-indigo-500 transition-colors group-hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]">
                                                 Fast Apply <ExternalLink className="w-4 h-4" />
-                                            </button>
+                                            </a>
                                         </div>
                                     </div>
                                 </motion.div>

@@ -6,16 +6,6 @@ import {
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
-// --- MOCK DATABASE ---
-const MASTER_SCHOLARSHIPS = [
-    { id: "m1", title: "Google Generation Scholarship", provider: "Google Labs", amount: "$10,000", deadline: "Oct 15, 2026", matchScore: 96, tags: ["Women in Tech", "Computer Science"], status: "Open", type: "Diversity" },
-    { id: "m2", title: "Reliance Foundation Scholar", provider: "Reliance Ind.", amount: "₹2,00,000", deadline: "Aug 30, 2026", matchScore: 88, tags: ["Undergrad", "Merit-Based"], status: "Closing Soon", type: "Merit-Based" },
-    { id: "m3", title: "Tata Innovation Grant", provider: "Tata Trusts", amount: "₹5,00,000", deadline: "Nov 01, 2026", matchScore: 92, tags: ["Innovation", "Hardware"], status: "Upcoming", type: "Merit-Based" },
-    { id: "m4", title: "Avery Dennison STEM", provider: "Avery Dennison", amount: "$3,000", deadline: "Sep 15, 2026", matchScore: 75, tags: ["Engineering", "STEM"], status: "Open", type: "Merit-Based" },
-    { id: "m5", title: "HDFC Badhte Kadam", provider: "HDFC Bank", amount: "₹1,00,000", deadline: "Aug 25, 2026", matchScore: 82, tags: ["Need-Based", "Undergrad"], status: "Closing Soon", type: "Need-Based" },
-    { id: "m6", title: "Palantir Global Impact", provider: "Palantir", amount: "$15,000", deadline: "Dec 10, 2026", matchScore: 65, tags: ["Data Science", "Global"], status: "Upcoming", type: "Merit-Based" },
-];
-
 export default function Scholarships() {
     // --- STATE MANAGEMENT ---
     const [isBooting, setIsBooting] = useState(true);
@@ -32,7 +22,7 @@ export default function Scholarships() {
     const filters = ["All", "Merit-Based", "Need-Based", "Diversity", "Women in Tech"];
     const sortOptions = ["Match Score", "Amount (High-Low)", "Deadline (Soonest)"];
 
-    // --- INITIAL DATA FETCH ---
+    // --- REAL BACKEND DATA FETCH ---
     useEffect(() => {
         async function fetchScholarships() {
             try {
@@ -46,22 +36,24 @@ export default function Scholarships() {
                 if (data && data.length > 0) {
                     const transformed = data.map(s => ({
                         id: s.id,
-                        title: s.title,
+                        title: s.title || "Untitled Scholarship",
                         provider: s.domain_tag || "Grant Organization",
                         amount: s.reward_summary || "Variable",
                         deadline: s.deadline_date ? new Date(s.deadline_date).toLocaleDateString() : "TBD",
-                        matchScore: Math.floor(Math.random() * 20) + 80,
+                        // Real match score from DB. Safely defaults to 0 if missing.
+                        matchScore: s.match_score || 0,
                         tags: s.eligible_degrees || [],
-                        status: "Open",
-                        type: "Merit-Based"
+                        status: s.status || "Open",
+                        type: s.tier || "Merit-Based", // Fallback to Merit-Based if category isn't specified
+                        link: s.link || "#"
                     }));
-                    setScholarships([...transformed, ...MASTER_SCHOLARSHIPS]);
+                    setScholarships(transformed);
                 } else {
-                    setScholarships(MASTER_SCHOLARSHIPS);
+                    setScholarships([]); // Empty state if DB has no scholarships
                 }
             } catch (err) {
-                console.error("Error fetching scholarships:", err);
-                setScholarships(MASTER_SCHOLARSHIPS);
+                console.error("Error fetching scholarships from Supabase:", err);
+                setScholarships([]); // Failsafe
             } finally {
                 setIsBooting(false);
             }
@@ -69,7 +61,7 @@ export default function Scholarships() {
         fetchScholarships();
     }, []);
 
-    // --- SIMULATE BACKEND SEARCH DELAY ---
+    // --- SIMULATE SEARCH DELAY (UX Polish) ---
     useEffect(() => {
         if (isBooting) return;
         setIsSearching(true);
@@ -93,20 +85,25 @@ export default function Scholarships() {
             data = data.filter(s => s.tags.includes(activeFilter) || s.type === activeFilter);
         }
 
-        // 3. Sort the Data (Including complex currency parsing)
+        // 3. Sort the Data safely
         data.sort((a, b) => {
-            if (sortBy === "Match Score") return b.matchScore - a.matchScore;
-            if (sortBy === "Deadline (Soonest)") return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+            if (sortBy === "Match Score") return (b.matchScore || 0) - (a.matchScore || 0);
+
+            if (sortBy === "Deadline (Soonest)") {
+                const dateA = a.deadline !== "TBD" ? new Date(a.deadline).getTime() : Infinity;
+                const dateB = b.deadline !== "TBD" ? new Date(b.deadline).getTime() : Infinity;
+                return dateA - dateB;
+            }
+
             if (sortBy === "Amount (High-Low)") {
-                // Parse strings like "$10,000" or "₹2,00,000" into raw numbers for sorting
-                const parseAmount = (val: string) => parseInt(val.replace(/[^0-9]/g, ''), 10);
+                const parseAmount = (val: string) => parseInt(val.replace(/[^0-9]/g, ''), 10) || 0;
                 return parseAmount(b.amount) - parseAmount(a.amount);
             }
             return 0;
         });
 
         return data;
-    }, [searchQuery, activeFilter, sortBy]);
+    }, [searchQuery, activeFilter, sortBy, scholarships]);
 
     const displayedScholarships = processedData.slice(0, page * ITEMS_PER_PAGE);
     const hasMoreData = displayedScholarships.length < processedData.length;
@@ -138,7 +135,7 @@ export default function Scholarships() {
                     <div className="flex items-center gap-4 bg-[#0d1117] border border-[#30363d] px-4 py-2 rounded-xl shadow-lg">
                         <div className="flex items-center gap-2">
                             <Activity className="w-4 h-4 text-emerald-400" />
-                            <span className="text-xs font-mono text-slate-300">Ledger Sync: <span className="text-emerald-400">{isSearching ? "..." : "8ms"}</span></span>
+                            <span className="text-xs font-mono text-slate-300">Ledger Sync: <span className="text-emerald-400">{isSearching ? "..." : "Live"}</span></span>
                         </div>
                         <div className="w-px h-4 bg-[#30363d]"></div>
                         <div className="flex items-center gap-2">
@@ -146,7 +143,7 @@ export default function Scholarships() {
                                 <span className={`absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${isSearching ? 'animate-pulse' : 'animate-ping'}`}></span>
                                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                             </span>
-                            <span className="text-xs font-mono text-emerald-400">SECURE</span>
+                            <span className="text-xs font-mono text-emerald-400">DATABASE</span>
                         </div>
                     </div>
                 </motion.div>
@@ -201,15 +198,15 @@ export default function Scholarships() {
                 {isBooting ? (
                     <div className="flex flex-col items-center justify-center py-32 space-y-4">
                         <div className="w-12 h-12 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin shadow-[0_0_30px_rgba(16,185,129,0.3)]"></div>
-                        <p className="text-emerald-400 font-mono animate-pulse text-sm">Decrypting Financial Ledgers...</p>
+                        <p className="text-emerald-400 font-mono animate-pulse text-sm">Decrypting Financial Ledgers from Supabase...</p>
                     </div>
                 ) : isSearching && displayedScholarships.length === 0 ? (
                     <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-emerald-500 animate-spin" /></div>
                 ) : displayedScholarships.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-[#050b14]/50">
                         <Search className="w-10 h-10 text-slate-600 mb-4" />
-                        <h3 className="text-white font-mono font-bold text-lg">No Grants Found</h3>
-                        <p className="text-slate-500 font-mono text-sm mt-2">Adjust your filters or search query.</p>
+                        <h3 className="text-white font-mono font-bold text-lg">No Grants Found in Database</h3>
+                        <p className="text-slate-500 font-mono text-sm mt-2">Adjust your filters or check if the backend has data.</p>
                         <button onClick={() => { setSearchQuery(""); setActiveFilter("All"); }} className="mt-4 px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-mono hover:bg-emerald-500/20">Clear Filters</button>
                     </div>
                 ) : (
@@ -232,8 +229,8 @@ export default function Scholarships() {
                                         <div>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${scholarship.status === 'Open' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                                                        scholarship.status === 'Closing Soon' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                            'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                                    scholarship.status === 'Closing Soon' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                                        'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                                                     }`}>
                                                     {scholarship.status}
                                                 </span>
@@ -277,7 +274,7 @@ export default function Scholarships() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2 mt-auto mb-6">
-                                        {scholarship.tags.map(tag => (
+                                        {scholarship.tags.map((tag: string) => (
                                             <span key={tag} className="px-2.5 py-1 text-[10px] font-mono text-slate-300 bg-white/5 border border-white/10 rounded flex items-center gap-1">
                                                 <CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> {tag}
                                             </span>
@@ -288,9 +285,9 @@ export default function Scholarships() {
                                         <button className="flex items-center gap-2 text-sm font-mono font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
                                             <Zap className="w-4 h-4" /> Eligibility Check
                                         </button>
-                                        <button className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-bold font-mono hover:bg-emerald-400 transition-colors group-hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                                        <a href={scholarship.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-bold font-mono hover:bg-emerald-400 transition-colors group-hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                                             Apply <ExternalLink className="w-4 h-4" />
-                                        </button>
+                                        </a>
                                     </div>
                                 </motion.div>
                             ))}

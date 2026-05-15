@@ -22,9 +22,11 @@ interface Message {
     artifactTrigger?: Artifact;
 }
 
-// --- SUBCOMPONENTS ---
+interface CopilotProps {
+    initialPrompt?: string;
+}
 
-// 1. Telemetry Stream (Instant feedback "thought process")
+// --- SUBCOMPONENTS ---
 const TelemetryStream = ({ logs }: { logs: string[] }) => {
     const [visibleLogs, setVisibleLogs] = useState<string[]>([]);
 
@@ -37,7 +39,7 @@ const TelemetryStream = ({ logs }: { logs: string[] }) => {
             } else {
                 clearInterval(interval);
             }
-        }, 300); // Ultra-fast streaming effect
+        }, 300);
         return () => clearInterval(interval);
     }, [logs]);
 
@@ -55,7 +57,6 @@ const TelemetryStream = ({ logs }: { logs: string[] }) => {
     );
 };
 
-// 2. Generative UI Widget: Hackathon Carousel
 const HackathonWidget = () => (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-4 overflow-x-auto pb-4 mt-4 custom-scrollbar w-full max-w-full sm:max-w-[500px]">
         {[
@@ -80,7 +81,7 @@ const HackathonWidget = () => (
 );
 
 // --- MAIN APP ---
-export default function AICopilot() {
+export default function AICopilot({ initialPrompt }: CopilotProps) {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "1",
@@ -93,23 +94,29 @@ export default function AICopilot() {
     const [activeArtifact, setActiveArtifact] = useState<Artifact | null>(null);
 
     const chatEndRef = useRef<HTMLDivElement>(null);
+    const hasRunInitial = useRef(false);
 
-    // Auto-scroll to bottom of chat
+    // Auto-scroll
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isProcessing, activeArtifact]);
 
-    const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!inputValue.trim()) return;
+    // THE TELEPORT EXECUTION
+    useEffect(() => {
+        if (initialPrompt && !hasRunInitial.current) {
+            hasRunInitial.current = true;
+            executePrompt(initialPrompt);
+        }
+    }, [initialPrompt]);
 
-        const userMsg: Message = { id: Date.now().toString(), sender: "user", text: inputValue };
+    const executePrompt = async (text: string) => {
+        if (!text.trim()) return;
+
+        const userMsg: Message = { id: Date.now().toString(), sender: "user", text };
         setMessages(prev => [...prev, userMsg]);
-        setInputValue("");
         setIsProcessing(true);
 
         try {
-            // Add a telemetry message for realism while waiting for backend
             const telemetryMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 sender: "ai",
@@ -118,15 +125,11 @@ export default function AICopilot() {
             setMessages(prev => [...prev, telemetryMsg]);
 
             // --- REAL BACKEND CONNECTION ---
-            // Adjust this URL to match wherever your backend is running!
             const response = await fetch("http://localhost:3000/api/ai-chat", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     prompt: userMsg.text,
-                    // Sending history so your backend AI knows what was said previously
                     history: messages.filter(m => m.text).map(m => ({
                         role: m.sender === "user" ? "user" : "model",
                         content: m.text || ""
@@ -134,12 +137,10 @@ export default function AICopilot() {
                 })
             });
 
-            if (!response.ok) {
-                throw new Error("Backend server rejected the connection.");
-            }
+            if (!response.ok) throw new Error("Backend server rejected the connection.");
 
             const data = await response.json();
-            const responseText = data.text; // Assumes your backend responds with { "text": "AI's response here" }
+            const responseText = data.text;
 
             let aiMsg: Message = {
                 id: (Date.now() + 2).toString(),
@@ -147,11 +148,10 @@ export default function AICopilot() {
                 text: responseText
             };
 
-            // Detect if response contains a large markdown block to automatically trigger the Action Canvas
             if (responseText.includes("```")) {
                 const parts = responseText.split("```");
                 if (parts.length >= 3) {
-                    const content = parts[1].split("\n").slice(1).join("\n"); // Remove language tag
+                    const content = parts[1].split("\n").slice(1).join("\n");
                     const title = responseText.toLowerCase().includes("cover letter") ? "Cover_Letter.md" : "Generated_Document.md";
                     const artifactData: Artifact = {
                         id: Date.now().toString() + "_art",
@@ -167,7 +167,6 @@ export default function AICopilot() {
                 }
             }
 
-            // Replace the telemetry loading message with the final real response
             setMessages(prev => prev.map(m => m.id === telemetryMsg.id ? aiMsg : m));
 
         } catch (error: any) {
@@ -182,16 +181,20 @@ export default function AICopilot() {
         }
     };
 
+    const handleSendMessage = (e: React.FormEvent) => {
+        e.preventDefault();
+        const text = inputValue;
+        setInputValue("");
+        executePrompt(text);
+    };
+
     return (
         <div className="flex w-full min-h-screen pt-16 bg-[#030712] font-sans selection:bg-purple-500/30 overflow-hidden relative">
 
-            {/* Background Grid */}
             <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
 
-            {/* --- THE SPLIT SCREEN ENGINE --- */}
             <div className="flex w-full h-[calc(100vh-4rem)] relative z-10">
 
-                {/* LEFT: CHAT INTERFACE */}
                 <motion.div
                     layout
                     className={`flex flex-col h-full bg-[#030712] transition-all duration-500 ease-in-out ${activeArtifact
@@ -199,7 +202,6 @@ export default function AICopilot() {
                         : 'w-full flex-1'
                         }`}
                 >
-                    {/* Chat Header */}
                     <div className="h-14 border-b border-white/5 bg-[#050b14] flex items-center px-4 sm:px-6 shrink-0 justify-between">
                         <div className="flex items-center gap-3">
                             <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
@@ -208,13 +210,11 @@ export default function AICopilot() {
                         {!activeArtifact && <span className="text-[10px] text-cyan-400 font-mono flex items-center gap-1 border border-cyan-500/30 px-2 py-0.5 rounded-full bg-cyan-500/10"><Zap className="w-3 h-3" /> ONLINE</span>}
                     </div>
 
-                    {/* Chat History */}
                     <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar flex flex-col gap-6">
                         <AnimatePresence initial={false}>
                             {messages.map((msg) => (
                                 <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex w-full flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
 
-                                    {/* AI Telemetry Render */}
                                     {msg.sender === "ai" && msg.telemetry && (
                                         <div className="ml-11 mb-1 max-w-[85%]"><TelemetryStream logs={msg.telemetry} /></div>
                                     )}
@@ -235,12 +235,10 @@ export default function AICopilot() {
                                         )}
                                     </div>
 
-                                    {/* Generative UI Render */}
                                     {msg.sender === "ai" && msg.widget === "hackathons" && (
                                         <div className="ml-0 sm:ml-11 mt-2 w-full"><HackathonWidget /></div>
                                     )}
 
-                                    {/* Artifact Trigger Link */}
                                     {msg.sender === "ai" && msg.artifactTrigger && (
                                         <div className="ml-11 mt-3">
                                             <button
@@ -258,7 +256,6 @@ export default function AICopilot() {
                             ))}
                         </AnimatePresence>
 
-                        {/* Processing Indicator */}
                         {isProcessing && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-start">
                                 <div className="w-8 h-8 rounded-lg bg-purple-950 border border-purple-500/50 flex items-center justify-center shrink-0 mt-1 shadow-[0_0_15px_rgba(147,51,234,0.3)]"><BrainCircuit className="w-4 h-4 text-purple-400 animate-pulse" /></div>
@@ -270,7 +267,6 @@ export default function AICopilot() {
                         <div ref={chatEndRef} className="h-4" />
                     </div>
 
-                    {/* Input Box */}
                     <div className="p-4 bg-[#050b14] border-t border-white/5 shrink-0 z-10">
                         <form onSubmit={handleSendMessage} className="relative flex items-center max-w-4xl mx-auto">
                             <span className="absolute left-4 text-purple-500 font-mono font-bold animate-pulse">{">"}</span>
@@ -286,7 +282,6 @@ export default function AICopilot() {
                     </div>
                 </motion.div>
 
-                {/* RIGHT: THE ACTION CANVAS */}
                 <AnimatePresence>
                     {activeArtifact && (
                         <motion.div
@@ -296,7 +291,6 @@ export default function AICopilot() {
                             transition={{ type: "spring", stiffness: 120, damping: 20 }}
                             className="absolute md:relative inset-0 md:inset-auto flex-1 h-full bg-[#030712] flex flex-col z-30"
                         >
-                            {/* Canvas Header */}
                             <div className="h-14 border-b border-white/5 bg-[#050b14] flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-md">
                                 <div className="flex items-center gap-3 overflow-hidden">
                                     <FileText className="w-5 h-5 text-cyan-400 shrink-0" />
@@ -316,7 +310,6 @@ export default function AICopilot() {
                                 </div>
                             </div>
 
-                            {/* Canvas Editor Surface */}
                             <div className="flex-1 p-4 sm:p-8 overflow-y-auto custom-scrollbar bg-[#010409]">
                                 <div className="max-w-4xl mx-auto bg-[#0d1117] border border-[#30363d] rounded-xl shadow-2xl p-6 sm:p-12 min-h-full">
                                     <textarea
@@ -333,7 +326,6 @@ export default function AICopilot() {
 
             </div>
 
-            {/* Global Custom Scrollbar Styling */}
             <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; } 
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

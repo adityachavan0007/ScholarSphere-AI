@@ -6,16 +6,6 @@ import {
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
-// --- MOCK DATABASE ---
-const MASTER_DATABASE = [
-    { id: "m1", title: "Smart India Hackathon 2026", organizer: "Ministry of Education", date: "Aug 15 - Aug 17, 2026", mode: "Offline", matchScore: 98, tags: ["Hardware", "IoT", "Open Innovation"], status: "Live", participants: 12500 },
-    { id: "m2", title: "ETHGlobal Pune", organizer: "ETHGlobal", date: "Sep 10 - Sep 12, 2026", mode: "Hybrid", matchScore: 85, tags: ["Web3", "Blockchain"], status: "Registering", participants: 1500 },
-    { id: "m3", title: "HackNITR 5.0", organizer: "NIT Rourkela", date: "Oct 05 - Oct 06, 2026", mode: "Online", matchScore: 92, tags: ["AI/ML", "Node.js"], status: "Upcoming", participants: 3200 },
-    { id: "m4", title: "Hardware Conclave Hack", organizer: "Arduino Foundation", date: "Nov 20 - Nov 22, 2026", mode: "Offline", matchScore: 99, tags: ["Hardware", "Arduino", "Circuit Design"], status: "Upcoming", participants: 850 },
-    { id: "m5", title: "TensorFlow AI Challenge", organizer: "Google Labs", date: "Dec 01 - Dec 03, 2026", mode: "Online", matchScore: 75, tags: ["AI/ML", "Python"], status: "Upcoming", participants: 5000 },
-    { id: "m6", title: "Polygon Buildathon", organizer: "Polygon", date: "Dec 15 - Dec 17, 2026", mode: "Online", matchScore: 60, tags: ["Web3", "Smart Contracts"], status: "Upcoming", participants: 2100 },
-];
-
 export default function Hackathons() {
     // --- STATE MANAGEMENT ---
     const [isBooting, setIsBooting] = useState(true);
@@ -27,14 +17,14 @@ export default function Hackathons() {
     const [activeFilter, setActiveFilter] = useState("All");
     const [sortBy, setSortBy] = useState("Match Score"); // "Match Score" | "Participants" | "Date"
 
-    // Pagination Architecture (For Millions of Records)
+    // Pagination Architecture
     const [page, setPage] = useState(1);
     const ITEMS_PER_PAGE = 4;
 
     const filters = ["All", "Hardware", "Web3", "AI/ML", "Online", "Offline"];
     const sortOptions = ["Match Score", "Participants", "Date"];
 
-    // --- INITIAL DATA FETCH ---
+    // --- REAL BACKEND DATA FETCH ---
     useEffect(() => {
         async function fetchHackathons() {
             try {
@@ -48,22 +38,24 @@ export default function Hackathons() {
                 if (data && data.length > 0) {
                     const transformed = data.map(h => ({
                         id: h.id,
-                        title: h.title,
+                        title: h.title || "Untitled Hackathon",
                         organizer: h.domain_tag || "Partner Org",
                         date: h.deadline_date ? new Date(h.deadline_date).toLocaleDateString() : "Upcoming",
                         mode: h.eligible_states?.[0] || "Online",
-                        matchScore: Math.floor(Math.random() * 20) + 80,
+                        // Using REAL data. If your DB doesn't have these columns yet, it defaults safely to 0
+                        matchScore: h.match_score || 0,
                         tags: h.eligible_degrees || [],
-                        status: "Registering",
-                        participants: Math.floor(Math.random() * 5000) + 1000
+                        status: h.status || "Registering",
+                        participants: h.participants_count || 0,
+                        link: h.link || "#"
                     }));
-                    setHackathons([...transformed, ...MASTER_DATABASE]);
+                    setHackathons(transformed);
                 } else {
-                    setHackathons(MASTER_DATABASE);
+                    setHackathons([]); // Empty state if DB has no hackathons
                 }
             } catch (err) {
-                console.error("Error fetching hackathons:", err);
-                setHackathons(MASTER_DATABASE);
+                console.error("Error fetching hackathons from Supabase:", err);
+                setHackathons([]); // Failsafe
             } finally {
                 setIsBooting(false);
             }
@@ -71,14 +63,14 @@ export default function Hackathons() {
         fetchHackathons();
     }, []);
 
-    // --- SIMULATE BACKEND SEARCH DELAY ---
+    // --- SIMULATE SEARCH DELAY (UX Polish) ---
     useEffect(() => {
         if (isBooting) return;
         setIsSearching(true);
         const delay = setTimeout(() => {
             setIsSearching(false);
             setPage(1); // Reset pagination when search changes
-        }, 400); // 400ms network delay simulation
+        }, 400);
         return () => clearTimeout(delay);
     }, [searchQuery, activeFilter, sortBy]);
 
@@ -95,11 +87,15 @@ export default function Hackathons() {
             data = data.filter(h => h.tags.includes(activeFilter) || h.mode === activeFilter);
         }
 
-        // 3. Sort the Data
+        // 3. Sort the Data safely
         data.sort((a, b) => {
-            if (sortBy === "Match Score") return b.matchScore - a.matchScore;
-            if (sortBy === "Participants") return b.participants - a.participants;
-            if (sortBy === "Date") return new Date(a.date.split(" - ")[0]).getTime() - new Date(b.date.split(" - ")[0]).getTime();
+            if (sortBy === "Match Score") return (b.matchScore || 0) - (a.matchScore || 0);
+            if (sortBy === "Participants") return (b.participants || 0) - (a.participants || 0);
+            if (sortBy === "Date") {
+                const dateA = a.date !== "Upcoming" ? new Date(a.date).getTime() : 0;
+                const dateB = b.date !== "Upcoming" ? new Date(b.date).getTime() : 0;
+                return dateA - dateB;
+            }
             return 0;
         });
 
@@ -137,7 +133,7 @@ export default function Hackathons() {
                     <div className="flex items-center gap-4 bg-[#0d1117] border border-[#30363d] px-4 py-2 rounded-xl shadow-lg">
                         <div className="flex items-center gap-2">
                             <Activity className="w-4 h-4 text-green-400" />
-                            <span className="text-xs font-mono text-slate-300">API Sync: <span className="text-green-400">{isSearching ? "..." : "12ms"}</span></span>
+                            <span className="text-xs font-mono text-slate-300">API Sync: <span className="text-green-400">{isSearching ? "..." : "Live"}</span></span>
                         </div>
                         <div className="w-px h-4 bg-[#30363d]"></div>
                         <div className="flex items-center gap-2">
@@ -145,7 +141,7 @@ export default function Hackathons() {
                                 <span className={`absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 ${isSearching ? 'animate-pulse' : 'animate-ping'}`}></span>
                                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                             </span>
-                            <span className="text-xs font-mono text-green-400">LIVE</span>
+                            <span className="text-xs font-mono text-green-400">DATABASE</span>
                         </div>
                     </div>
                 </motion.div>
@@ -200,15 +196,15 @@ export default function Hackathons() {
                 {isBooting ? (
                     <div className="flex flex-col items-center justify-center py-32 space-y-4">
                         <div className="w-12 h-12 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin shadow-[0_0_30px_rgba(6,182,212,0.3)]"></div>
-                        <p className="text-cyan-400 font-mono animate-pulse text-sm">Establishing Secure API Connection...</p>
+                        <p className="text-cyan-400 font-mono animate-pulse text-sm">Querying Supabase Matrix...</p>
                     </div>
                 ) : isSearching && displayedHackathons.length === 0 ? (
                     <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-cyan-500 animate-spin" /></div>
                 ) : displayedHackathons.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-[#050b14]/50">
                         <Search className="w-10 h-10 text-slate-600 mb-4" />
-                        <h3 className="text-white font-mono font-bold text-lg">No Results Found</h3>
-                        <p className="text-slate-500 font-mono text-sm mt-2">Adjust your filters or search query.</p>
+                        <h3 className="text-white font-mono font-bold text-lg">No Results Found in Database</h3>
+                        <p className="text-slate-500 font-mono text-sm mt-2">Adjust your filters or check if the backend has data.</p>
                         <button onClick={() => { setSearchQuery(""); setActiveFilter("All"); }} className="mt-4 px-4 py-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs font-mono hover:bg-cyan-500/20">Clear Filters</button>
                     </div>
                 ) : (
@@ -236,7 +232,7 @@ export default function Hackathons() {
                                                     }`}>
                                                     {hackathon.status}
                                                 </span>
-                                                <span className="text-[10px] font-mono text-slate-500">ID: HK-{hackathon.id}99X</span>
+                                                <span className="text-[10px] font-mono text-slate-500">ID: {hackathon.id.toString().substring(0, 8)}...</span>
                                             </div>
                                             <h2 className="text-xl font-bold text-white font-mono group-hover:text-cyan-400 transition-colors">{hackathon.title}</h2>
                                             <p className="text-sm text-slate-400 mt-1">{hackathon.organizer}</p>
@@ -268,7 +264,7 @@ export default function Hackathons() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2 mb-6">
-                                        {hackathon.tags.map(tag => (
+                                        {hackathon.tags.map((tag: string) => (
                                             <span key={tag} className="px-2.5 py-1 text-[10px] font-mono text-slate-300 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition-colors">
                                                 {tag}
                                             </span>
@@ -279,9 +275,9 @@ export default function Hackathons() {
                                         <button className="flex items-center gap-2 text-sm font-mono font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
                                             <Zap className="w-4 h-4" /> View Details
                                         </button>
-                                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-lg text-sm font-bold font-mono hover:bg-white transition-colors group-hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                                        <a href={hackathon.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 rounded-lg text-sm font-bold font-mono hover:bg-white transition-colors group-hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]">
                                             Apply Now <ExternalLink className="w-4 h-4" />
-                                        </button>
+                                        </a>
                                     </div>
                                 </motion.div>
                             ))}
