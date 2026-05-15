@@ -114,6 +114,16 @@ export default function App() {
     }
   };
 
+  // Handles the large Terminal Demo component
+  const handleTerminalExecute = (prompt: string) => {
+    if (!isLoggedIn) {
+      handleOpenAuth("login"); // Block if not logged in
+      return;
+    }
+    setInitialAiPrompt(`Analyze these skills and find matches: ${prompt}`);
+    setCurrentPage("copilot");
+  };
+
   if (isCheckingSession) {
     return (
       <div className="min-h-screen bg-[#030712] flex items-center justify-center font-mono text-sky-500">
@@ -210,7 +220,8 @@ export default function App() {
         <div className="w-full z-20 relative"><LiveTicker /></div>
 
         <div className="relative z-10 flex flex-col items-center w-full px-4 pb-32 sm:px-6 lg:px-8">
-          <TerminalDemo />
+          {/* THE NEW REAL TERMINAL DEMO */}
+          <TerminalDemo onExecute={handleTerminalExecute} />
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.15 } } }} className="grid w-full max-w-6xl grid-cols-1 gap-6 mt-20 md:grid-cols-3 sm:gap-8">
 

@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateChatResponse } from '../../../../backend/lib/ai';
+import { chatWithAI } from '../../../../backend/lib/ai';
 import { supabaseAdmin } from '../../../../backend/lib/supabase';
 
 async function getUser(req: NextRequest) {
   const authHeader = req.headers.get('Authorization');
-  // If no auth header, try to get from cookies (Next.js App Router specific)
-  // For now, we'll assume the frontend sends the token if available.
   if (!authHeader) return null;
   const token = authHeader.replace('Bearer ', '');
   const { data, error } = await supabaseAdmin.auth.getUser(token);
@@ -37,14 +35,14 @@ export async function POST(req: NextRequest) {
         }
     }
 
-    const aiResponse = await generateChatResponse(prompt, [
+    const aiResponse = await chatWithAI(prompt, [
         { role: "model", content: systemContext },
-        ...history
+        ...(history || [])
     ]);
 
     return NextResponse.json({ text: aiResponse });
   } catch (error: any) {
-    console.error("Chat API Error:", error.message);
-    return NextResponse.json({ error: 'Failed to process chat request' }, { status: 500 });
+    console.error("AI Chat Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

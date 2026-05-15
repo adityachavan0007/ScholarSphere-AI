@@ -1,10 +1,14 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 /**
  * AI Layer Wrapper for ScholarSphere AI
  */
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || "");
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: "You are ScholarSphere AI, an elite AI copilot for Indian undergraduate students. Your tone is engineering-focused, slightly futuristic, and highly efficient. You help students find scholarships, hackathons, and internships. You can also help draft cover letters and application answers. Use terminal-style language occasionally (e.g., 'neural link established', 'scanning registers'). If you generate a long document (like a cover letter), format it clearly with markdown."
+});
 
 export interface StudentProfile {
   name: string;
@@ -81,22 +85,21 @@ export async function generateDraftAnswers(
 }
 
 /**
- * Generates a chat response using Gemini.
+ * General chat interaction with the AI model.
  */
-export async function generateChatResponse(prompt: string, history: { role: string, content: string }[]) {
+export async function chatWithAI(prompt: string, history: { role: string; content: string }[]) {
   try {
-    const chatSession = model.startChat({
-      history: history.map(msg => ({
-        role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: msg.content }]
-      })),
+    const chat = model.startChat({
+      history: history.map(m => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }]
+      }))
     });
 
-    const result = await chatSession.sendMessage(prompt);
-    const response = await result.response;
-    return response.text();
+    const result = await chat.sendMessage(prompt);
+    return result.response.text();
   } catch (error: any) {
-    console.error("AI Generation Error:", error.message);
+    console.error("AI Chat Error:", error);
     throw new Error("Failed to generate AI response.");
   }
 }

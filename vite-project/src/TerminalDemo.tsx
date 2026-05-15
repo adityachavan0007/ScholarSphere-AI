@@ -2,7 +2,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Terminal as TerminalIcon, Command, ArrowRight, Code } from "lucide-react";
 
-export default function TerminalDemo() {
+interface TerminalDemoProps {
+    onExecute?: (prompt: string) => void;
+}
+
+export default function TerminalDemo({ onExecute }: TerminalDemoProps) {
     const [input, setInput] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [showResults, setShowResults] = useState(false);
@@ -10,6 +14,11 @@ export default function TerminalDemo() {
     const handleSimulate = (e: React.FormEvent) => {
         e.preventDefault();
         if (!input) return;
+
+        if (onExecute) {
+            onExecute(input);
+            return;
+        }
 
         setIsProcessing(true);
         setShowResults(false);
@@ -22,7 +31,7 @@ export default function TerminalDemo() {
     };
 
     return (
-        <div className="w-full max-w-3xl mx-auto mt-24 mb-16">
+        <div className="w-full max-w-3xl mx-auto mt-24 mb-16 relative z-10">
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-white sm:text-4xl font-mono mb-4">Test the Copilot</h2>
                 <p className="text-slate-400">Enter your core skills and see what the AI finds in milliseconds.</p>
