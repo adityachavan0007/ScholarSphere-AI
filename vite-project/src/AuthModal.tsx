@@ -63,10 +63,11 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
     const handleOAuthSignIn = async (provider: 'linkedin' | 'github') => {
         setIsAuthenticating(true);
         try {
+            const redirectTo = window.location.origin;
             const { error } = await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
-                    redirectTo: window.location.origin
+                    redirectTo: redirectTo.endsWith('/') ? redirectTo : `${redirectTo}/`
                 }
             });
             if (error) throw error;
