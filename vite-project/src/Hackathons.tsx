@@ -35,7 +35,7 @@ export default function Hackathons() {
 
                 if (error) throw error;
 
-                // AUTOMATIC UPDATE: If no hackathons exist, trigger AI Discovery
+                // AUTOMATIC UPDATE: If no hackathons exist, trigger AI Discovery on port 3001
                 if (!data || data.length === 0) {
                     console.log("Matrix empty. Triggering AI Autonomous Discovery...");
                     const refreshRes = await fetch("http://127.0.0.1:3001/api/hackathons/discover");

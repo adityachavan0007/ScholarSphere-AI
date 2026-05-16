@@ -125,21 +125,43 @@ export async function chatWithAI(prompt: string, history: { role: string; conten
  * Uses AI to discover/recommend trending hackathons.
  */
 export async function discoverHackathons(query?: string) {
+  const currentDate = new Intl.DateTimeFormat('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'long'
+  }).format(new Date());
   const discoveryPrompt = `
-    Generate a list of 5 real-world or highly plausible upcoming hackathons suitable for Indian engineering students. 
+    Today is ${currentDate}. 
+    
+    REFERENCE DATA (Use these or similar REAL upcoming events):
+    1. Intellify 4.0 - Marwadi University (Aug 15-16, 2026) - https://unstop.com/hackathons/intellify-40-marwadi-university-100234
+    2. InnovaHack Chapter 1 (Aug 9, 2026) - https://unstop.com/hackathons/innovahack-chapter-1-iet-davv-100123
+    3. Smart India Hackathon 2026 - https://sih.gov.in/
+    
+    Generate a list of 5 REAL-WORLD upcoming hackathons suitable for Indian engineering students that start AFTER ${currentDate}.
+    
+    CRITICAL DATE RULES:
+    - THE YEAR MUST BE 2026 OR 2027. 
+    - NEVER USE YEARS LIKE 2004, 2007, OR 2023.
+    - If you are unsure of the exact date, use a placeholder in LATE 2026 (e.g., "October 15, 2026").
+    
     Focus on areas like: ${query || 'Web3, AI, FinTech, and Open Source'}.
     
+    IMPORTANT: All 'link' URLs must be VALID. Do not hallucinate URLs. 
+    Use real platforms: unstop.com, devfolio.co, hackerearth.com. 
+    
+    Take latest details of hackathon only. Do not take details of old hackathon. You can give details of different types of hackathons like hardware and software.
+
     RETURN ONLY A JSON ARRAY of objects. Each object must have:
     - id: string (unique)
     - title: string
     - organizer: string
-    - date: string (e.g., "Oct 15, 2026")
+    - date: string (e.g., "Nov 20, 2026")
     - mode: "Online" | "Offline" | "Hybrid"
     - matchScore: number (80-99)
     - tags: string[] (at least 3 tech tags)
     - status: "Registering" | "Live"
     - participants: number
-    - link: string (URL)
+    - link: string (MUST BE A VALID URL)
     
     Do not include any conversational text, only the JSON array.
   `;

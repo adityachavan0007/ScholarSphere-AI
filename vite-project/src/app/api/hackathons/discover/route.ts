@@ -16,25 +16,38 @@ export async function GET(req: NextRequest) {
   try {
     console.log("AI: Starting automated hackathon discovery...");
     
-    // 1. Get recommendations from AI
+    // 1. Auto-Delete: Clear out old/expired hackathons to keep data fresh
+    const now = new Date().toISOString();
+    await supabaseAdmin
+      .from('opportunities')
+      .delete()
+      .match({ type: 'hackathon' })
+      .lt('deadline_date', now);
+
+    // 2. Get recommendations from AI
     const aiHackathons = await discoverHackathons();
 
-    // 2. Map AI results to our Database Schema
-    const opportunities = aiHackathons.map((h: any) => ({
-      title: h.title,
-      type: 'hackathon',
-      domain_tag: h.organizer,
-      deadline_date: new Date(h.date).toISOString(),
-      eligible_states: [h.mode],
-      match_score: h.matchScore,
-      eligible_degrees: h.tags,
-      status: h.status,
-      participants_count: h.participants,
-      link: h.link,
-      updated_at: new Date().toISOString(),
-    }));
+    // 3. Map & Filter out hallucinated past years (ONLY allow 2026-2027)
+    const opportunities = aiHackathons
+      .filter((h: any) => {
+        const year = new Date(h.date).getFullYear();
+        return year >= 2026; 
+      })
+      .map((h: any) => ({
+        title: h.title,
+        type: 'hackathon',
+        domain_tag: h.organizer,
+        deadline_date: new Date(h.date).toISOString(),
+        eligible_states: [h.mode],
+        match_score: h.matchScore,
+        eligible_degrees: h.tags,
+        status: h.status,
+        participants_count: h.participants,
+        link: h.link,
+        updated_at: new Date().toISOString(),
+      }));
 
-    // 3. Automatically update the database (Upsert based on title to avoid duplicates)
+    // 4. Automatically update the database
     const { data, error } = await supabaseAdmin
       .from('opportunities')
       .upsert(opportunities, { onConflict: 'title' })
