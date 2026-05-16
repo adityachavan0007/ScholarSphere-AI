@@ -28,12 +28,22 @@ export default function Hackathons() {
     useEffect(() => {
         async function fetchHackathons() {
             try {
-                const { data, error } = await supabase
+                let { data, error } = await supabase
                     .from('opportunities')
                     .select('*')
                     .eq('type', 'hackathon');
 
                 if (error) throw error;
+
+                // AUTOMATIC UPDATE: If no hackathons exist, trigger AI Discovery
+                if (!data || data.length === 0) {
+                    console.log("Matrix empty. Triggering AI Autonomous Discovery...");
+                    const refreshRes = await fetch("http://127.0.0.1:3001/api/hackathons/discover");
+                    if (refreshRes.ok) {
+                        const refreshData = await refreshRes.json();
+                        data = refreshData.data; // Use the newly discovered data
+                    }
+                }
 
                 if (data && data.length > 0) {
                     const transformed = data.map(h => ({
@@ -42,7 +52,6 @@ export default function Hackathons() {
                         organizer: h.domain_tag || "Partner Org",
                         date: h.deadline_date ? new Date(h.deadline_date).toLocaleDateString() : "Upcoming",
                         mode: h.eligible_states?.[0] || "Online",
-                        // Using REAL data. If your DB doesn't have these columns yet, it defaults safely to 0
                         matchScore: h.match_score || 0,
                         tags: h.eligible_degrees || [],
                         status: h.status || "Registering",
@@ -51,11 +60,11 @@ export default function Hackathons() {
                     }));
                     setHackathons(transformed);
                 } else {
-                    setHackathons([]); // Empty state if DB has no hackathons
+                    setHackathons([]); 
                 }
             } catch (err) {
-                console.error("Error fetching hackathons from Supabase:", err);
-                setHackathons([]); // Failsafe
+                console.error("Error fetching hackathons:", err);
+                setHackathons([]); 
             } finally {
                 setIsBooting(false);
             }

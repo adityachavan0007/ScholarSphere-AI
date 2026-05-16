@@ -4,9 +4,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * AI Layer Wrapper for ScholarSphere AI
  */
 
-const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || "");
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
 const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: "You are ScholarSphere AI, an elite AI copilot for Indian undergraduate students. Your tone is engineering-focused, slightly futuristic, and highly efficient. You help students find scholarships, hackathons, and internships. You can also help draft cover letters and application answers. Use terminal-style language occasionally (e.g., 'neural link established', 'scanning registers'). If you generate a long document (like a cover letter), format it clearly with markdown."
 });
 
@@ -89,11 +89,29 @@ export async function generateDraftAnswers(
  */
 export async function chatWithAI(prompt: string, history: { role: string; content: string }[]) {
   try {
+    // Ensure history alternates between user and model roles
+    const cleanedHistory = [];
+    let lastRole = "";
+    
+    for (const m of history) {
+      const currentRole = m.role === "user" ? "user" : "model";
+      if (currentRole !== lastRole) {
+        cleanedHistory.push({
+          role: currentRole,
+          parts: [{ text: m.content }]
+        });
+        lastRole = currentRole;
+      }
+    }
+
+    // CRITICAL: Gemini requires the first message in history to be from the 'user'.
+    // If our history starts with a 'model' message (like a welcome message), we must remove it.
+    while (cleanedHistory.length > 0 && cleanedHistory[0].role === "model") {
+      cleanedHistory.shift();
+    }
+
     const chat = model.startChat({
-      history: history.map(m => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }]
-      }))
+      history: cleanedHistory
     });
 
     const result = await chat.sendMessage(prompt);
@@ -101,5 +119,43 @@ export async function chatWithAI(prompt: string, history: { role: string; conten
   } catch (error: any) {
     console.error("AI Chat Error:", error);
     throw new Error("Failed to generate AI response.");
+  }
+}
+/**
+ * Uses AI to discover/recommend trending hackathons.
+ */
+export async function discoverHackathons(query?: string) {
+  const discoveryPrompt = `
+    Generate a list of 5 real-world or highly plausible upcoming hackathons suitable for Indian engineering students. 
+    Focus on areas like: ${query || 'Web3, AI, FinTech, and Open Source'}.
+    
+    RETURN ONLY A JSON ARRAY of objects. Each object must have:
+    - id: string (unique)
+    - title: string
+    - organizer: string
+    - date: string (e.g., "Oct 15, 2026")
+    - mode: "Online" | "Offline" | "Hybrid"
+    - matchScore: number (80-99)
+    - tags: string[] (at least 3 tech tags)
+    - status: "Registering" | "Live"
+    - participants: number
+    - link: string (URL)
+    
+    Do not include any conversational text, only the JSON array.
+  `;
+
+  try {
+    const result = await model.generateContent(discoveryPrompt);
+    const text = result.response.text();
+    
+    // Extract JSON from the response (in case of markdown blocks)
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+    }
+    throw new Error("Invalid AI response format");
+  } catch (error) {
+    console.error("AI Discovery Error:", error);
+    throw error;
   }
 }
