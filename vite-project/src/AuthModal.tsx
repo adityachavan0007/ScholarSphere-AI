@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, User, Github, Command, Linkedin } from "lucide-react";
+import { X, Mail, Lock, User, Command } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
 
@@ -60,22 +60,6 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
         }
     };
 
-    const handleOAuthSignIn = async (provider: 'linkedin' | 'github') => {
-        setIsAuthenticating(true);
-        try {
-            const redirectTo = window.location.origin;
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider,
-                options: {
-                    redirectTo: redirectTo.endsWith('/') ? redirectTo : `${redirectTo}/`
-                }
-            });
-            if (error) throw error;
-        } catch (error: any) {
-            alert(error.message || `Failed to sign in with ${provider}`);
-            setIsAuthenticating(false);
-        }
-    };
 
     return (
         <AnimatePresence>
@@ -147,29 +131,6 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                                         {isAuthenticating ? "Processing..." : (view === "login" ? "Execute Login" : "Initialize Account")}
                                     </button>
                                 </form>
-
-                                <div className="flex items-center gap-4 my-6">
-                                    <div className="flex-1 h-px bg-[#30363d]"></div>
-                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">OR</span>
-                                    <div className="flex-1 h-px bg-[#30363d]"></div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => handleOAuthSignIn('github')}
-                                        disabled={isAuthenticating}
-                                        className="flex items-center justify-center gap-3 py-3 text-sm font-medium text-white transition-all bg-[#21262d] border border-[#30363d] rounded-lg hover:bg-[#30363d] disabled:opacity-50 font-mono"
-                                    >
-                                        <Github size={18} /> GitHub
-                                    </button>
-                                    <button
-                                        onClick={() => handleOAuthSignIn('linkedin')}
-                                        disabled={isAuthenticating}
-                                        className="flex items-center justify-center gap-3 py-3 text-sm font-medium text-white transition-all bg-[#21262d] border border-[#30363d] rounded-lg hover:bg-[#30363d] disabled:opacity-50 font-mono"
-                                    >
-                                        <Linkedin size={18} className="text-[#0a66c2]" /> LinkedIn
-                                    </button>
-                                </div>
                             </div>
                         </motion.div>
                     </div>

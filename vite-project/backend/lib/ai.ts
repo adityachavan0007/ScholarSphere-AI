@@ -122,46 +122,41 @@ export async function chatWithAI(prompt: string, history: { role: string; conten
   }
 }
 /**
- * Uses AI to discover/recommend trending hackathons.
+ * Uses AI to discover/recommend trending opportunities (Hackathons, Scholarships, Internships).
  */
-export async function discoverHackathons(query?: string) {
+export async function discoverOpportunities(type: 'hackathon' | 'scholarship' | 'internship', query?: string) {
   const currentDate = new Intl.DateTimeFormat('en-IN', {
     timeZone: 'Asia/Kolkata',
     dateStyle: 'long'
   }).format(new Date());
+
   const discoveryPrompt = `
     Today is ${currentDate}. 
     
-    REFERENCE DATA (Use these or similar REAL upcoming events):
-    1. Intellify 4.0 - Marwadi University (Aug 15-16, 2026) - https://unstop.com/hackathons/intellify-40-marwadi-university-100234
-    2. InnovaHack Chapter 1 (Aug 9, 2026) - https://unstop.com/hackathons/innovahack-chapter-1-iet-davv-100123
-    3. Smart India Hackathon 2026 - https://sih.gov.in/
+    TYPE: ${type.toUpperCase()}
     
-    Generate a list of 5 REAL-WORLD upcoming hackathons suitable for Indian engineering students that start AFTER ${currentDate}.
+    TASK: Generate a list of 5 REAL-WORLD, UP-TO-DATE upcoming ${type}s suitable for Indian engineering students.
     
-    CRITICAL DATE RULES:
+    CRITICAL RULES:
+    - YOU MUST PROVIDE THE LATEST DATA AVAILABLE. 
     - THE YEAR MUST BE 2026 OR 2027. 
-    - NEVER USE YEARS LIKE 2004, 2007, OR 2023.
-    - If you are unsure of the exact date, use a placeholder in LATE 2026 (e.g., "October 15, 2026").
+    - All 'link' URLs must be VALID.
+    - HACKATHONS: Use unstop.com or devfolio.co.
+    - SCHOLARSHIPS: Use buddy4study.com or official organization sites.
+    - INTERNSHIPS: Use unstop.com or company career portals (google.com, microsoft.com, etc.).
+    - RETURN ONLY A JSON ARRAY.
     
-    Focus on areas like: ${query || 'Web3, AI, FinTech, and Open Source'}.
-    
-    IMPORTANT: All 'link' URLs must be VALID. Do not hallucinate URLs. 
-    Use real platforms: unstop.com, devfolio.co, hackerearth.com. 
-    
-    Take latest details of hackathon only. Do not take details of old hackathon. You can give details of different types of hackathons like hardware and software.
-
-    RETURN ONLY A JSON ARRAY of objects. Each object must have:
+    JSON Object Structure:
     - id: string (unique)
     - title: string
     - organizer: string
     - date: string (e.g., "Nov 20, 2026")
     - mode: "Online" | "Offline" | "Hybrid"
     - matchScore: number (80-99)
-    - tags: string[] (at least 3 tech tags)
-    - status: "Registering" | "Live"
+    - tags: string[]
+    - status: "Registering" | "Live" | "Open"
     - participants: number
-    - link: string (MUST BE A VALID URL)
+    - link: string (MUST BE VALID)
     
     Do not include any conversational text, only the JSON array.
   `;
@@ -169,15 +164,11 @@ export async function discoverHackathons(query?: string) {
   try {
     const result = await model.generateContent(discoveryPrompt);
     const text = result.response.text();
-    
-    // Extract JSON from the response (in case of markdown blocks)
     const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-    }
+    if (jsonMatch) return JSON.parse(jsonMatch[0]);
     throw new Error("Invalid AI response format");
   } catch (error) {
-    console.error("AI Discovery Error:", error);
+    console.error(`AI ${type} Discovery Error:`, error);
     throw error;
   }
 }

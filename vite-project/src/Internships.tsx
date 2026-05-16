@@ -26,12 +26,22 @@ export default function Internships() {
     useEffect(() => {
         async function fetchInternships() {
             try {
-                const { data, error } = await supabase
+                let { data, error } = await supabase
                     .from('opportunities')
                     .select('*')
                     .eq('type', 'internship');
 
                 if (error) throw error;
+
+                // AUTOMATIC UPDATE: If no internships exist, trigger AI Discovery on port 3001
+                if (!data || data.length === 0) {
+                    console.log("Internships empty. Triggering AI Autonomous Discovery...");
+                    const refreshRes = await fetch("http://127.0.0.1:3001/api/internships/discover");
+                    if (refreshRes.ok) {
+                        const refreshData = await refreshRes.json();
+                        data = refreshData.data; // Use the newly discovered data
+                    }
+                }
 
                 if (data && data.length > 0) {
                     const transformed = data.map(i => ({

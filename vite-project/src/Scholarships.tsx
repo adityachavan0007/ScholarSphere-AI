@@ -26,25 +26,34 @@ export default function Scholarships() {
     useEffect(() => {
         async function fetchScholarships() {
             try {
-                const { data, error } = await supabase
+                let { data, error } = await supabase
                     .from('opportunities')
                     .select('*')
                     .eq('type', 'scholarship');
 
                 if (error) throw error;
 
+                // AUTOMATIC UPDATE: If no scholarships exist, trigger AI Discovery on port 3001
+                if (!data || data.length === 0) {
+                    console.log("Scholarships empty. Triggering AI Autonomous Discovery...");
+                    const refreshRes = await fetch("http://127.0.0.1:3001/api/scholarships/discover");
+                    if (refreshRes.ok) {
+                        const refreshData = await refreshRes.json();
+                        data = refreshData.data; // Use the newly discovered data
+                    }
+                }
+
                 if (data && data.length > 0) {
                     const transformed = data.map(s => ({
                         id: s.id,
-                        title: s.title || "Untitled Scholarship",
-                        provider: s.domain_tag || "Grant Organization",
+                        title: s.title,
+                        provider: s.domain_tag,
                         amount: s.reward_summary || "Variable",
-                        deadline: s.deadline_date ? new Date(s.deadline_date).toLocaleDateString() : "TBD",
-                        // Real match score from DB. Safely defaults to 0 if missing.
+                        deadline: s.deadline_date ? new Date(s.deadline_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "TBD",
                         matchScore: s.match_score || 0,
                         tags: s.eligible_degrees || [],
                         status: s.status || "Open",
-                        type: s.tier || "Merit-Based", // Fallback to Merit-Based if category isn't specified
+                        type: s.tier || "Merit-Based",
                         link: s.link || "#"
                     }));
                     setScholarships(transformed);

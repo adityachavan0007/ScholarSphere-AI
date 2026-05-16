@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Terminal as TerminalIcon, Command, ArrowRight, Code } from "lucide-react";
+import { Command, ArrowRight, Code } from "lucide-react";
 
 interface TerminalDemoProps {
     onExecute?: (prompt: string) => void;

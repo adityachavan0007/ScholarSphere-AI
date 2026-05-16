@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MapPin, Link as LinkIcon, Github, Briefcase, GraduationCap,
-    Code, Edit3, Sparkles, Youtube, Terminal, Plus, X, Linkedin,
-    Upload, BrainCircuit, Target, CheckCircle2, ChevronRight, Award,
-    Download, FolderGit2, Activity, Calendar, Loader2
+    Code, Edit3, Youtube, Terminal, X, Linkedin,
+    BrainCircuit, Target, CheckCircle2, ChevronRight,
+    Download, FolderGit2, Calendar, Loader2
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
@@ -37,7 +37,6 @@ export default function Profile() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [isImporting, setIsImporting] = useState(false);
 
     // AI Analyzer States
     const [showAnalyzer, setShowAnalyzer] = useState(false);
@@ -57,7 +56,7 @@ export default function Profile() {
         const fetchProfile = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data, error } = await supabase.from('student_profiles').select('*').eq('id', user.id).single();
+                const { data } = await supabase.from('student_profiles').select('*').eq('id', user.id).single();
 
                 if (data && data.profile_data) {
                     setProfile(data.profile_data);
@@ -134,25 +133,7 @@ export default function Profile() {
     }, [showAnalyzer]);
 
     // --- HANDLERS ---
-    const handleGithubImport = async () => {
-        setIsImporting(true);
-        setTimeout(() => {
-            alert("GitHub import API not yet connected to backend.");
-            setIsImporting(false);
-        }, 1500);
-    };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (type === 'avatar') setProfile({ ...profile, avatarUrl: reader.result as string });
-                if (type === 'banner') setProfile({ ...profile, bannerUrl: reader.result as string });
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const addSkill = () => { if (newSkill.trim() && !profile.skills.includes(newSkill)) { setProfile({ ...profile, skills: [...profile.skills, newSkill.trim()] }); setNewSkill(""); } };
     const removeSkill = (skillToRemove: string) => setProfile({ ...profile, skills: profile.skills.filter(s => s !== skillToRemove) });
@@ -194,10 +175,6 @@ export default function Profile() {
                     <h2 className="mb-2 text-2xl font-bold text-white font-mono">Initialize Profile</h2>
                     <p className="mb-8 text-sm text-slate-400">Let's set up your developer portfolio.</p>
                     <div className="space-y-4">
-                        <button onClick={handleGithubImport} disabled={isImporting} className="flex items-center justify-center w-full gap-3 px-4 py-3 text-sm font-bold text-white transition-all bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] rounded-lg disabled:opacity-50">
-                            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Github size={18} /> Import from GitHub</>}
-                        </button>
-                        <div className="flex items-center gap-4"><div className="flex-1 h-px bg-[#30363d]"></div><span className="text-xs font-mono text-slate-500">OR</span><div className="flex-1 h-px bg-[#30363d]"></div></div>
                         <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-full gap-3 px-4 py-3 text-sm font-bold text-white transition-all bg-sky-600 hover:bg-sky-500 rounded-lg"><Edit3 size={18} /> Setup Manually</button>
                     </div>
                 </motion.div>
@@ -466,15 +443,33 @@ export default function Profile() {
                                     </div>
                                 </div>
 
-                                {/* LINKS */}
-                                <div className="pt-6 border-t border-[#30363d]">
-                                    <label className="block mb-4 text-sm font-bold text-slate-300 font-mono">SOCIAL LINKS</label>
-                                    <div className="space-y-3">
-                                        <input type="text" value={profile.github} onChange={e => setProfile({ ...profile, github: e.target.value })} className="w-full px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-slate-500" placeholder="github.com/username" />
-                                        <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-red-500" placeholder="youtube.com/@channel" />
-                                        <input type="text" value={profile.website} onChange={e => setProfile({ ...profile, website: e.target.value })} className="w-full px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-sky-500" placeholder="yourportfolio.dev" />
-                                    </div>
-                                </div>
+                                 {/* PROJECTS BUILDER */}
+                                 <div className="pt-6 border-t border-[#30363d]">
+                                     <label className="block mb-4 text-sm font-bold text-green-400 font-mono">PROJECTS_ARRAY</label>
+                                     {profile.projects.map(proj => (
+                                         <div key={proj.id} className="flex justify-between items-start p-3 mb-2 bg-[#010409] border border-[#30363d] rounded-lg">
+                                             <div><p className="text-sm font-bold text-white">{proj.name}</p><p className="text-xs text-slate-400">{proj.description.substring(0, 50)}...</p></div>
+                                             <button type="button" onClick={() => removeProject(proj.id)} className="text-red-400 hover:text-red-300 p-1"><X size={16} /></button>
+                                         </div>
+                                     ))}
+                                     <div className="grid grid-cols-1 gap-3 mt-3">
+                                         <input type="text" value={newProj.name} onChange={e => setNewProj({ ...newProj, name: e.target.value })} className="px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Name" />
+                                         <textarea value={newProj.description} onChange={e => setNewProj({ ...newProj, description: e.target.value })} className="h-16 px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-green-500 resize-none" placeholder="Description"></textarea>
+                                         <input type="text" value={newProj.link} onChange={e => setNewProj({ ...newProj, link: e.target.value })} className="px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Link (Optional)" />
+                                         <input type="text" value={newProj.tags} onChange={e => setNewProj({ ...newProj, tags: e.target.value })} className="px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Tags (comma separated)" />
+                                         <button type="button" onClick={addProject} className="px-4 py-2 bg-[#21262d] border border-[#30363d] rounded-lg text-white hover:bg-[#30363d]">Add Project</button>
+                                     </div>
+                                 </div>
+
+                                 {/* LINKS */}
+                                 <div className="pt-6 border-t border-[#30363d]">
+                                     <label className="block mb-4 text-sm font-bold text-slate-300 font-mono">SOCIAL LINKS</label>
+                                     <div className="space-y-3">
+                                         <input type="text" value={profile.github} onChange={e => setProfile({ ...profile, github: e.target.value })} className="w-full px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-slate-500" placeholder="github.com/username" />
+                                         <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-red-500" placeholder="youtube.com/@channel" />
+                                         <input type="text" value={profile.website} onChange={e => setProfile({ ...profile, website: e.target.value })} className="w-full px-3 py-2 bg-[#010409] border border-[#30363d] rounded-lg text-white font-mono text-sm outline-none focus:border-sky-500" placeholder="yourportfolio.dev" />
+                                     </div>
+                                 </div>
                             </div>
 
                             {/* SAVE BUTTON */}
