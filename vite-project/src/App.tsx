@@ -3,14 +3,13 @@ import { motion } from "framer-motion";
 import {
   Sparkles, FileText, LayoutDashboard, GraduationCap, Target,
   CheckCircle2, Code, Globe, Briefcase, ChevronDown, BrainCircuit,
-  User as UserIcon, ArrowRight, Loader2, ChevronRight
+  User as UserIcon, ArrowRight, Loader2, ChevronRight, Terminal
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
 // --- CUSTOM COMPONENTS ---
 import Navbar from "./Navbar";
 import AuthModal from "./AuthModal";
-import LiveTicker from "./LiveTicker";
 import TerminalDemo from "./TerminalDemo";
 import Profile from "./Profile";
 import AICopilot from "./AICopilot";
@@ -59,7 +58,7 @@ export default function App() {
     return () => {
       if (authSubscription) authSubscription.unsubscribe();
     };
-  }, []); // Only run once on mount
+  }, []);
 
   // Kick back to home if user logs out while on a private page
   useEffect(() => {
@@ -78,16 +77,6 @@ export default function App() {
     setIsLoggedIn(true);
     setIsModalOpen(false);
     setCurrentPage("profile"); // Takes them to profile after they log in
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setIsLoggedIn(false);
-      setCurrentPage("home");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
   };
 
   // ==========================================
@@ -114,10 +103,9 @@ export default function App() {
     }
   };
 
-  // Handles the large Terminal Demo component
   const handleTerminalExecute = (prompt: string) => {
     if (!isLoggedIn) {
-      handleOpenAuth("login"); // Block if not logged in
+      handleOpenAuth("login");
       return;
     }
     setInitialAiPrompt(`Analyze these skills and find matches: ${prompt}`);
@@ -132,19 +120,30 @@ export default function App() {
     );
   }
 
+  // --- SLEEK GLOBAL FOOTER ---
+  const Footer = () => (
+    <footer className="w-full py-8 mt-auto border-t bg-[#030712] border-white/5 z-10 relative">
+      <div className="flex flex-col items-center justify-center gap-3">
+        <div className="flex items-center gap-2 text-slate-400 font-mono text-sm">
+          <Terminal className="w-4 h-4 text-sky-400" />
+          <span className="font-bold text-white tracking-wide">Scholar<span className="text-sky-400">Sphere</span></span>
+        </div>
+        <p className="text-xs text-slate-500 font-mono">
+          &copy; {new Date().getFullYear()} ScholarSphere AI. All rights reserved.
+        </p>
+      </div>
+    </footer>
+  );
+
   // ==========================================
   // VIEW ROUTING ENGINE
   // ==========================================
   const renderCurrentPage = () => {
+    // App Interfaces (No Footer needed here as they are full-screen apps)
     if (currentPage === "profile") {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
           <Profile />
-          <div className="fixed bottom-6 right-6 z-50">
-            <button onClick={handleSignOut} className="px-4 py-2 font-mono text-xs text-red-400 bg-red-900/10 border border-red-900/50 rounded-lg hover:bg-red-900/30 transition-colors shadow-[0_0_15px_rgba(153,27,27,0.3)]">
-              sudo kill_session (Sign Out)
-            </button>
-          </div>
         </div>
       );
     }
@@ -153,47 +152,44 @@ export default function App() {
       return (
         <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans">
           <AICopilot initialPrompt={initialAiPrompt} />
-          <div className="fixed bottom-6 right-6 z-50 lg:hidden">
-            <button onClick={handleSignOut} className="px-4 py-2 font-mono text-xs text-red-400 bg-red-900/10 border border-red-900/50 rounded-lg hover:bg-red-900/30 transition-colors shadow-[0_0_15px_rgba(153,27,27,0.3)]">
-              Sign Out
-            </button>
-          </div>
         </div>
       );
     }
 
-    if (currentPage === "hackathons") return <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans"><Hackathons /></div>;
-    if (currentPage === "scholarships") return <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans"><Scholarships /></div>;
-    if (currentPage === "internships") return <div className="relative w-full min-h-screen bg-[#030712] flex flex-col font-sans"><Internships /></div>;
+    // Directory Pages (With Footer)
+    if (currentPage === "hackathons") return <div className="relative flex flex-col min-h-screen"><Hackathons /><Footer /></div>;
+    if (currentPage === "scholarships") return <div className="relative flex flex-col min-h-screen"><Scholarships /><Footer /></div>;
+    if (currentPage === "internships") return <div className="relative flex flex-col min-h-screen"><Internships /><Footer /></div>;
 
     // HOME PAGE
     return (
-      <div className="relative w-full bg-[#030712] flex flex-col items-center overflow-x-hidden selection:bg-sky-500/30 font-sans">
+      <div className="relative flex flex-col min-h-screen w-full bg-[#030712] items-center overflow-x-hidden selection:bg-sky-500/30 font-sans">
 
+        {/* Ambient Glow Effects */}
         <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15], x: [0, 40, 0], y: [0, -50, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[-5%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-sky-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
         <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.25, 0.1], x: [0, -50, 0], y: [0, 40, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
 
         <div className="relative z-10 w-full min-h-[100dvh] flex flex-col items-center justify-center px-4 pt-20 sm:px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, type: "spring", stiffness: 80, damping: 20 }} className="w-full max-w-5xl space-y-8 text-center">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, type: "spring", stiffness: 120, damping: 20 }} className="w-full max-w-5xl space-y-8 text-center">
 
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 100 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sky-300 text-xs sm:text-sm font-medium mb-4 shadow-[0_0_30px_rgba(56,189,248,0.1)] backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, type: "spring", stiffness: 150 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sky-300 text-xs sm:text-sm font-medium mb-4 shadow-[0_0_30px_rgba(56,189,248,0.1)] backdrop-blur-md">
               <GraduationCap className="w-4 h-4" />
               <span>Built for Indian Undergraduates</span>
             </motion.div>
 
-            <motion.h1 initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }} className="py-2 text-5xl font-extrabold tracking-tight text-transparent sm:text-7xl md:text-8xl bg-clip-text bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 drop-shadow-[0_0_40px_rgba(56,189,248,0.3)] leading-tight font-mono">
+            <motion.h1 initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }} className="py-2 text-5xl font-extrabold tracking-tight text-transparent sm:text-7xl md:text-8xl bg-clip-text bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 drop-shadow-[0_0_40px_rgba(56,189,248,0.3)] leading-tight font-mono">
               ScholarSphere AI
             </motion.h1>
 
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="px-4 text-xl font-semibold sm:text-2xl md:text-3xl text-slate-200">
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="px-4 text-xl font-semibold sm:text-2xl md:text-3xl text-slate-200">
               Your AI copilot for scholarships, hackathons and internships.
             </motion.p>
 
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="max-w-2xl px-4 mx-auto text-base leading-relaxed sm:text-lg text-slate-400">
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="max-w-2xl px-4 mx-auto text-base leading-relaxed sm:text-lg text-slate-400">
               Stop endlessly scrolling through portals. We match you with the best opportunities based on your profile and even help you draft the perfect application.
             </motion.p>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7 }} className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-5">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-5">
               {!isLoggedIn ? (
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleOpenAuth("signup")} className="group inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-sky-600 to-blue-700 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_0_40px_rgba(2,132,199,0.5)] hover:shadow-[0_0_60px_rgba(2,132,199,0.7)] border border-white/10 transition-all font-mono">
                   Initialize Account <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -217,15 +213,14 @@ export default function App() {
           </motion.div>
         </div>
 
-        <div className="w-full z-20 relative"><LiveTicker /></div>
+        {/* MAIN CONTENT WRAPPER */}
+        <div className="relative z-10 flex flex-col items-center w-full px-4 pb-32 sm:px-6 lg:px-8 flex-1">
 
-        <div className="relative z-10 flex flex-col items-center w-full px-4 pb-32 sm:px-6 lg:px-8">
-          {/* THE NEW REAL TERMINAL DEMO */}
           <TerminalDemo onExecute={handleTerminalExecute} />
 
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.15 } } }} className="grid w-full max-w-6xl grid-cols-1 gap-6 mt-20 md:grid-cols-3 sm:gap-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} className="grid w-full max-w-6xl grid-cols-1 gap-6 mt-20 md:grid-cols-3 sm:gap-8">
 
-            <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-sky-500/50 transition-all group shadow-2xl relative overflow-hidden">
+            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-sky-500/50 transition-all group shadow-2xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="flex items-center justify-center mb-6 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#21262d] border border-[#30363d] group-hover:scale-110 group-hover:rotate-3 group-hover:border-sky-500/30 group-hover:bg-sky-500/10 relative z-10">
                 <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-sky-400" />
@@ -235,7 +230,7 @@ export default function App() {
             </motion.div>
 
             {/* THE SECURE AI QUICK PROMPT CARD */}
-            <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-purple-500/50 transition-all group shadow-2xl relative overflow-hidden flex flex-col">
+            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-purple-500/50 transition-all group shadow-2xl relative overflow-hidden flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="flex justify-between items-start mb-6 relative z-10">
@@ -243,7 +238,7 @@ export default function App() {
                   <BrainCircuit className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
                 </div>
                 <span className="text-[10px] font-mono text-purple-400 border border-purple-500/30 bg-purple-500/10 px-2 py-1 rounded-md flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span> LIVE BACKEND
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span> SECURE COMMS
                 </span>
               </div>
 
@@ -262,7 +257,7 @@ export default function App() {
                     onClick={(e) => {
                       if (!isLoggedIn) {
                         e.preventDefault();
-                        handleOpenAuth("login"); // <--- BLOCKS CLICKS IF NOT LOGGED IN
+                        handleOpenAuth("login");
                       }
                     }}
                   />
@@ -272,7 +267,7 @@ export default function App() {
                     onClick={(e) => {
                       if (!isLoggedIn) {
                         e.preventDefault();
-                        handleOpenAuth("login"); // <--- BLOCKS CLICKS IF NOT LOGGED IN
+                        handleOpenAuth("login");
                       }
                     }}
                   >
@@ -282,7 +277,7 @@ export default function App() {
               </form>
             </motion.div>
 
-            <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-indigo-500/50 transition-all group shadow-2xl relative overflow-hidden">
+            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-indigo-500/50 transition-all group shadow-2xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="flex items-center justify-center mb-6 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#21262d] border border-[#30363d] group-hover:scale-110 group-hover:rotate-3 group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 relative z-10">
                 <LayoutDashboard className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-400" />
@@ -293,7 +288,7 @@ export default function App() {
 
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.3 }} className="w-full max-w-5xl mt-32 text-center">
+          <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6, type: "spring", bounce: 0.3 }} className="w-full max-w-5xl mt-32 text-center">
             <h2 className="mb-16 text-3xl font-bold text-white sm:text-4xl md:text-5xl font-mono">How ScholarSphere Works</h2>
             <div className="grid grid-cols-1 gap-10 md:grid-cols-3 sm:gap-8 relative">
 
@@ -327,8 +322,9 @@ export default function App() {
               </motion.div>
             </div>
           </motion.div>
-
         </div>
+
+        <Footer />
       </div>
     );
   };
@@ -339,7 +335,7 @@ export default function App() {
         onOpenAuth={handleOpenAuth}
         isLoggedIn={isLoggedIn}
         onNavigateProfile={() => handleSecureNavigation("profile")}
-        onNavigateHome={() => setCurrentPage("home")} // Home is always accessible!
+        onNavigateHome={() => setCurrentPage("home")}
         onNavigateCopilot={() => { setInitialAiPrompt(""); handleSecureNavigation("copilot"); }}
         onNavigateHackathons={() => setCurrentPage("hackathons")}
         onNavigateScholarships={() => setCurrentPage("scholarships")}

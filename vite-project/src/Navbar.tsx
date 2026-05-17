@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, User as UserIcon, Menu, X, BrainCircuit } from "lucide-react";
+import { Terminal, User as UserIcon, Menu, X, BrainCircuit, LogOut, ChevronDown } from "lucide-react";
+import { supabase } from "./lib/supabaseClient";
 
 // --- STRICT INTERFACES FOR PARENT ROUTING ---
 interface NavbarProps {
@@ -25,13 +26,36 @@ export default function Navbar({
   onNavigateInternships
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Unified routing array - no more mismatched highlight states
+  // Unified routing array - keeps links clean and organized
   const navLinks = [
     { name: "/hackathons", action: onNavigateHackathons },
     { name: "/scholarships", action: onNavigateScholarships },
     { name: "/internships", action: onNavigateInternships },
   ];
+
+  // REAL BACKEND SIGN OUT
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      window.location.href = "/"; // Instant redirect, clears all state safely
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  // Close dropdown if user clicks outside of it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b bg-[#030712]/80 backdrop-blur-xl border-white/5 transition-all">
@@ -92,13 +116,48 @@ export default function Navbar({
               </button>
             </div>
           ) : (
-            <button
-              onClick={onNavigateProfile}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-mono font-medium text-sky-400 transition-all border border-sky-500/30 rounded-lg bg-sky-500/5 hover:bg-sky-500/15 group shadow-[0_0_10px_rgba(56,189,248,0.1)]"
-            >
-              <UserIcon size={16} className="group-hover:scale-110 transition-transform text-sky-400" />
-              <span>~/profile</span>
-            </button>
+            // --- NEW DESKTOP PROFILE DROPDOWN ---
+            <div className="hidden sm:block relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-mono font-medium text-sky-400 transition-all border border-sky-500/30 rounded-lg bg-sky-500/5 hover:bg-sky-500/15 group shadow-[0_0_10px_rgba(56,189,248,0.1)]"
+              >
+                <UserIcon size={16} className="text-sky-400" />
+                <span>~/profile</span>
+                <ChevronDown size={14} className={`text-sky-400 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-3 w-48 bg-[#0d1117] border border-[#30363d] rounded-xl shadow-2xl overflow-hidden z-50"
+                  >
+                    <div className="flex flex-col p-1.5">
+                      <button
+                        onClick={() => {
+                          onNavigateProfile();
+                          setIsDropdownOpen(false);
+                        }}
+                        className="flex items-center gap-3 px-3 py-2.5 text-sm font-mono text-slate-300 hover:bg-white/5 hover:text-sky-400 rounded-lg transition-colors w-full text-left"
+                      >
+                        <UserIcon className="w-4 h-4" /> Visit Profile
+                      </button>
+                      <div className="w-full h-px bg-white/5 my-1"></div>
+                      <button
+                        onClick={handleSignOut}
+                        className="flex items-center gap-3 px-3 py-2.5 text-sm font-mono text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors w-full text-left"
+                      >
+                        <LogOut className="w-4 h-4" /> Sign Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
 
           {/* MOBILE HAMBURGER TOGGLE */}
@@ -145,7 +204,13 @@ export default function Navbar({
                     onClick={() => { onNavigateProfile(); setIsMenuOpen(false); }}
                     className="text-left text-sky-400 py-3 px-4 rounded-lg hover:bg-white/5 flex items-center gap-2 transition-colors"
                   >
-                    <UserIcon size={16} /> ~/profile
+                    <UserIcon size={16} /> Visit Profile
+                  </button>
+                  <button
+                    onClick={() => { handleSignOut(); setIsMenuOpen(false); }}
+                    className="text-left text-red-400 py-3 px-4 rounded-lg hover:bg-red-500/10 flex items-center gap-2 transition-colors mt-1"
+                  >
+                    <LogOut size={16} /> Sign Out
                   </button>
                 </>
               ) : (
