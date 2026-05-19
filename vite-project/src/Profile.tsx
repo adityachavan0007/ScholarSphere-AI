@@ -4,7 +4,7 @@ import {
     MapPin, Link as LinkIcon, Github, Briefcase, GraduationCap,
     Code, Edit3, Sparkles, Youtube, Terminal, X,
     BrainCircuit, Target, CheckCircle2, ChevronRight,
-    Download, FolderGit2, Calendar, Loader2, User, Plus
+    Download, FolderGit2, Calendar, Loader2, User, Plus, Linkedin
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
@@ -18,7 +18,7 @@ interface AIMatch { title: string; reason: string; }
 
 interface ProfileData {
     name: string; headline: string; bio: string; location: string;
-    website: string; github: string; youtube: string;
+    website: string; github: string; youtube: string; linkedin: string;
     avatarUrl: string; bannerUrl: string;
     skills: string[]; certificates: Certificate[]; lookingFor: string[];
     projects: Project[]; experiences: Experience[]; education: Education[];
@@ -27,7 +27,7 @@ interface ProfileData {
 }
 
 const EMPTY_PROFILE: ProfileData = {
-    name: "", headline: "", bio: "", location: "", website: "", github: "", youtube: "",
+    name: "", headline: "", bio: "", location: "", website: "", github: "", youtube: "", linkedin: "",
     avatarUrl: "", bannerUrl: "", skills: [], certificates: [], lookingFor: [],
     projects: [], experiences: [], education: [], recentActivity: [],
     availability: "Seeking Internships"
@@ -519,6 +519,12 @@ export default function Profile() {
                                         <span className="text-sm font-mono text-slate-300 group-hover:text-white transition-colors">{profile.youtube}</span>
                                     </a>
                                 )}
+                                {profile.linkedin && (
+                                    <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-[#010409] border-[#30363d] hover:border-blue-500/50 transition-all group shadow-sm">
+                                        <Linkedin className="w-5 h-5 text-blue-500" />
+                                        <span className="text-sm font-mono text-slate-300 group-hover:text-white transition-colors">{profile.linkedin}</span>
+                                    </a>
+                                )}
                                 {profile.website && (
                                     <a href={`https://${profile.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-[#010409] border-[#30363d] hover:border-sky-500/50 transition-all group shadow-sm">
                                         <LinkIcon className="w-5 h-5 text-sky-400" />
@@ -657,6 +663,10 @@ export default function Profile() {
                                         <div className="relative">
                                             <Youtube className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
                                             <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#010409] border border-[#30363d] rounded-xl text-white font-mono text-sm outline-none focus:border-red-500 transition-colors" placeholder="youtube.com/@channel" />
+                                        </div>
+                                        <div className="relative">
+                                            <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
+                                            <input type="text" value={profile.linkedin} onChange={e => setProfile({ ...profile, linkedin: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#010409] border border-[#30363d] rounded-xl text-white font-mono text-sm outline-none focus:border-blue-500 transition-colors" placeholder="linkedin.com/in/username" />
                                         </div>
                                         <div className="relative">
                                             <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-500" />
