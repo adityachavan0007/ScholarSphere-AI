@@ -32,7 +32,7 @@ export default function Scholarships() {
                     console.log("Database empty. Fetching live grants...");
 
                     // DEPLOY-READY: Uses Env Variable in production, falls back to localhost in dev
-                    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+                    const API_URL = import.meta.env.PROD ? "" : "http://localhost:3001";
 
                     const refreshRes = await fetch(`${API_URL}/api/scholarships/discover`);
                     if (refreshRes.ok) {
