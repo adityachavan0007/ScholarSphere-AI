@@ -56,11 +56,11 @@ export async function POST(req: NextRequest) {
     .select('*')
     .limit(20);
 
-  // 3. Query OpenAI for dynamic matching and recommendations
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
+  // 3. Query OpenRouter for dynamic matching and recommendations
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+  if (!openRouterApiKey) {
     return NextResponse.json(
-      { error: 'OPENAI_API_KEY is not configured in the environment' },
+      { error: 'OpenRouter API key (OPENROUTER_API_KEY or OPENAI_API_KEY) is not configured in the environment' },
       { status: 500, headers: CORS_HEADERS }
     );
   }
@@ -105,16 +105,18 @@ Return a JSON object with this exact structure:
   `;
 
   try {
-    console.log(`AI: Analyzing profile via OpenAI for student ${profileData?.name || user?.id || "Guest"}`);
+    console.log(`AI: Analyzing profile via OpenRouter for student ${profileData?.name || user?.id || "Guest"}`);
     
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        "Authorization": `Bearer ${openRouterApiKey}`,
+        "HTTP-Referer": "https://scholarsphere.ai",
+        "X-Title": "ScholarSphere AI"
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "openai/gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
@@ -126,12 +128,12 @@ Return a JSON object with this exact structure:
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`OpenAI API request failed: ${response.status} - ${errText}`);
+      throw new Error(`OpenRouter API request failed: ${response.status} - ${errText}`);
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error("Empty response from OpenAI");
+    if (!content) throw new Error("Empty response from OpenRouter");
 
     const analysisResult = JSON.parse(content);
     return NextResponse.json(analysisResult, { headers: CORS_HEADERS });

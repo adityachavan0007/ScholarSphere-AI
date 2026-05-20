@@ -37,26 +37,28 @@ export interface Opportunity {
 
 
 /**
- * Helper to query OpenAI Chat Completions API using node fetch.
+ * Helper to query OpenRouter Chat Completions API using node fetch.
  */
-async function queryOpenAI(
+async function queryOpenRouter(
   systemPrompt: string,
   userPrompt: string,
   responseFormat?: 'json_object' | 'text'
 ): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not defined in environment variables.");
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+  if (!openRouterApiKey) {
+    throw new Error("OpenRouter API key (OPENROUTER_API_KEY or OPENAI_API_KEY) is not defined in environment variables.");
   }
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
+      "Authorization": `Bearer ${openRouterApiKey}`,
+      "HTTP-Referer": "https://scholarsphere.ai",
+      "X-Title": "ScholarSphere AI"
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "openai/gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
@@ -68,22 +70,22 @@ async function queryOpenAI(
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`OpenAI API request failed: ${response.status} - ${errText}`);
+    throw new Error(`OpenRouter API request failed: ${response.status} - ${errText}`);
   }
 
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content;
   if (!content) {
-    throw new Error("Empty response from OpenAI");
+    throw new Error("Empty response from OpenRouter");
   }
   return content;
 }
 
 /**
- * Calculates a fit score between a student profile and an opportunity using OpenAI.
+ * Calculates a fit score between a student profile and an opportunity using OpenRouter.
  */
 export async function scoreMatch(profile: StudentProfile, opportunity: Opportunity) {
-  console.log(`AI: Scoring match via OpenAI for ${profile.name} vs ${opportunity.title}`);
+  console.log(`AI: Scoring match via OpenRouter for ${profile.name} vs ${opportunity.title}`);
 
   const systemPrompt = `You are an expert AI recruiter for ScholarSphere. You calculate match scores (0-100) and provide logical reasons matching Indian engineering students to opportunities.`;
 
@@ -121,14 +123,14 @@ Return a JSON object with this exact structure:
   `;
 
   try {
-    const responseText = await queryOpenAI(systemPrompt, userPrompt, 'json_object');
+    const responseText = await queryOpenRouter(systemPrompt, userPrompt, 'json_object');
     const data = JSON.parse(responseText);
     return {
       fitScore: typeof data.fitScore === 'number' ? data.fitScore : 70,
       reasons: Array.isArray(data.reasons) ? data.reasons : ["Matches profile characteristics."]
     };
   } catch (error) {
-    console.error("AI Match Scoring Error (OpenAI):", error);
+    console.error("AI Match Scoring Error (OpenRouter):", error);
     return {
       fitScore: 70,
       reasons: ["Matches domain interests.", "Meets GPA prerequisites."]
@@ -137,7 +139,7 @@ Return a JSON object with this exact structure:
 }
 
 /**
- * Generates draft answers for application questions based on the profile and opportunity using OpenAI.
+ * Generates draft answers for application questions based on the profile and opportunity using OpenRouter.
  */
 export async function generateDraftAnswers(
   profile: StudentProfile,
@@ -145,7 +147,7 @@ export async function generateDraftAnswers(
   reasons: string[],
   questionKeys: string[]
 ) {
-  console.log(`AI: Generating application drafts via OpenAI for ${opportunity.title}`);
+  console.log(`AI: Generating application drafts via OpenRouter for ${opportunity.title}`);
 
   const systemPrompt = `You are a professional application coach. You write highly compelling, customized answers for student applications. Write in a clear, persuasive, yet natural human tone.`;
 
@@ -179,7 +181,7 @@ Return a JSON object where the keys are the exact question keys, and the values 
   `;
 
   try {
-    const responseText = await queryOpenAI(systemPrompt, userPrompt, 'json_object');
+    const responseText = await queryOpenRouter(systemPrompt, userPrompt, 'json_object');
     const data = JSON.parse(responseText);
     const drafts: Record<string, string> = {};
     questionKeys.forEach(key => {
@@ -187,7 +189,7 @@ Return a JSON object where the keys are the exact question keys, and the values 
     });
     return drafts;
   } catch (error) {
-    console.error("AI Draft Generation Error (OpenAI):", error);
+    console.error("AI Draft Generation Error (OpenRouter):", error);
     const drafts: Record<string, string> = {};
     questionKeys.forEach(key => {
       drafts[key] = `As a ${profile.year} year ${profile.degree} student at ${profile.college}, I have a strong background in ${profile.branch}. This opportunity for ${opportunity.title} aligns perfectly with my goal to ${profile.career_goal}.`;
@@ -235,7 +237,7 @@ export async function chatWithAI(prompt: string, history: { role: string; conten
 }
 
 /**
- * Uses OpenAI to discover/recommend trending opportunities (Hackathons, Scholarships, Internships).
+ * Uses OpenRouter to discover/recommend trending opportunities (Hackathons, Scholarships, Internships).
  */
 export async function discoverOpportunities(type: 'hackathon' | 'scholarship' | 'internship', query?: string) {
   const currentDate = new Intl.DateTimeFormat('en-IN', {
@@ -243,7 +245,7 @@ export async function discoverOpportunities(type: 'hackathon' | 'scholarship' | 
     dateStyle: 'long'
   }).format(new Date());
 
-  console.log(`AI: Discovering ${type}s via OpenAI...`);
+  console.log(`AI: Discovering ${type}s via OpenRouter...`);
 
   const systemPrompt = `You are a web opportunity harvester for Indian engineering students. You extract REAL-WORLD, UP-TO-DATE upcoming opportunities. Today is ${currentDate}.`;
 
@@ -281,14 +283,14 @@ export async function discoverOpportunities(type: 'hackathon' | 'scholarship' | 
   `;
 
   try {
-    const responseText = await queryOpenAI(systemPrompt, discoveryPrompt, 'json_object');
+    const responseText = await queryOpenRouter(systemPrompt, discoveryPrompt, 'json_object');
     const data = JSON.parse(responseText);
     if (data && Array.isArray(data.opportunities)) {
       return data.opportunities;
     }
-    throw new Error("Invalid OpenAI JSON response structure");
+    throw new Error("Invalid OpenRouter JSON response structure");
   } catch (error: any) {
-    console.warn(`AI ${type} Discovery Warning (OpenAI failed, using offline fallback):`, error.message || error);
+    console.warn(`AI ${type} Discovery Warning (OpenRouter failed, using offline fallback):`, error.message || error);
     
     if (type === 'hackathon') {
       return [
