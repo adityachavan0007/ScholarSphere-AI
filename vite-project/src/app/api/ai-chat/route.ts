@@ -38,9 +38,22 @@ export async function GET(req: NextRequest) {
   try {
     const aiResponse = await chatWithAI(prompt, []);
     return NextResponse.json({ text: aiResponse }, { headers: CORS_HEADERS });
+    
+  // --- UPDATED ERROR HANDLING ---
   } catch (error: any) {
-    console.error("AI Chat GET Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: CORS_HEADERS });
+    console.error("AI Chat Error:", error);
+
+    // 1. Specifically handle the Quota/Rate Limit error (429)
+    if (error.status === 429 || error.message?.includes("429")) {
+      return new Response(JSON.stringify({ 
+        text: "I've hit my daily usage limit (20 requests per day). Please try again tomorrow, or check your Google AI Studio dashboard." 
+      }), { status: 429 });
+    }
+
+    // 2. Handle generic errors
+    return new Response(JSON.stringify({ 
+      text: "I'm having trouble connecting to the brain right now. Please try again in a few moments." 
+    }), { status: 500 });
   }
 }
 
@@ -89,4 +102,7 @@ export async function POST(req: NextRequest) {
       details: error.message 
     }, { status: 500, headers: CORS_HEADERS });
   }
+
+  
 }
+
