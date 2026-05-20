@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MapPin, Link as LinkIcon, Github, Briefcase, GraduationCap,
-    Code, Edit3, Sparkles, Youtube, Terminal, X,
-    BrainCircuit, Target, CheckCircle2, ChevronRight,
+    Code, Edit3, Youtube, Terminal, X,
+    BrainCircuit, Target, ChevronRight,
     Download, FolderGit2, Calendar, Loader2, User, Plus, Linkedin,
     RefreshCw, Award, AlertCircle
 } from "lucide-react";
@@ -59,7 +59,7 @@ export default function Profile() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [isImporting, setIsImporting] = useState(false);
+    const [isImporting] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
     // AI Analyzer States
@@ -224,7 +224,7 @@ export default function Profile() {
             element.innerHTML = htmlContent;
 
             const opt = {
-                margin: [0, 0, 0, 0],
+                margin: [0, 0, 0, 0] as [number, number, number, number],
                 filename: `${profile.name ? profile.name.replace(/\s+/g, '_') : 'Developer'}_Resume.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
@@ -251,28 +251,6 @@ export default function Profile() {
         setSuggestions([]);
         setAiMatches([]);
 
-<<<<<<< HEAD
-        const analyzeProfileReal = async () => {
-            setIsAnalyzing(true);
-            setAiMatches([]);
-
-            try {
-                const response = await fetch(`/api/analyze-profile`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ profileData: profile })
-                });
-
-                if (!response.ok) throw new Error("AI Backend failed");
-                const data = await response.json();
-
-                setAiMatches(data.matches || [{ title: "System Error", reason: "AI response formatted incorrectly." }]);
-            } catch (error) {
-                console.error("Analyzer failed", error);
-                setAiMatches([{ title: "Connection Failed", reason: "Could not reach the AI Mainframe. Check backend server." }]);
-            } finally {
-                setIsAnalyzing(false);
-=======
         try {
             // Read active session token
             const { data: { session } } = await supabase.auth.getSession();
@@ -281,11 +259,9 @@ export default function Profile() {
             };
             if (session?.access_token) {
                 headers["Authorization"] = `Bearer ${session.access_token}`;
->>>>>>> ef7fef6e1cb7cfc21b1185a68899507cfe3888b0
             }
 
-            const API_URL = import.meta.env.PROD ? "" : "http://localhost:3001";
-            const response = await fetch(`${API_URL}/api/analyze-profile`, {
+            const response = await fetch(`/api/analyze-profile`, {
                 method: "POST",
                 headers,
                 body: JSON.stringify({ profileData: profile })
