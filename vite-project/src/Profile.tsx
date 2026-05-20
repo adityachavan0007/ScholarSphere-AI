@@ -4,7 +4,8 @@ import {
     MapPin, Link as LinkIcon, Github, Briefcase, GraduationCap,
     Code, Edit3, Sparkles, Youtube, Terminal, X,
     BrainCircuit, Target, CheckCircle2, ChevronRight,
-    Download, FolderGit2, Calendar, Loader2, User, Plus, Linkedin
+    Download, FolderGit2, Calendar, Loader2, User, Plus, Linkedin,
+    RefreshCw, Award, AlertCircle
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
@@ -64,6 +65,13 @@ export default function Profile() {
     // AI Analyzer States
     const [showAnalyzer, setShowAnalyzer] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [atsScore, setAtsScore] = useState<number | null>(null);
+    const [subScores, setSubScores] = useState<{
+        skillRelevance: number;
+        completeness: number;
+        projectImpact: number;
+    } | null>(null);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
     const [aiMatches, setAiMatches] = useState<AIMatch[]>([]);
 
     // Edit Form Temp States
@@ -236,34 +244,52 @@ export default function Profile() {
     // ==========================================
     // REAL BACKEND: FAST AI ANALYZER
     // ==========================================
-    useEffect(() => {
-        if (!showAnalyzer) return;
+    const runAnalysis = async () => {
+        setIsAnalyzing(true);
+        setAtsScore(null);
+        setSubScores(null);
+        setSuggestions([]);
+        setAiMatches([]);
 
-        const analyzeProfileReal = async () => {
-            setIsAnalyzing(true);
-            setAiMatches([]);
-
-            try {
-                const API_URL = import.meta.env.PROD ? "" : "http://localhost:3001";
-                const response = await fetch(`${API_URL}/api/analyze-profile`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ profileData: profile })
-                });
-
-                if (!response.ok) throw new Error("AI Backend failed");
-                const data = await response.json();
-
-                setAiMatches(data.matches || [{ title: "System Error", reason: "AI response formatted incorrectly." }]);
-            } catch (error) {
-                console.error("Analyzer failed", error);
-                setAiMatches([{ title: "Connection Failed", reason: "Could not reach the AI Mainframe. Check backend server." }]);
-            } finally {
-                setIsAnalyzing(false);
+        try {
+            // Read active session token
+            const { data: { session } } = await supabase.auth.getSession();
+            const headers: Record<string, string> = {
+                "Content-Type": "application/json"
+            };
+            if (session?.access_token) {
+                headers["Authorization"] = `Bearer ${session.access_token}`;
             }
-        };
 
-        analyzeProfileReal();
+            const API_URL = import.meta.env.PROD ? "" : "http://localhost:3001";
+            const response = await fetch(`${API_URL}/api/analyze-profile`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ profileData: profile })
+            });
+
+            if (!response.ok) throw new Error("AI Backend failed");
+            const data = await response.json();
+
+            setAtsScore(data.atsScore ?? 0);
+            setSubScores(data.subScores ?? { skillRelevance: 0, completeness: 0, projectImpact: 0 });
+            setSuggestions(data.suggestions ?? []);
+            setAiMatches(data.matches ?? []);
+        } catch (error: any) {
+            console.error("Analyzer failed", error);
+            setAtsScore(0);
+            setSubScores({ skillRelevance: 0, completeness: 0, projectImpact: 0 });
+            setSuggestions([`Could not reach the AI Mainframe: ${error.message}`]);
+            setAiMatches([{ title: "Connection Failed", reason: "Could not reach the AI Mainframe. Check backend server." }]);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    useEffect(() => {
+        if (showAnalyzer) {
+            runAnalysis();
+        }
     }, [showAnalyzer]);
 
     // --- HANDLERS ---
@@ -694,43 +720,152 @@ export default function Profile() {
             <AnimatePresence>
                 {showAnalyzer && (
                     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-lg bg-[#0d1117] border border-purple-500/30 rounded-2xl shadow-[0_0_50px_rgba(147,51,234,0.3)] overflow-hidden">
-                            <div className="flex items-center gap-3 p-5 bg-[#161b22] border-b border-[#30363d]">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+                            animate={{ opacity: 1, scale: 1, y: 0 }} 
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }} 
+                            className="w-full max-w-2xl bg-[#0d1117] border border-purple-500/30 rounded-2xl shadow-[0_0_50px_rgba(147,51,234,0.3)] overflow-hidden flex flex-col max-h-[90vh]"
+                        >
+                            <div className="flex items-center gap-3 p-5 bg-[#161b22] border-b border-[#30363d] shrink-0">
                                 <div className="p-2 bg-purple-500/10 rounded-lg">
                                     <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
                                 </div>
                                 <h2 className="text-base font-bold text-white font-mono">ScholarSphere AI Engine</h2>
                                 <div className="flex-1"></div>
-                                <button onClick={() => setShowAnalyzer(false)} className="text-slate-400 hover:text-white transition-colors p-1"><X size={20} /></button>
+                                <button 
+                                    onClick={runAnalysis} 
+                                    disabled={isAnalyzing} 
+                                    title="Re-run Analysis"
+                                    className="p-1.5 bg-white/5 border border-white/10 text-slate-400 hover:text-white rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                    <RefreshCw size={16} className={`${isAnalyzing ? 'animate-spin' : ''}`} />
+                                </button>
+                                <button onClick={() => setShowAnalyzer(false)} className="text-slate-400 hover:text-white transition-colors p-1.5 bg-white/5 border border-white/10 rounded-lg"><X size={16} /></button>
                             </div>
-                            <div className="p-6 font-mono text-sm">
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
-                                        {isAnalyzing ? <Loader2 className="w-4 h-4 text-purple-400 animate-spin" /> : <CheckCircle2 className="w-4 h-4 text-green-400" />}
-                                        <span className="text-slate-300">
-                                            {isAnalyzing ? `Scanning profile data for ${profile.name || "User"}...` : "Matrix evaluation complete."}
-                                        </span>
+                            
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                                {isAnalyzing ? (
+                                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                                        <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+                                        <p className="text-purple-400 font-mono animate-pulse text-sm">Evaluating matrix parameters...</p>
+                                        <p className="text-slate-500 text-xs font-mono">Scanning skills, completeness, projects and CGPA fit...</p>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {/* Score Diagnostic Row */}
+                                        <div className="flex flex-col sm:flex-row items-center gap-6 p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 shadow-inner">
+                                            <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+                                                <svg className="w-full h-full -rotate-90">
+                                                    <circle cx="56" cy="56" r="40" fill="none" stroke="#1f2937" strokeWidth="8" />
+                                                    <circle 
+                                                        cx="56" 
+                                                        cy="56" 
+                                                        r="40" 
+                                                        fill="none" 
+                                                        stroke="currentColor" 
+                                                        strokeWidth="8" 
+                                                        strokeDasharray={2 * Math.PI * 40} 
+                                                        strokeDashoffset={2 * Math.PI * 40 - ((atsScore ?? 0) / 100) * (2 * Math.PI * 40)} 
+                                                        className={`${
+                                                            (atsScore ?? 0) >= 80 
+                                                                ? "text-green-400" 
+                                                                : (atsScore ?? 0) >= 55 
+                                                                ? "text-yellow-400" 
+                                                                : "text-red-500"
+                                                        } transition-all duration-1000 ease-out`}
+                                                    />
+                                                </svg>
+                                                <div className="absolute flex flex-col items-center">
+                                                    <span className="text-2xl font-extrabold text-white font-mono">{atsScore ?? 0}%</span>
+                                                    <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">ATS MATCH</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 space-y-2 w-full text-center sm:text-left">
+                                                <div className="text-white text-sm font-bold font-mono flex items-center justify-center sm:justify-start gap-1.5">
+                                                    <Award className="w-4 h-4 text-purple-400" /> ATS Matrix Rating
+                                                </div>
+                                                <p className="text-xs text-slate-400 leading-relaxed font-mono">
+                                                    {(atsScore ?? 0) >= 80 
+                                                        ? "Excellent profile! Your details align well with standard recruitment screens." 
+                                                        : (atsScore ?? 0) >= 55 
+                                                        ? "Good foundation. Addressing the recommended suggestions will significantly boost your match rates." 
+                                                        : "High warning. Please flesh out your skills, projects, and experiences to improve visibility."}
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                {!isAnalyzing && aiMatches.length > 0 && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 pt-6 border-t border-[#30363d]">
-                                        <h3 className="text-purple-400 font-bold mb-4 flex items-center gap-2"><Target className="w-4 h-4" /> High-Probability Matches Found:</h3>
-                                        <div className="space-y-3">
-                                            {aiMatches.map((match, idx) => (
-                                                <div key={idx} className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl group cursor-pointer hover:bg-purple-500/10 transition-colors">
-                                                    <div className="flex justify-between items-start gap-4">
-                                                        <div>
-                                                            <div className="text-white font-bold text-sm leading-tight">{match.title}</div>
-                                                            <div className="text-slate-400 text-xs mt-2 leading-relaxed">{match.reason}</div>
-                                                        </div>
-                                                        <ChevronRight className="w-4 h-4 text-purple-400 shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
-                                                    </div>
+                                        {/* Sub-scores grid */}
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {[
+                                                { label: "Skill Fit", val: subScores?.skillRelevance ?? 0, icon: Code, color: "text-cyan-400" },
+                                                { label: "Profile Integrity", val: subScores?.completeness ?? 0, icon: GraduationCap, color: "text-purple-400" },
+                                                { label: "Project Power", val: subScores?.projectImpact ?? 0, icon: Briefcase, color: "text-amber-400" }
+                                            ].map((item, idx) => (
+                                                <div key={idx} className="p-3.5 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col items-center text-center font-mono">
+                                                    <item.icon className={`w-4 h-4 ${item.color} mb-2`} />
+                                                    <span className="text-[10px] text-slate-500 leading-none">{item.label}</span>
+                                                    <span className="text-sm font-bold text-white mt-2">{item.val}%</span>
                                                 </div>
                                             ))}
                                         </div>
-                                    </motion.div>
+
+                                        {/* Suggestions checklist */}
+                                        {suggestions.length > 0 && (
+                                            <div className="pt-4 border-t border-[#30363d] font-mono">
+                                                <h3 className="text-amber-400 text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-1.5">
+                                                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" /> Actions to Boost Rating:
+                                                </h3>
+                                                <ul className="space-y-2">
+                                                    {suggestions.map((sug, idx) => (
+                                                        <li key={idx} className="text-xs text-slate-300 flex items-start gap-2 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-lg">
+                                                            <span className="text-amber-500 font-bold mt-0.5">•</span>
+                                                            <span className="leading-relaxed">{sug}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {/* Recommended Opportunities */}
+                                        {aiMatches.length > 0 && (
+                                            <div className="pt-4 border-t border-[#30363d] font-mono">
+                                                <h3 className="text-purple-400 text-xs font-bold mb-4 uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Target className="w-4 h-4 text-purple-400 shrink-0" /> Recommended Matches & Paths:
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {aiMatches.map((match, idx) => (
+                                                        <div key={idx} className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl group hover:bg-purple-500/10 transition-colors">
+                                                            <div className="flex justify-between items-start gap-4">
+                                                                <div>
+                                                                    <div className="text-white font-bold text-sm leading-tight group-hover:text-purple-400 transition-colors">{match.title}</div>
+                                                                    <div className="text-slate-400 text-xs mt-2 leading-relaxed">{match.reason}</div>
+                                                                </div>
+                                                                <ChevronRight className="w-4 h-4 text-purple-400 shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
+                            </div>
+
+                            <div className="p-4 border-t border-[#30363d] bg-[#161b22] flex justify-end gap-3 shrink-0">
+                                <button 
+                                    onClick={() => setShowAnalyzer(false)} 
+                                    className="px-6 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg text-xs font-mono font-bold transition-all"
+                                >
+                                    Dismiss Diagnostics
+                                </button>
+                                <button 
+                                    onClick={runAnalysis} 
+                                    disabled={isAnalyzing} 
+                                    className="px-6 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)]"
+                                >
+                                    {isAnalyzing && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                    {isAnalyzing ? "Recalculating..." : "Re-run Analysis"}
+                                </button>
                             </div>
                         </motion.div>
                     </div>

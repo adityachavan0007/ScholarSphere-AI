@@ -22,10 +22,6 @@ async function getUser(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const user = await getUser(req);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: CORS_HEADERS });
-  }
-
   // 1. Parse student profile from body or fallback to database
   let profileData = null;
   try {
@@ -35,7 +31,12 @@ export async function POST(req: NextRequest) {
     // Ignore and fallback
   }
 
+  // If no profileData in body, we require user authentication to fetch from DB
   if (!profileData) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: CORS_HEADERS });
+    }
+
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('student_profiles')
       .select('*')
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
     }
     profileData = profile.profile_data || profile;
   }
+
 
   // 2. Fetch active opportunities to run matching
   const { data: opportunities, error: oppsError } = await supabaseAdmin
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const systemPrompt = `You are the ScholarSphere AI Engine, an elite AI profile analyzer and matching specialist for Indian engineering students. You analyze student profiles (skills, projects, experience, GPA) and match them to real opportunities or make custom recommendations.`;
+  const systemPrompt = `You are the ScholarSphere AI Engine, an elite AI profile analyzer and matching specialist for Indian engineering students. You analyze student profiles (skills, projects, experience, GPA) and calculate ATS scores, other recommended sub-scores, structural profile improvement recommendations, and matched opportunities.`;
 
   const userPrompt = `
 Student Profile:
@@ -72,25 +74,38 @@ ${JSON.stringify(profileData, null, 2)}
 Available Opportunities from Database:
 ${opportunities && opportunities.length > 0 ? JSON.stringify(opportunities.map(o => ({ id: o.id, title: o.title, type: o.type, tags: o.eligible_degrees, min_cgpa: o.min_cgpa, description: o.description })), null, 2) : "No active opportunities in the database."}
 
-Evaluate the student's profile strengths and matches.
-Generate 3-4 matched opportunities or strategic recommendations.
-- If there are relevant opportunities in the database list, match the student to the best 2-3 of them and write a custom reason for each.
-- In addition (or as a fallback if the database list is empty), generate 1-2 highly relevant, specific real-world recommendations/opportunities (e.g. 'Google Summer of Code', 'Smart India Hackathon', 'Reliance Foundation Scholarship', 'Microsoft Internships') customized to their tech stack, interests, and branch.
-- For each recommendation, provide a short, motivational 'reason' that highlights their profile strengths (e.g., 'Matches your React and Node.js skills', 'Great fit for your CGPA of 9.2').
+Evaluate the student's profile:
+1. ATS Score: Rate the overall resume/profile strength from 0 to 100 based on standard industry expectations for software engineering / tech roles.
+2. Sub-scores:
+   - Skill Relevance: How well aligned their skill list is (0-100).
+   - Profile Completeness: How thoroughly filled out their profile sections are (0-100).
+   - Project Impact: The strength and detail of their projects (0-100).
+3. Suggestions: Actionable bullet-point improvements to boost their profile strength (e.g. 'Add a live link for project X', 'Mention specific libraries used', 'Include a professional headline').
+4. Matches: Generate 2-3 matched opportunities from the database list (with a customized match explanation for each) AND/OR 1-2 relevant external recommendations (like 'Google STEP Internship', 'Reliance Foundation Scholarship', 'Smart India Hackathon') tailored to their tech stack.
 
 Return a JSON object with this exact structure:
 {
+  "atsScore": 78,
+  "subScores": {
+    "skillRelevance": 85,
+    "completeness": 90,
+    "projectImpact": 60
+  },
+  "suggestions": [
+    "Suggestion 1...",
+    "Suggestion 2..."
+  ],
   "matches": [
     {
-      "title": "Opportunity Title or Recommendation Name",
-      "reason": "Personalized match explanation and actionable advice."
+      "title": "Opportunity Title",
+      "reason": "Why it fits..."
     }
   ]
 }
   `;
 
   try {
-    console.log(`AI: Analyzing profile via OpenAI for student ${profileData.name || user.id}`);
+    console.log(`AI: Analyzing profile via OpenAI for student ${profileData?.name || user?.id || "Guest"}`);
     
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -124,10 +139,20 @@ Return a JSON object with this exact structure:
     console.error("AI Profile Analyzer Error:", error);
     return NextResponse.json(
       { 
+        atsScore: 0,
+        subScores: {
+          skillRelevance: 0,
+          completeness: 0,
+          projectImpact: 0
+        },
+        suggestions: [
+          "Unable to complete dynamic analysis. Make sure profile details are filled out.",
+          `Error Details: ${error.message}`
+        ],
         matches: [
           { 
             title: "Analysis Fallback", 
-            reason: `Unable to complete dynamic analysis. Make sure profile details are filled out. Error: ${error.message}` 
+            reason: `Unable to complete dynamic analysis. Check console or backend configuration.` 
           }
         ] 
       }, 
