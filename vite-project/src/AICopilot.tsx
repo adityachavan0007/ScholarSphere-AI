@@ -125,8 +125,7 @@ export default function AICopilot({ initialPrompt }: CopilotProps) {
             setMessages(prev => [...prev, telemetryMsg]);
 
             // --- REAL BACKEND CONNECTION ---
-            const API_URL = import.meta.env.PROD ? "" : "http://localhost:3001";
-            const response = await fetch(`${API_URL}/api/ai-chat`, {
+            const response = await fetch(`/api/ai-chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

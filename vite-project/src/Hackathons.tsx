@@ -32,9 +32,7 @@ export default function Hackathons() {
                     console.log("Database empty. Fetching live opportunities...");
 
                     // DEPLOY-READY: Uses Env Variable in production, falls back to localhost in dev
-                    const API_URL = import.meta.env.PROD ? "" : "http://localhost:3001";
-
-                    const refreshRes = await fetch(`${API_URL}/api/hackathons/discover`);
+                    const refreshRes = await fetch(`/api/hackathons/discover`);
                     if (refreshRes.ok) {
                         const refreshData = await refreshRes.json();
                         data = refreshData.data;
