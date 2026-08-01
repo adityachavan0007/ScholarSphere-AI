@@ -10,7 +10,7 @@ interface Message { id: string; sender: "user" | "ai"; text?: string; isThinking
 const renderFormattedText = (text: string) => {
     return text.split('\n').map((line, i) => {
         if (line.trim().startsWith('- ')) {
-            return <li key={i} className="ml-4 list-disc mb-1 text-slate-300">{line.replace('- ', '')}</li>;
+            return <li key={i} className="ml-4 list-disc mb-1 text-zinc-300">{line.replace('- ', '')}</li>;
         }
         const parts = line.split(/(\*\*.*?\*\*)/g);
         return (
@@ -99,13 +99,13 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
     };
 
     return (
-        <div className="flex w-full min-h-screen bg-black/95 text-slate-200 font-sans relative overflow-hidden">
+        <div className="flex w-full min-h-screen bg-zinc-950 text-slate-200 font-sans relative overflow-hidden">
             {/* Subtle glow in background */}
-            <div className="absolute top-0 left-[20%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+            <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-40 mix-blend-overlay"></div>
             <div className={`flex flex-col w-full transition-all duration-300 ${activeArtifact ? "max-w-4xl mx-auto" : "max-w-3xl mx-auto"}`}>
                 
                 <div className="h-14 flex items-center px-6 shrink-0 border-b border-[#30363d]/50">
-                    <Sparkles className="w-5 h-5 text-indigo-400 mr-2" />
+                    <Sparkles className="w-5 h-5 text-zinc-200 mr-2" />
                     <h1 className="text-sm font-semibold text-slate-200">ScholarSphere AI</h1>
                 </div>
 
@@ -113,12 +113,12 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex gap-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-                            {msg.sender === "ai" && <div className="w-8 h-8 mt-1 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30"><Bot size={16} className="text-indigo-400"/></div>}
+                            {msg.sender === "ai" && <div className="w-8 h-8 mt-1 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30"><Bot size={16} className="text-zinc-200"/></div>}
                             
                             {msg.isThinking ? (
-                                <div className="px-5 py-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-2xl animate-pulse text-sm">Thinking...</div>
+                                <div className="px-5 py-3 bg-zinc-950 border border-white/10 shadow-lg rounded-2xl animate-pulse text-sm">Thinking...</div>
                             ) : (
-                                <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-[15px] shadow-lg border ${msg.sender === "user" ? "bg-indigo-600/80 backdrop-blur-md border-indigo-500/50 text-white rounded-tr-sm" : "bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border-white/10 text-slate-200 rounded-tl-none"}`}>
+                                <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-[15px] shadow-lg border ${msg.sender === "user" ? "bg-zinc-800 border-zinc-700 text-white rounded-tr-sm" : "bg-zinc-950 border border-white/10 shadow-lg border-white/10 text-slate-200 rounded-tl-none"}`}>
                                     {msg.sender === "ai" ? renderFormattedText(msg.text || "") : msg.text}
                                     {msg.artifactTrigger && (
                                         <button onClick={() => setActiveArtifact(msg.artifactTrigger!)} className="block mt-3 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-medium transition-all">
@@ -136,13 +136,13 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
 
                 {/* Floating Input Bar */}
                 <div className="p-6 relative z-10">
-                    <form onSubmit={(e) => { e.preventDefault(); executePrompt(inputValue); setInputValue(""); }} className="relative flex items-center bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-2xl focus-within:border-indigo-400 focus-within:shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all">
+                    <form onSubmit={(e) => { e.preventDefault(); executePrompt(inputValue); setInputValue(""); }} className="relative flex items-center bg-zinc-950 border border-white/10 shadow-lg rounded-2xl focus-within:border-white/30 focus-within:shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all">
                         <input 
                             value={inputValue} onChange={(e) => setInputValue(e.target.value)}
                             placeholder="Ask ScholarSphere AI..."
-                            className="w-full bg-transparent p-4 pl-6 text-sm text-white focus:outline-none placeholder:text-slate-500"
+                            className="w-full bg-transparent p-4 pl-6 text-sm text-white focus:outline-none placeholder:text-zinc-500"
                         />
-                        <button disabled={isProcessing} className="p-4 text-indigo-400 hover:text-indigo-300 disabled:text-slate-600 transition-colors">
+                        <button disabled={isProcessing} className="p-4 text-zinc-200 hover:text-indigo-300 disabled:text-slate-600 transition-colors">
                             <Send size={18} />
                         </button>
                     </form>
@@ -154,11 +154,11 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
                 {activeArtifact && (
                     <motion.div initial={{ width: 0 }} animate={{ width: 450 }} exit={{ width: 0 }} className="h-screen bg-black/80 backdrop-blur-2xl border-l border-white/10 flex flex-col z-30 shadow-2xl relative">
                         <div className="flex justify-between items-center p-4 border-b border-[#30363d]">
-                            <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">{activeArtifact.title}</span>
-                            <button onClick={() => setActiveArtifact(null)}><X size={16} className="text-slate-400" /></button>
+                            <span className="text-xs font-sans text-zinc-400 uppercase tracking-wider">{activeArtifact.title}</span>
+                            <button onClick={() => setActiveArtifact(null)}><X size={16} className="text-zinc-400" /></button>
                         </div>
                         <div className="p-6 overflow-y-auto flex-1">
-                            <textarea value={activeArtifact.content} onChange={(e) => setActiveArtifact({...activeArtifact, content: e.target.value})} className="w-full h-full bg-transparent border-none outline-none font-sans text-sm leading-relaxed text-slate-300 custom-scrollbar" />
+                            <textarea value={activeArtifact.content} onChange={(e) => setActiveArtifact({...activeArtifact, content: e.target.value})} className="w-full h-full bg-transparent border-none outline-none font-sans text-sm leading-relaxed text-zinc-300 custom-scrollbar" />
                         </div>
                     </motion.div>
                 )}

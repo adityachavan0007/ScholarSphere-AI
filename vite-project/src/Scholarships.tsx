@@ -137,9 +137,9 @@ export default function Scholarships() {
                         Live Grant Directory
                     </div>
                     <h1 className="text-4xl sm:text-6xl font-extrabold text-white font-outfit tracking-tight">
-                        Global <span className="text-emerald-400">Scholarships</span>
+                        Global <span className="text-zinc-300">Scholarships</span>
                     </h1>
-                    <p className="text-slate-400 font-sans text-base max-w-2xl leading-relaxed">
+                    <p className="text-zinc-400 font-sans text-base max-w-2xl leading-relaxed">
                         Secure funding for your education. Track massive financial aid grants specifically for CS students.
                     </p>
                 </motion.div>
@@ -147,13 +147,13 @@ export default function Scholarships() {
                 {/* COMMAND CENTER (Search & Sort) */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="w-full max-w-4xl mx-auto mb-16 flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1 w-full flex items-center bg-zinc-900/50 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 focus-within:border-emerald-500/50 transition-all">
-                        <Search className="absolute left-4 w-5 h-5 text-slate-500" />
+                        <Search className="absolute left-4 w-5 h-5 text-zinc-500" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search scholarships, organizations, or degrees..."
-                            className="w-full pl-12 pr-4 py-3.5 bg-transparent text-white font-sans text-sm focus:outline-none placeholder:text-slate-500"
+                            className="w-full pl-12 pr-4 py-3.5 bg-transparent text-white font-sans text-sm focus:outline-none placeholder:text-zinc-500"
                         />
                     </div>
                     <div className="relative md:w-56 flex-shrink-0 bg-zinc-900/50 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 focus-within:border-emerald-500/50 transition-all">
@@ -166,7 +166,7 @@ export default function Scholarships() {
                             <option value="date_asc" className="bg-zinc-900 text-white">Soonest Deadline</option>
                             <option value="date_desc" className="bg-zinc-900 text-white">Latest Deadline</option>
                         </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                         </div>
                     </div>
@@ -177,19 +177,19 @@ export default function Scholarships() {
                     <div className="flex flex-col items-center justify-center py-32 space-y-6">
                         <div className="relative w-16 h-16 flex items-center justify-center">
                            <div className="absolute inset-0 border-2 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin"></div>
-                           <GraduationCap className="w-6 h-6 text-emerald-400 animate-pulse" />
+                           <GraduationCap className="w-6 h-6 text-zinc-300 animate-pulse" />
                         </div>
-                        <p className="text-emerald-400 font-sans tracking-widest uppercase text-xs font-bold animate-pulse">Scanning Global Funds</p>
+                        <p className="text-zinc-300 font-sans tracking-widest uppercase text-xs font-bold animate-pulse">Scanning Global Funds</p>
                     </div>
                 ) : displayedScholarships.length === 0 ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center max-w-3xl mx-auto w-full">
                         <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                           <Search className="w-8 h-8 text-slate-500" />
+                           <Search className="w-8 h-8 text-zinc-500" />
                         </div>
                         <h3 className="text-white font-outfit font-bold text-2xl mb-2">No Grants Found</h3>
-                        <p className="text-slate-400 font-sans text-sm max-w-md">Our scanners couldn't find any scholarships matching your exact criteria right now.</p>
+                        <p className="text-zinc-400 font-sans text-sm max-w-md">Our scanners couldn't find any scholarships matching your exact criteria right now.</p>
                         {searchQuery && (
-                            <button onClick={() => setSearchQuery("")} className="mt-6 px-6 py-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-sm font-bold font-sans hover:bg-emerald-500/20 transition-colors">
+                            <button onClick={() => setSearchQuery("")} className="mt-6 px-6 py-2.5 bg-emerald-500/10 text-zinc-300 border border-emerald-500/20 rounded-xl text-sm font-bold font-sans hover:bg-emerald-500/20 transition-colors">
                                 Reset Filters
                             </button>
                         )}
@@ -215,13 +215,13 @@ export default function Scholarships() {
 
                                     <div className="relative z-10 flex justify-between items-start mb-4" style={{ transform: 'translateZ(20px)' }}>
                                         <div className="pr-4">
-                                            <h2 className="text-xl font-bold text-white font-outfit leading-tight group-hover:text-emerald-400 transition-colors line-clamp-2">{scholarship.title}</h2>
-                                            <p className="text-sm text-slate-400 mt-1 font-sans">{scholarship.provider}</p>
+                                            <h2 className="text-xl font-bold text-white font-outfit leading-tight group-hover:text-zinc-300 transition-colors line-clamp-2">{scholarship.title}</h2>
+                                            <p className="text-sm text-zinc-400 mt-1 font-sans">{scholarship.provider}</p>
                                         </div>
                                         <div className="shrink-0">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider border ${
                                                 scholarship.status === 'OPEN' 
-                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' 
+                                                ? 'bg-emerald-500/10 text-zinc-300 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' 
                                                 : 'bg-zinc-800 text-zinc-400 border-zinc-700'
                                             }`}>
                                                 {scholarship.status}
@@ -229,24 +229,24 @@ export default function Scholarships() {
                                         </div>
                                     </div>
 
-                                    <div className="relative z-10 flex flex-wrap gap-4 mb-6 text-sm text-slate-300 font-sans" style={{ transform: 'translateZ(30px)' }}>
+                                    <div className="relative z-10 flex flex-wrap gap-4 mb-6 text-sm text-zinc-300 font-sans" style={{ transform: 'translateZ(30px)' }}>
                                         <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
-                                            <Banknote className="w-4 h-4 text-emerald-400" />
+                                            <Banknote className="w-4 h-4 text-zinc-300" />
                                             <span>{scholarship.amount}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
-                                            <Calendar className="w-4 h-4 text-slate-500" />
+                                            <Calendar className="w-4 h-4 text-zinc-500" />
                                             <span>{scholarship.deadline}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
-                                            <Building2 className="w-4 h-4 text-slate-500" />
+                                            <Building2 className="w-4 h-4 text-zinc-500" />
                                             <span>{scholarship.type}</span>
                                         </div>
                                     </div>
 
                                     <div className="relative z-10 flex flex-wrap gap-2 mb-6" style={{ transform: 'translateZ(40px)' }}>
                                         {scholarship.tags.slice(0, 4).map((tag: string) => (
-                                            <span key={tag} className="px-2.5 py-1 text-[11px] font-sans font-medium text-slate-400 bg-white/5 border border-white/5 rounded">
+                                            <span key={tag} className="px-2.5 py-1 text-[11px] font-sans font-medium text-zinc-400 bg-white/5 border border-white/5 rounded">
                                                 {tag}
                                             </span>
                                         ))}
@@ -271,7 +271,7 @@ export default function Scholarships() {
                     <div className="flex justify-center mt-4 mb-12">
                         <button
                             onClick={() => setPage(p => p + 1)}
-                            className="px-6 py-3 bg-zinc-900 border border-emerald-500/30 text-emerald-400 font-sans font-bold text-sm rounded-xl hover:bg-emerald-500/10 transition-all flex items-center gap-2 group"
+                            className="px-6 py-3 bg-zinc-900 border border-emerald-500/30 text-zinc-300 font-sans font-bold text-sm rounded-xl hover:bg-emerald-500/10 transition-all flex items-center gap-2 group"
                         >
                             <Zap className="w-4 h-4 group-hover:scale-110 transition-transform fill-emerald-400/20" />
                             Load More
