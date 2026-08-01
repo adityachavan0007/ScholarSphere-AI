@@ -225,7 +225,7 @@ export default function Profile() {
 
             const opt = {
                 margin: [0, 0, 0, 0] as [number, number, number, number],
-                filename: `${profile.name ? profile.name.replace(/\s+/g, '_') : 'Developer'}_Resume.pdf`,
+                filename: `${profile.name ? profile.name.replace(/s+/g, '_') : 'Developer'}_Resume.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -394,115 +394,110 @@ export default function Profile() {
                 variants={staggerContainer}
                 initial="hidden"
                 animate="show"
-                className="max-w-5xl mx-auto space-y-6 relative z-10"
+                className="max-w-5xl mx-auto space-y-8 relative z-10"
             >
                 {/* PROFILE CONTAINER HEADER */}
-                <motion.div variants={fadeUp} className="relative w-full overflow-hidden bento-card p-0 relative group bg-zinc-950">
-                    <div className="h-48 sm:h-64 relative overflow-hidden bg-zinc-900 rounded-t-2xl">
+                <motion.div variants={fadeUp} className="relative w-full overflow-hidden bento-card p-0 relative group">
+                    <div className="h-32 sm:h-56 relative overflow-hidden bg-zinc-950">
                         {profile.bannerUrl ? (
-                            <img src={profile.bannerUrl} alt="Profile Banner" className="w-full h-full object-cover opacity-80" />
+                            <img src={profile.bannerUrl} alt="Profile Banner" className="w-full h-full object-cover opacity-60 mix-blend-screen group-hover:scale-105 transition-transform duration-700" />
                         ) : (
-                            <div className="absolute inset-0 bg-zinc-800"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-sky-900/40 via-indigo-900/40 to-purple-900/40">
+                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                            </div>
                         )}
                     </div>
 
-                    <div className="px-6 pb-8 sm:px-8 relative">
-                        <div className="flex justify-between items-start">
-                            {/* Avatar overlapping banner on the left */}
-                            <div className="relative -mt-16 sm:-mt-20 z-10 p-1 bg-zinc-950 rounded-full inline-block">
-                                <div className={`flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-zinc-900 border-4 border-zinc-950 overflow-hidden relative group/avatar cursor-pointer`} onClick={() => setIsEditing(true)}>
-                                    {profile.avatarUrl ? <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <User className="w-12 h-12 text-zinc-500 sm:w-16 sm:h-16" />}
-                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center"><Edit3 className="w-6 h-6 text-white" /></div>
+                    <div className="px-6 pb-8 sm:px-10">
+                        <div className="flex flex-col items-start justify-between sm:flex-row sm:items-end">
+                            <div className="relative flex items-end -mt-16 sm:-mt-20">
+                                <div className={`p-2 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-3xl border ${activeStatus.border} ${activeStatus.glow} relative cursor-pointer transition-all duration-500`} onClick={() => setIsEditing(true)}>
+                                    <div className={`flex items-center justify-center w-28 h-28 sm:w-36 sm:h-36 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/20 border border-white/10 transition-all overflow-hidden relative shadow-inner group/avatar`}>
+                                        {profile.avatarUrl ? <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <Terminal className="w-12 h-12 text-sky-400 sm:w-14 sm:h-14" />}
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center"><Edit3 className="w-6 h-6 text-white" /></div>
+                                    </div>
+                                    {/* STATUS INDICATOR DOT */}
+                                    <div className={`absolute bottom-4 right-4 w-5 h-5 ${activeStatus.dot} rounded-full border-4 border-[#0d1117]`}></div>
                                 </div>
-                                {/* STATUS INDICATOR DOT */}
-                                <div className={`absolute bottom-3 right-3 w-6 h-6 \${activeStatus.dot} rounded-full border-4 border-zinc-950`} title={profile.availability}></div>
                             </div>
-                            
-                            {/* Action Buttons on the right */}
-                            <div className="hidden sm:flex flex-wrap gap-3 mt-4">
-                                <button onClick={() => setIsEditing(true)} className="px-5 py-2 text-sm font-bold transition-all rounded-full bg-zinc-100 text-zinc-950 hover:bg-white flex items-center gap-2">
-                                    <Edit3 className="w-4 h-4" /> Edit Profile
-                                </button>
-                                <button onClick={handleDownloadCV} disabled={isGeneratingPDF} className="px-5 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center gap-2 disabled:opacity-50">
+
+                            <div className="flex flex-wrap gap-3 mt-6 sm:mt-0">
+                                <button onClick={handleDownloadCV} disabled={isGeneratingPDF} className="px-5 py-2.5 text-sm font-bold font-mono transition-all border rounded-xl bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center gap-2 disabled:opacity-50">
                                     {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                                    {isGeneratingPDF ? "Generating..." : "Download CV"}
+                                    {isGeneratingPDF ? "Generating PDF..." : "Download CV"}
+                                </button>
+                                <button onClick={() => setIsEditing(true)} className="px-5 py-2.5 text-sm font-bold font-mono transition-all border rounded-xl bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center gap-2">
+                                    <Edit3 className="w-4 h-4" /> Edit
+                                </button>
+                                <button onClick={() => setShowAnalyzer(true)} className="pill-button bg-zinc-100 text-zinc-950 hover:bg-white overflow-hidden relative flex items-center gap-2 font-mono">
+                                    <BrainCircuit className="w-4 h-4 animate-pulse" /> Analyzer
                                 </button>
                             </div>
                         </div>
 
-                        <div className="mt-4 sm:mt-2">
-                            <h1 className="text-2xl font-bold text-white sm:text-3xl font-outfit tracking-tight">
-                                {profile.name || "Anonymous Developer"}
-                            </h1>
-                            <p className="mt-1 text-base text-zinc-300">{profile.headline || "Add a headline to stand out"}</p>
-                            
-                            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-zinc-400">
-                                {profile.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {profile.location}</span>}
-                                {profile.website && <a href={`https://\${profile.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sky-400 hover:underline"><LinkIcon className="w-3.5 h-3.5" /> {profile.website}</a>}
+                        <div className="mt-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <h1 className="text-3xl font-extrabold text-transparent sm:text-4xl font-outfit bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
+                                    {profile.name || "Anonymous Developer"}
+                                </h1>
+                                {/* STATUS BADGE */}
+                                <span className={`hidden sm:inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono border ${activeStatus.bg} ${activeStatus.color} ${activeStatus.border}`}>
+                                    {profile.availability || "Unavailable"}
+                                </span>
                             </div>
-                            
-                            {/* Mobile action buttons */}
-                            <div className="flex sm:hidden flex-wrap gap-3 mt-6">
-                                <button onClick={() => setIsEditing(true)} className="flex-1 px-4 py-2 text-sm font-bold transition-all rounded-full bg-zinc-100 text-zinc-950 hover:bg-white flex items-center justify-center gap-2">
-                                    <Edit3 className="w-4 h-4" /> Edit
-                                </button>
-                                <button onClick={handleDownloadCV} disabled={isGeneratingPDF} className="flex-1 px-4 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 flex items-center justify-center gap-2">
-                                    <Download className="w-4 h-4" /> CV
-                                </button>
+                            <p className="mt-2 text-lg text-sky-400 font-mono tracking-wide">{profile.headline || "Add a headline to stand out"}</p>
+
+                            <div className="flex flex-wrap items-center gap-4 mt-5 text-sm text-zinc-400 font-mono">
+                                {profile.location && <span className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-lg"><MapPin className="w-3.5 h-3.5" /> {profile.location}</span>}
                             </div>
                         </div>
                     </div>
                 </motion.div>
 
                 {/* CORE PROFILE GRID COLUMNS */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mt-6">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 
                     {/* MAIN TRACKS */}
-                    <div className="space-y-6 lg:col-span-2">
+                    <div className="space-y-8 lg:col-span-2">
+
                         {/* About/Bio */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-4 text-xl font-bold text-zinc-100 font-outfit tracking-tight">About</h2>
-                            <p className="leading-relaxed text-zinc-400 text-sm whitespace-pre-line">{profile.bio || "No bio added yet."}</p>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><span className="text-sky-400">{">"}</span> about_me.md</h2>
+                            <p className="leading-relaxed text-zinc-400 text-sm sm:text-base whitespace-pre-line">{profile.bio || "No bio added yet."}</p>
                         </motion.div>
 
-                        {/* Experience */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Experience</h2>
-                            <div className="space-y-6">
-                                {profile.experiences.length === 0 ? <p className="text-sm text-zinc-500">No experience added.</p> : profile.experiences.map((exp, idx) => (
-                                    <div key={exp.id} className="flex gap-4 group">
-                                        <div className="flex-shrink-0 mt-1">
-                                            <div className="w-12 h-12 bg-zinc-900 border border-white/10 rounded-md flex items-center justify-center text-zinc-400">
-                                                <Briefcase className="w-6 h-6" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-zinc-100 text-base">{exp.role}</h3>
-                                            <p className="text-zinc-300 text-sm">{exp.company}</p>
-                                            <p className="text-xs text-zinc-500 mt-1">{exp.duration}</p>
-                                            {exp.description && <p className="text-sm text-zinc-400 mt-3 leading-relaxed">{exp.description}</p>}
+                        {/* Education Timeline */}
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><GraduationCap className="w-6 h-6 text-blue-400" /> Education Matrix</h2>
+                            <div className="relative space-y-8 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-500/50 before:via-[#30363d] before:to-transparent">
+                                {profile.education.length === 0 ? <p className="text-sm text-zinc-500 ml-8 font-mono">No education matrix initialized.</p> : profile.education.map((edu, idx) => (
+                                    <div key={edu.id} className="relative pl-8 group">
+                                        <div className="absolute w-4 h-4 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-full left-[4px] top-1.5 border-2 border-blue-500 z-10 group-hover:bg-blue-500 transition-colors duration-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                                        <div className="bg-zinc-950/50 border border-white/10 p-6 rounded-2xl group-hover:border-blue-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                            <h3 className="font-bold text-zinc-100 text-lg font-outfit group-hover:text-blue-400 transition-colors">{edu.school}</h3>
+                                            <p className="text-sky-400 font-medium text-sm mt-1">{edu.degree}</p>
+                                            <p className="text-xs text-zinc-500 mt-3 flex items-center gap-1.5 font-mono"><Calendar className="w-3.5 h-3.5" /> {edu.duration}</p>
+                                            {edu.details && <p className="text-sm text-zinc-400 mt-4 leading-relaxed border-t border-white/10 pt-4">{edu.details}</p>}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </motion.div>
 
-                        {/* Education */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Education</h2>
-                            <div className="space-y-6">
-                                {profile.education.length === 0 ? <p className="text-sm text-zinc-500">No education added.</p> : profile.education.map((edu, idx) => (
-                                    <div key={edu.id} className="flex gap-4 group">
-                                        <div className="flex-shrink-0 mt-1">
-                                            <div className="w-12 h-12 bg-zinc-900 border border-white/10 rounded-md flex items-center justify-center text-zinc-400">
-                                                <GraduationCap className="w-6 h-6" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-zinc-100 text-base">{edu.school}</h3>
-                                            <p className="text-zinc-300 text-sm">{edu.degree}</p>
-                                            <p className="text-xs text-zinc-500 mt-1">{edu.duration}</p>
-                                            {edu.details && <p className="text-sm text-zinc-400 mt-2 leading-relaxed">{edu.details}</p>}
+                        {/* Experience Timeline */}
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><Briefcase className="w-6 h-6 text-indigo-400" /> Experience Log</h2>
+                            <div className="relative space-y-8 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-500/50 before:via-[#30363d] before:to-transparent">
+                                {profile.experiences.length === 0 ? <p className="text-sm text-zinc-500 ml-8 font-mono">No experience logs found.</p> : profile.experiences.map((exp, idx) => (
+                                    <div key={exp.id} className="relative pl-8 group">
+                                        <div className="absolute w-4 h-4 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-full left-[4px] top-1.5 border-2 border-indigo-500 z-10 group-hover:bg-indigo-500 transition-colors duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                                        <div className="bg-zinc-950/50 border border-white/10 p-6 rounded-2xl group-hover:border-indigo-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                            <h3 className="font-bold text-zinc-100 text-lg font-outfit group-hover:text-indigo-400 transition-colors">{exp.role}</h3>
+                                            <p className="text-indigo-400 font-medium text-sm mt-1">{exp.company}</p>
+                                            <p className="text-xs text-zinc-500 mt-3 flex items-center gap-1.5 font-mono"><Calendar className="w-3.5 h-3.5" /> {exp.duration}</p>
+                                            {exp.description && <p className="text-sm text-zinc-400 mt-4 leading-relaxed border-t border-white/10 pt-4">{exp.description}</p>}
                                         </div>
                                     </div>
                                 ))}
@@ -510,18 +505,19 @@ export default function Profile() {
                         </motion.div>
 
                         {/* Projects */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Projects</h2>
-                            <div className="space-y-6">
-                                {profile.projects.length === 0 ? <p className="text-sm text-zinc-500">No projects added.</p> : profile.projects.map(proj => (
-                                    <div key={proj.id} className="border-b border-white/10 pb-6 last:border-0 last:pb-0">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold text-zinc-100 font-outfit text-base">{proj.name}</h3>
-                                            {proj.link && <a href={proj.link} target="_blank" rel="noreferrer" className="text-zinc-500 hover:text-white transition-colors"><LinkIcon className="w-4 h-4" /></a>}
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-8 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><FolderGit2 className="w-6 h-6 text-green-400" /> Featured Projects</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                {profile.projects.length === 0 ? <p className="text-sm text-zinc-500 col-span-2 font-mono">No projects added.</p> : profile.projects.map(proj => (
+                                    <div key={proj.id} className="p-6 border rounded-2xl bg-zinc-950/50 border-white/10 hover:border-green-500/50 transition-all group flex flex-col h-full shadow-lg relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-green-400 to-transparent -translate-x-full group-hover:animate-[scan_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100"></div>
+                                        <div className="flex justify-between items-start mb-3">
+                                            <h3 className="font-bold text-zinc-100 font-outfit text-base group-hover:text-green-400 transition-colors">{proj.name}</h3>
+                                            {proj.link && <a href={proj.link} target="_blank" rel="noreferrer"><LinkIcon className="w-4 h-4 text-zinc-500 hover:text-green-400 transition-colors" /></a>}
                                         </div>
-                                        <p className="text-sm text-zinc-400 mb-4 leading-relaxed">{proj.description}</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {proj.tags.map(tag => <span key={tag} className="text-[11px] px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-zinc-300">{tag}</span>)}
+                                        <p className="text-sm text-zinc-400 mb-6 flex-grow leading-relaxed">{proj.description}</p>
+                                        <div className="flex flex-wrap gap-2 mt-auto">
+                                            {proj.tags.map(tag => <span key={tag} className="text-[10px] font-mono px-2 py-1 bg-white/5 border border-white/10 rounded-md text-zinc-300">{tag}</span>)}
                                         </div>
                                     </div>
                                 ))}
@@ -529,60 +525,52 @@ export default function Profile() {
                         </motion.div>
                     </div>
 
-                    {/* RIGHT PANEL - SIDEBAR */}
-                    <div className="space-y-6 lg:col-span-1 lg:sticky lg:top-24 h-fit">
-                        {/* Analytics Dashboard Card */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">Analytics & Tools</h2>
-                            <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 mt-1"><BrainCircuit className="w-5 h-5 text-zinc-400" /></div>
-                                <div>
-                                    <p className="text-sm font-medium text-white mb-1">AI Profile Analyzer</p>
-                                    <p className="text-xs text-zinc-500 mb-4">Get instant ATS scoring and resume feedback.</p>
-                                    <button onClick={() => setShowAnalyzer(true)} className="w-full px-4 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center justify-center gap-2">
-                                        Analyze Profile
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-
+                    {/* RIGHT PANEL CHIPS - STICKY FOR HIGH END UX */}
+                    <div className="space-y-8 lg:sticky lg:top-24 h-fit">
                         {/* Tech Stack */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">Skills</h2>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><Code className="w-6 h-6 text-purple-400" /> Tech Stack</h2>
                             <div className="flex flex-wrap gap-2">
-                                {profile.skills.length === 0 ? <p className="text-sm text-zinc-500">No skills added.</p> : profile.skills.map((skill) => (
-                                    <span key={skill} className="px-3 py-1.5 text-xs font-medium text-zinc-200 bg-white/5 border border-white/10 rounded-full">{skill}</span>
+                                {profile.skills.length === 0 ? <p className="text-sm text-zinc-500 font-mono">No skills added.</p> : profile.skills.map((skill) => (
+                                    <span key={skill} className="px-3.5 py-1.5 text-xs font-mono font-medium text-sky-300 bg-sky-500/10 border border-sky-500/20 rounded-lg">{skill}</span>
                                 ))}
                             </div>
                         </motion.div>
 
                         {/* Social Anchors */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">Contact</h2>
-                            <div className="space-y-4">
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Access Nodes</h2>
+                            <div className="space-y-3">
                                 {profile.github && (
-                                    <a href={`https://\${profile.github}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
+                                    <a href={`https://${profile.github}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-slate-400 transition-all group shadow-sm">
                                         <Github className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
-                                        <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">GitHub</span>
-                                    </a>
-                                )}
-                                {profile.linkedin && (
-                                    <a href={`https://linkedin.com/in/\${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-                                        <Linkedin className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
-                                        <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">LinkedIn</span>
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.github}</span>
                                     </a>
                                 )}
                                 {profile.youtube && (
-                                    <a href={`https://youtube.com/@\${profile.youtube}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-                                        <Youtube className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
-                                        <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">YouTube</span>
+                                    <a href={`https://youtube.com/@${profile.youtube}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-red-500/50 transition-all group shadow-sm">
+                                        <Youtube className="w-5 h-5 text-red-500" />
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.youtube}</span>
                                     </a>
                                 )}
-                                {!profile.github && !profile.linkedin && !profile.youtube && <p className="text-sm text-zinc-500">No profiles linked.</p>}
+                                {profile.linkedin && (
+                                    <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-blue-500/50 transition-all group shadow-sm">
+                                        <Linkedin className="w-5 h-5 text-blue-500" />
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.linkedin}</span>
+                                    </a>
+                                )}
+                                {profile.website && (
+                                    <a href={`https://${profile.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-sky-500/50 transition-all group shadow-sm">
+                                        <LinkIcon className="w-5 h-5 text-sky-400" />
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.website}</span>
+                                    </a>
+                                )}
+                                {!profile.github && !profile.youtube && !profile.website && <p className="text-sm text-zinc-500 font-mono">No nodes linked.</p>}
                             </div>
                         </motion.div>
                     </div>
                 </div>
+
             </motion.div>
 
             {/* --- SYSTEM CONFIGURATION POPUP OVERLAY --- */}
@@ -591,30 +579,30 @@ export default function Profile() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl bento-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
                             <div className="flex justify-between items-center p-5 border-b border-white/10 bg-black/40 backdrop-blur-md">
-                                <h2 className="text-lg font-bold text-zinc-100 font-outfit flex items-center gap-2"><Edit3 className="w-5 h-5 text-zinc-400" /> Edit Profile</h2>
+                                <h2 className="text-lg font-bold text-zinc-100 font-outfit flex items-center gap-2"><Edit3 className="w-5 h-5 text-sky-400" /> System Configuration</h2>
                                 <button onClick={() => setIsEditing(false)} className="text-zinc-400 hover:text-white transition-colors p-1"><X size={20} /></button>
                             </div>
 
                             <div className="p-6 overflow-y-auto space-y-8 flex-1 custom-scrollbar bg-zinc-950">
-                                <form id="editProfileForm" onSubmit={(e) => { e.preventDefault(); saveProfileToDatabase(); }} className="space-y-6">
+                                <form id="editProfileForm" onSubmit={(e) => { e.preventDefault(); saveProfileToDatabase(); }} className="space-y-5">
 
                                     {/* IMAGE UPLOADS & STATUS */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-2">
-                                        <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
-                                            <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Avatar Image</label>
-                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'avatar')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer transition-colors" />
+                                        <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
+                                            <label className="block mb-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">Avatar Image</label>
+                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'avatar')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-sky-500/10 file:text-sky-400 hover:file:bg-sky-500/20 cursor-pointer transition-colors" />
                                         </div>
-                                        <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
-                                            <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Banner Image</label>
-                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer transition-colors" />
+                                        <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
+                                            <label className="block mb-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">Banner Image</label>
+                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer transition-colors" />
                                         </div>
                                         {/* STATUS DROPDOWN */}
-                                        <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
-                                            <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Current Status</label>
+                                        <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
+                                            <label className="block mb-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">Current Status</label>
                                             <select
                                                 value={profile.availability}
                                                 onChange={e => setProfile({ ...profile, availability: e.target.value as any })}
-                                                className="w-full bg-zinc-950/50 border border-white/10 text-zinc-300 text-sm font-sans rounded-lg px-3 py-2 outline-none focus:border-zinc-500"
+                                                className="w-full bg-zinc-950/50 border border-white/10 text-zinc-300 text-xs font-mono rounded-lg px-3 py-2 outline-none focus:border-sky-500"
                                             >
                                                 <option value="Seeking Internships">Seeking Internships</option>
                                                 <option value="Looking for Teammates">Looking for Teammates</option>
@@ -624,111 +612,111 @@ export default function Profile() {
                                         </div>
                                     </div>
 
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Full Name</label><input type="text" value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" required /></div>
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Headline</label><input type="text" value={profile.headline} onChange={e => setProfile({ ...profile, headline: e.target.value })} className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" /></div>
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Location</label><input type="text" value={profile.location} onChange={e => setProfile({ ...profile, location: e.target.value })} className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" /></div>
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">About Me</label><textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} className="w-full h-32 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none transition-colors"></textarea></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">Full Name</label><input type="text" value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} className="w-full px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" required /></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">Headline</label><input type="text" value={profile.headline} onChange={e => setProfile({ ...profile, headline: e.target.value })} className="w-full px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" /></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">Location</label><input type="text" value={profile.location} onChange={e => setProfile({ ...profile, location: e.target.value })} className="w-full px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" /></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">About Me (Markdown)</label><textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} className="w-full h-32 px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-sky-500 resize-none transition-colors"></textarea></div>
                                 </form>
 
                                 <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2"><GraduationCap className="w-4 h-4 text-zinc-400" /> Education</label>
+                                    <label className="block mb-4 text-sm font-bold text-blue-400 font-mono flex items-center gap-2"><GraduationCap className="w-4 h-4" /> EDUCATION_ARRAY</label>
                                     {profile.education.map(edu => (
-                                        <div key={edu.id} className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl">
+                                        <div key={edu.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
                                             <div><p className="text-sm font-bold text-white">{edu.school}</p><p className="text-xs text-zinc-400 mt-1">{edu.degree}</p></div>
-                                            <button type="button" onClick={() => removeEducation(edu.id)} className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"><X size={16} /></button>
+                                            <button type="button" onClick={() => removeEducation(edu.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
-                                        <input type="text" value={newEdu.school} onChange={e => setNewEdu({ ...newEdu, school: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="School/University" />
-                                        <input type="text" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Degree (e.g. B.Tech IT)" />
-                                        <input type="text" value={newEdu.duration} onChange={e => setNewEdu({ ...newEdu, duration: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Duration (e.g. 2025-2029)" />
-                                        <input type="text" value={newEdu.details} onChange={e => setNewEdu({ ...newEdu, details: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Details/GPA" />
-                                        <button type="button" onClick={addEducation} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Education</button>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-zinc-950/50">
+                                        <input type="text" value={newEdu.school} onChange={e => setNewEdu({ ...newEdu, school: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="School/University" />
+                                        <input type="text" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Degree (e.g. B.Tech IT)" />
+                                        <input type="text" value={newEdu.duration} onChange={e => setNewEdu({ ...newEdu, duration: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Duration (e.g. 2025-2029)" />
+                                        <input type="text" value={newEdu.details} onChange={e => setNewEdu({ ...newEdu, details: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Details/GPA" />
+                                        <button type="button" onClick={addEducation} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-lg font-mono font-bold hover:bg-blue-500/20 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Node</button>
                                     </div>
                                 </div>
 
                                 <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2"><Briefcase className="w-4 h-4 text-zinc-400" /> Experience</label>
+                                    <label className="block mb-4 text-sm font-bold text-indigo-400 font-mono flex items-center gap-2"><Briefcase className="w-4 h-4" /> EXPERIENCE_ARRAY</label>
                                     {profile.experiences.map(exp => (
-                                        <div key={exp.id} className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl">
+                                        <div key={exp.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
                                             <div><p className="text-sm font-bold text-white">{exp.role}</p><p className="text-xs text-zinc-400 mt-1">{exp.company}</p></div>
-                                            <button type="button" onClick={() => removeExperience(exp.id)} className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"><X size={16} /></button>
+                                            <button type="button" onClick={() => removeExperience(exp.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
-                                        <input type="text" value={newExp.role} onChange={e => setNewExp({ ...newExp, role: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Role/Title" />
-                                        <input type="text" value={newExp.company} onChange={e => setNewExp({ ...newExp, company: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Company" />
-                                        <input type="text" value={newExp.duration} onChange={e => setNewExp({ ...newExp, duration: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Duration (e.g. Jan 2026 - Present)" />
-                                        <textarea value={newExp.description} onChange={e => setNewExp({ ...newExp, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none" placeholder="Description of your work..."></textarea>
-                                        <button type="button" onClick={addExperience} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Experience</button>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-zinc-950/50">
+                                        <input type="text" value={newExp.role} onChange={e => setNewExp({ ...newExp, role: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Role/Title" />
+                                        <input type="text" value={newExp.company} onChange={e => setNewExp({ ...newExp, company: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Company" />
+                                        <input type="text" value={newExp.duration} onChange={e => setNewExp({ ...newExp, duration: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Duration (e.g. Jan 2026 - Present)" />
+                                        <textarea value={newExp.description} onChange={e => setNewExp({ ...newExp, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-indigo-500 resize-none" placeholder="Description of your work..."></textarea>
+                                        <button type="button" onClick={addExperience} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 rounded-lg font-mono font-bold hover:bg-indigo-500/20 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Node</button>
                                     </div>
                                 </div>
 
                                 <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2"><FolderGit2 className="w-4 h-4 text-zinc-400" /> Projects</label>
+                                    <label className="block mb-4 text-sm font-bold text-green-400 font-mono flex items-center gap-2"><FolderGit2 className="w-4 h-4" /> PROJECT_ARRAY</label>
                                     {profile.projects.map(proj => (
-                                        <div key={proj.id} className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl">
+                                        <div key={proj.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
                                             <div>
                                                 <p className="text-sm font-bold text-white">{proj.name}</p>
                                                 <p className="text-xs text-zinc-400 mt-1 line-clamp-1">{proj.description}</p>
                                             </div>
-                                            <button type="button" onClick={() => removeProject(proj.id)} className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"><X size={16} /></button>
+                                            <button type="button" onClick={() => removeProject(proj.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
-                                        <input type="text" value={newProj.name} onChange={e => setNewProj({ ...newProj, name: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Project Name" />
-                                        <input type="text" value={newProj.link} onChange={e => setNewProj({ ...newProj, link: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Project Link (URL)" />
-                                        <input type="text" value={newProj.tags} onChange={e => setNewProj({ ...newProj, tags: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Tags (comma separated)" />
-                                        <textarea value={newProj.description} onChange={e => setNewProj({ ...newProj, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none" placeholder="Short description..."></textarea>
-                                        <button type="button" onClick={addProject} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Project</button>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-zinc-950/50">
+                                        <input type="text" value={newProj.name} onChange={e => setNewProj({ ...newProj, name: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Name" />
+                                        <input type="text" value={newProj.link} onChange={e => setNewProj({ ...newProj, link: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Link (URL)" />
+                                        <input type="text" value={newProj.tags} onChange={e => setNewProj({ ...newProj, tags: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Tags (comma separated)" />
+                                        <textarea value={newProj.description} onChange={e => setNewProj({ ...newProj, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-green-500 resize-none" placeholder="Short description..."></textarea>
+                                        <button type="button" onClick={addProject} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-green-500/10 text-green-400 border border-green-500/30 rounded-lg font-mono font-bold hover:bg-green-500/20 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Node</button>
                                     </div>
                                 </div>
 
                                 <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans tracking-wide">Tech Stack</label>
+                                    <label className="block mb-4 text-xs text-zinc-400 font-mono font-bold uppercase tracking-wider">Tech Stack</label>
                                     <div className="flex gap-3">
-                                        <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} className="flex-1 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Type a skill & press Enter" />
-                                        <button type="button" onClick={addSkill} className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-sans font-bold hover:bg-white/10 transition-colors">Add</button>
+                                        <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} className="flex-1 px-4 py-2.5 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500" placeholder="Type a skill & press Enter" />
+                                        <button type="button" onClick={addSkill} className="px-6 py-2.5 bg-[#21262d] border border-white/10 rounded-xl text-white font-mono font-bold hover:bg-[#30363d] transition-colors">Add</button>
                                     </div>
                                     <div className="flex flex-wrap gap-2 mt-4">
                                         {profile.skills.map(skill => (
-                                            <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-200 bg-white/5 border border-white/10 rounded-full">
-                                                {skill} <button type="button" onClick={() => removeSkill(skill)} className="hover:text-white text-zinc-400 transition-colors"><X size={12} /></button>
+                                            <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-sky-300 bg-sky-500/10 border border-sky-500/20 rounded-lg">
+                                                {skill} <button type="button" onClick={() => removeSkill(skill)} className="hover:text-white transition-colors"><X size={12} /></button>
                                             </span>
                                         ))}
                                     </div>
                                 </div>
 
                                 <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans tracking-wide">Social Links</label>
+                                    <label className="block mb-4 text-xs text-zinc-400 font-mono font-bold uppercase tracking-wider">Social Links</label>
                                     <div className="space-y-4">
                                         <div className="relative">
-                                            <Github className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.github} onChange={e => setProfile({ ...profile, github: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="github.com/username" />
+                                            <Github className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                            <input type="text" value={profile.github} onChange={e => setProfile({ ...profile, github: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-slate-500 transition-colors" placeholder="github.com/username" />
                                         </div>
                                         <div className="relative">
-                                            <Youtube className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="youtube.com/@channel" />
+                                            <Youtube className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                                            <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-red-500 transition-colors" placeholder="youtube.com/@channel" />
                                         </div>
                                         <div className="relative">
-                                            <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.linkedin} onChange={e => setProfile({ ...profile, linkedin: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="linkedin.com/in/username" />
+                                            <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
+                                            <input type="text" value={profile.linkedin} onChange={e => setProfile({ ...profile, linkedin: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-blue-500 transition-colors" placeholder="linkedin.com/in/username" />
                                         </div>
                                         <div className="relative">
-                                            <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.website} onChange={e => setProfile({ ...profile, website: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="yourportfolio.dev" />
+                                            <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-500" />
+                                            <input type="text" value={profile.website} onChange={e => setProfile({ ...profile, website: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" placeholder="yourportfolio.dev" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="p-5 border-t border-white/10 bg-black/40 backdrop-blur-md flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2.5 font-bold text-zinc-300 rounded-xl hover:bg-white/5 font-sans transition-colors">
+                                <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2.5 font-bold text-zinc-300 rounded-xl hover:bg-white/5 font-mono transition-colors">
                                     Cancel
                                 </button>
-                                <button type="submit" form="editProfileForm" disabled={isSaving} className="px-8 py-2.5 font-bold text-zinc-950 rounded-xl bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center gap-2 transition-all">
-                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-zinc-950" /> : null}
-                                    {isSaving ? "Saving..." : "Save Profile"}
+                                <button type="submit" form="editProfileForm" disabled={isSaving} className="px-8 py-2.5 font-bold text-white rounded-xl bg-sky-600 hover:bg-sky-500 shadow-[0_0_20px_rgba(2,132,199,0.3)] disabled:opacity-50 flex items-center gap-2 transition-all">
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                    {isSaving ? "Syncing..." : "Commit Setup"}
                                 </button>
                             </div>
                         </motion.div>
@@ -736,7 +724,7 @@ export default function Profile() {
                 )}
             </AnimatePresence>
 
-                        {/* --- AI CORE DIAGNOSTIC DIALOG OVERLAY --- */}
+            {/* --- AI CORE DIAGNOSTIC DIALOG OVERLAY --- */}
             <AnimatePresence>
                 {showAnalyzer && (
                     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">

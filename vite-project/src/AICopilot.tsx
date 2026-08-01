@@ -8,15 +8,15 @@ interface Message { id: string; sender: "user" | "ai"; text?: string; isThinking
 
 // --- PREMIUM FORMATTER: Parses AI text into clean UI elements ---
 const renderFormattedText = (text: string) => {
-    return text.split('\n').map((line, i) => {
+    return text.split('n').map((line, i) => {
         if (line.trim().startsWith('- ')) {
             return <li key={i} className="ml-4 list-disc mb-1 text-zinc-300">{line.replace('- ', '')}</li>;
         }
-        const parts = line.split(/(\*\*.*?\*\*)/g);
+        const parts = line.split(/(\\*\\*(.*?)\\*\\*)/g);
         return (
             <p key={i} className="mb-2">
                 {parts.map((part, j) => 
-                    part.startsWith('**') ? <strong key={j} className="text-white font-semibold">{part.replace(/\*\*/g, '')}</strong> : part
+                    part.startsWith('**') ? <strong key={j} className="text-white font-semibold">{part.replace(/**/g, '')}</strong> : part
                 )}
             </p>
         );
@@ -82,7 +82,7 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
                         id: Date.now().toString(),
                         title: "Generated Content",
                         type: "text",
-                        content: parts[1].replace(/^\w+\n/, "")
+                        content: parts[1].replace(/^w+n/, "")
                     };
                     aiMsg.artifactTrigger = artifactData;
                 }
