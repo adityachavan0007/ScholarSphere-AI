@@ -1,184 +1,323 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    MapPin, Link as LinkIcon, Github, Briefcase, GraduationCap,
-    Code, Edit3, Youtube, Terminal, X,
-    BrainCircuit, Target, ChevronRight,
-    Download, FolderGit2, Calendar, Loader2, User, Plus, Linkedin,
-    RefreshCw, Award, AlertCircle
+  MapPin,
+  Link as LinkIcon,
+  Github,
+  Briefcase,
+  GraduationCap,
+  Code,
+  Edit3,
+  Youtube,
+  Terminal,
+  X,
+  BrainCircuit,
+  Target,
+  ChevronRight,
+  Download,
+  FolderGit2,
+  Calendar,
+  Loader2,
+  User,
+  Plus,
+  Linkedin,
+  RefreshCw,
+  Award,
+  AlertCircle,
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
 // --- 1. DATA SHAPES ---
-interface Certificate { id: string; name: string; fileUrl: string; }
-interface Project { id: string; name: string; description: string; tags: string[]; link?: string; }
-interface Experience { id: string; role: string; company: string; duration: string; description: string; }
-interface Education { id: string; degree: string; school: string; duration: string; details: string; }
-interface ActivityLog { id: string; date: string; action: string; }
-interface AIMatch { title: string; reason: string; }
+interface Certificate {
+  id: string;
+  name: string;
+  fileUrl: string;
+}
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  tags: string[];
+  link?: string;
+}
+interface Experience {
+  id: string;
+  role: string;
+  company: string;
+  duration: string;
+  description: string;
+}
+interface Education {
+  id: string;
+  degree: string;
+  school: string;
+  duration: string;
+  details: string;
+}
+interface ActivityLog {
+  id: string;
+  date: string;
+  action: string;
+}
+interface AIMatch {
+  title: string;
+  reason: string;
+}
 
 interface ProfileData {
-    name: string; headline: string; bio: string; location: string;
-    website: string; github: string; youtube: string; linkedin: string;
-    avatarUrl: string; bannerUrl: string;
-    skills: string[]; certificates: Certificate[]; lookingFor: string[];
-    projects: Project[]; experiences: Experience[]; education: Education[];
-    recentActivity: ActivityLog[];
-    availability: "Seeking Internships" | "Looking for Teammates" | "Building in Stealth" | "Unavailable";
+  name: string;
+  headline: string;
+  bio: string;
+  location: string;
+  website: string;
+  github: string;
+  youtube: string;
+  linkedin: string;
+  avatarUrl: string;
+  bannerUrl: string;
+  skills: string[];
+  certificates: Certificate[];
+  lookingFor: string[];
+  projects: Project[];
+  experiences: Experience[];
+  education: Education[];
+  recentActivity: ActivityLog[];
+  availability:
+    | "Seeking Internships"
+    | "Looking for Teammates"
+    | "Building in Stealth"
+    | "Unavailable";
 }
 
 const EMPTY_PROFILE: ProfileData = {
-    name: "", headline: "", bio: "", location: "", website: "", github: "", youtube: "", linkedin: "",
-    avatarUrl: "", bannerUrl: "", skills: [], certificates: [], lookingFor: [],
-    projects: [], experiences: [], education: [], recentActivity: [],
-    availability: "Seeking Internships"
+  name: "",
+  headline: "",
+  bio: "",
+  location: "",
+  website: "",
+  github: "",
+  youtube: "",
+  linkedin: "",
+  avatarUrl: "",
+  bannerUrl: "",
+  skills: [],
+  certificates: [],
+  lookingFor: [],
+  projects: [],
+  experiences: [],
+  education: [],
+  recentActivity: [],
+  availability: "Seeking Internships",
 };
 
 // --- ANIMATION VARIANTS ---
 const staggerContainer = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const fadeUp = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 },
+  },
 };
 
 // --- STATUS CONFIGURATION ---
 const STATUS_STYLES = {
-    "Seeking Internships": { color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/50", glow: "shadow-[0_0_30px_rgba(34,197,94,0.4)]", dot: "bg-green-500" },
-    "Looking for Teammates": { color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/50", glow: "shadow-[0_0_30px_rgba(59,130,246,0.4)]", dot: "bg-blue-500" },
-    "Building in Stealth": { color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/50", glow: "shadow-[0_0_30px_rgba(168,85,247,0.4)]", dot: "bg-purple-500" },
-    "Unavailable": { color: "text-zinc-400", bg: "bg-slate-500/10", border: "border-white/10", glow: "", dot: "bg-slate-500" },
+  "Seeking Internships": {
+    color: "text-green-400",
+    bg: "bg-green-500/10",
+    border: "border-green-500/50",
+    glow: "shadow-[0_0_30px_rgba(34,197,94,0.4)]",
+    dot: "bg-green-500",
+  },
+  "Looking for Teammates": {
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/50",
+    glow: "shadow-[0_0_30px_rgba(59,130,246,0.4)]",
+    dot: "bg-blue-500",
+  },
+  "Building in Stealth": {
+    color: "text-purple-400",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/50",
+    glow: "shadow-[0_0_30px_rgba(168,85,247,0.4)]",
+    dot: "bg-purple-500",
+  },
+  Unavailable: {
+    color: "text-zinc-400",
+    bg: "bg-slate-500/10",
+    border: "border-white/10",
+    glow: "",
+    dot: "bg-slate-500",
+  },
 };
 
 export default function Profile() {
-    // --- STATE ---
-    const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [isImporting] = useState(false);
-    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  // --- STATE ---
+  const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isImporting] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
-    // AI Analyzer States
-    const [showAnalyzer, setShowAnalyzer] = useState(false);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [atsScore, setAtsScore] = useState<number | null>(null);
-    const [subScores, setSubScores] = useState<{
-        skillRelevance: number;
-        completeness: number;
-        projectImpact: number;
-    } | null>(null);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [aiMatches, setAiMatches] = useState<AIMatch[]>([]);
+  // AI Analyzer States
+  const [showAnalyzer, setShowAnalyzer] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [atsScore, setAtsScore] = useState<number | null>(null);
+  const [subScores, setSubScores] = useState<{
+    skillRelevance: number;
+    completeness: number;
+    projectImpact: number;
+  } | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [aiMatches, setAiMatches] = useState<AIMatch[]>([]);
 
-    // Edit Form Temp States
-    const [newSkill, setNewSkill] = useState("");
-    const [newEdu, setNewEdu] = useState({ school: "", degree: "", duration: "", details: "" });
-    const [newExp, setNewExp] = useState({ role: "", company: "", duration: "", description: "" });
-    const [newProj, setNewProj] = useState({ name: "", description: "", link: "", tags: "" });
+  // Edit Form Temp States
+  const [newSkill, setNewSkill] = useState("");
+  const [newEdu, setNewEdu] = useState({
+    school: "",
+    degree: "",
+    duration: "",
+    details: "",
+  });
+  const [newExp, setNewExp] = useState({
+    role: "",
+    company: "",
+    duration: "",
+    description: "",
+  });
+  const [newProj, setNewProj] = useState({
+    name: "",
+    description: "",
+    link: "",
+    tags: "",
+  });
 
-    // ==========================================
-    // HYPER-OPTIMIZED BACKEND FETCH
-    // ==========================================
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                // FASTER AUTH: Read local session memory instead of pinging Auth server
-                const { data: { session } } = await supabase.auth.getSession();
+  // ==========================================
+  // HYPER-OPTIMIZED BACKEND FETCH
+  // ==========================================
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        // FASTER AUTH: Read local session memory instead of pinging Auth server
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-                if (session?.user) {
-                    const { data, error } = await supabase
-                        .from('student_profiles')
-                        .select('*')
-                        .eq('id', session.user.id)
-                        .single();
+        if (session?.user) {
+          const { data, error } = await supabase
+            .from("student_profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
 
-                    if (error && error.code !== 'PGRST116') throw error;
+          if (error && error.code !== "PGRST116") throw error;
 
-                    if (data && data.profile_data) {
-                        setProfile({ ...EMPTY_PROFILE, ...data.profile_data });
-                    } else if (data && data.name) {
-                        setProfile({ ...EMPTY_PROFILE, name: data.name });
-                    }
-                }
-            } catch (err) {
-                console.error("Error fetching profile:", err);
-            } finally {
-                // INSTANT CLEAR: No fake delays
-                setIsLoading(false);
-            }
-        };
-        fetchProfile();
-    }, []);
-
-    // ==========================================
-    // REAL BACKEND: SAVE PROFILE DATA
-    // ==========================================
-    const saveProfileToDatabase = async () => {
-        setIsSaving(true);
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { error } = await supabase.from('student_profiles').upsert({
-                    id: user.id,
-                    name: profile.name,
-                    profile_data: profile
-                });
-                if (error) throw error;
-            }
-            setIsEditing(false);
-        } catch (error: any) {
-            console.error("Error saving profile:", error.message);
-            alert("Failed to save profile. Check console.");
-        } finally {
-            setIsSaving(false);
+          if (data && data.profile_data) {
+            setProfile({
+              ...EMPTY_PROFILE,
+              ...data.profile_data,
+              skills: data.profile_data.skills || [],
+              projects: data.profile_data.projects || [],
+              experiences: data.profile_data.experiences || [],
+              education: data.profile_data.education || [],
+              certificates: data.profile_data.certificates || [],
+              recentActivity: data.profile_data.recentActivity || [],
+              lookingFor: data.profile_data.lookingFor || []
+            });
+          } else if (data && data.name) {
+            setProfile({ ...EMPTY_PROFILE, name: data.name });
+          }
         }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      } finally {
+        // INSTANT CLEAR: No fake delays
+        setIsLoading(false);
+      }
     };
+    fetchProfile();
+  }, []);
 
-    // ==========================================
-    // FEATURE: ONE-CLICK PDF RESUME GENERATOR
-    // ==========================================
-    const handleDownloadCV = async () => {
-        setIsGeneratingPDF(true);
-        try {
-            const html2pdf = (await import('html2pdf.js')).default;
-            const element = document.createElement('div');
+  // ==========================================
+  // REAL BACKEND: SAVE PROFILE DATA
+  // ==========================================
+  const saveProfileToDatabase = async () => {
+    setIsSaving(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { error } = await supabase.from("student_profiles").upsert({
+          id: user.id,
+          name: profile.name,
+          profile_data: profile,
+        });
+        if (error) throw error;
+      }
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error("Error saving profile:", error.message);
+      alert("Failed to save profile. Check console.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-            let htmlContent = `
+  // ==========================================
+  // FEATURE: ONE-CLICK PDF RESUME GENERATOR
+  // ==========================================
+  const handleDownloadCV = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const html2pdf = (await import("html2pdf.js")).default;
+      const element = document.createElement("div");
+
+      let htmlContent = `
                 <div style="padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111; line-height: 1.5;">
-                    <h1 style="font-size: 28px; margin: 0 0 5px 0; color: #000; text-transform: uppercase; letter-spacing: 1px;">${profile.name || 'Developer'}</h1>
+                    <h1 style="font-size: 28px; margin: 0 0 5px 0; color: #000; text-transform: uppercase; letter-spacing: 1px;">${profile.name || "Developer"}</h1>
                     <p style="font-size: 14px; margin: 0 0 20px 0; color: #555;">
-                        ${profile.location ? profile.location + ' | ' : ''}
-                        ${profile.website ? profile.website + ' | ' : ''}
-                        ${profile.github ? 'github.com/' + profile.github : ''}
+                        ${profile.location ? profile.location + " | " : ""}
+                        ${profile.website ? profile.website + " | " : ""}
+                        ${profile.github ? "github.com/" + profile.github : ""}
                     </p>
                     
                     <p style="font-size: 12px; margin-bottom: 25px;">${profile.bio}</p>
             `;
 
-            if (profile.education.length > 0) {
-                htmlContent += `
+      if (profile.education.length > 0) {
+        htmlContent += `
                     <h2 style="font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; margin: 20px 0 10px 0; text-transform: uppercase;">Education</h2>
-                    ${profile.education.map(edu => `
+                    ${profile.education
+                      .map(
+                        (edu) => `
                         <div style="margin-bottom: 10px;">
                             <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
                                 <span>${edu.school}</span>
                                 <span>${edu.duration}</span>
                             </div>
                             <div style="font-size: 13px; font-style: italic;">${edu.degree}</div>
-                            ${edu.details ? `<div style="font-size: 12px; margin-top: 3px;">${edu.details}</div>` : ''}
+                            ${edu.details ? `<div style="font-size: 12px; margin-top: 3px;">${edu.details}</div>` : ""}
                         </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 `;
-            }
+      }
 
-            if (profile.experiences.length > 0) {
-                htmlContent += `
+      if (profile.experiences.length > 0) {
+        htmlContent += `
                     <h2 style="font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; margin: 20px 0 10px 0; text-transform: uppercase;">Experience</h2>
-                    ${profile.experiences.map(exp => `
+                    ${profile.experiences
+                      .map(
+                        (exp) => `
                         <div style="margin-bottom: 12px;">
                             <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
                                 <span>${exp.role}</span>
@@ -187,717 +326,1410 @@ export default function Profile() {
                             <div style="font-size: 13px; font-style: italic; margin-bottom: 4px;">${exp.company}</div>
                             <div style="font-size: 12px;">${exp.description}</div>
                         </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 `;
-            }
+      }
 
-            if (profile.projects.length > 0) {
-                htmlContent += `
+      if (profile.projects.length > 0) {
+        htmlContent += `
                     <h2 style="font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; margin: 20px 0 10px 0; text-transform: uppercase;">Projects</h2>
-                    ${profile.projects.map(proj => `
+                    ${profile.projects
+                      .map(
+                        (proj) => `
                         <div style="margin-bottom: 10px;">
                             <div style="font-weight: bold; font-size: 14px;">
-                                ${proj.name} ${proj.link ? `| <span style="font-weight: normal; font-size: 12px; color: #555;">${proj.link}</span>` : ''}
+                                ${proj.name} ${proj.link ? `| <span style="font-weight: normal; font-size: 12px; color: #555;">${proj.link}</span>` : ""}
                             </div>
                             <div style="font-size: 12px; margin-top: 3px;">${proj.description}</div>
-                            <div style="font-size: 11px; color: #555; margin-top: 3px;">Tech: ${proj.tags.join(', ')}</div>
+                            <div style="font-size: 11px; color: #555; margin-top: 3px;">Tech: ${proj.tags.join(", ")}</div>
                         </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 `;
-            }
+      }
 
-            if (profile.skills.length > 0) {
-                htmlContent += `
+      if (profile.skills.length > 0) {
+        htmlContent += `
                     <h2 style="font-size: 16px; border-bottom: 1px solid #000; padding-bottom: 5px; margin: 20px 0 10px 0; text-transform: uppercase;">Skills</h2>
                     <div style="font-size: 13px;">
-                        ${profile.skills.join(' • ')}
+                        ${profile.skills.join(" • ")}
                     </div>
                 `;
-            }
+      }
 
-            htmlContent += `
+      htmlContent += `
                     <div style="margin-top: 40px; padding-top: 10px; border-top: 1px solid #ccc; text-align: center; font-size: 10px; color: #888;">
                         Automatically generated via ScholarSphere AI Matrix
                     </div>
                 </div>
             `;
-            element.innerHTML = htmlContent;
+      element.innerHTML = htmlContent;
 
-            const opt = {
-                margin: [0, 0, 0, 0] as [number, number, number, number],
-                filename: `${profile.name ? profile.name.replace(/\s+/g, '_') : 'Developer'}_Resume.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
+      const opt = {
+        margin: [0, 0, 0, 0] as [number, number, number, number],
+        filename: `${profile.name ? profile.name.replace(/\s+/g, "_") : "Developer"}_Resume.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+      };
 
-            await html2pdf().set(opt).from(element).save();
-
-        } catch (error) {
-            console.error("PDF Generation failed:", error);
-            alert("Failed to generate PDF. Make sure you installed html2pdf.js");
-        } finally {
-            setIsGeneratingPDF(false);
-        }
-    };
-
-    // ==========================================
-    // REAL BACKEND: FAST AI ANALYZER
-    // ==========================================
-    const runAnalysis = async () => {
-        setIsAnalyzing(true);
-        setAtsScore(null);
-        setSubScores(null);
-        setSuggestions([]);
-        setAiMatches([]);
-
-        try {
-            // Read active session token
-            const { data: { session } } = await supabase.auth.getSession();
-            const headers: Record<string, string> = {
-                "Content-Type": "application/json"
-            };
-            if (session?.access_token) {
-                headers["Authorization"] = `Bearer ${session.access_token}`;
-            }
-
-            const response = await fetch(`/api/analyze-profile`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({ profileData: profile })
-            });
-
-            if (!response.ok) throw new Error("AI Backend failed");
-            const data = await response.json();
-
-            setAtsScore(data.atsScore ?? 0);
-            setSubScores(data.subScores ?? { skillRelevance: 0, completeness: 0, projectImpact: 0 });
-            setSuggestions(data.suggestions ?? []);
-            setAiMatches(data.matches ?? []);
-        } catch (error: any) {
-            console.error("Analyzer failed", error);
-            setAtsScore(0);
-            setSubScores({ skillRelevance: 0, completeness: 0, projectImpact: 0 });
-            setSuggestions([`Could not reach the AI Mainframe: ${error.message}`]);
-            setAiMatches([{ title: "Connection Failed", reason: "Could not reach the AI Mainframe. Check backend server." }]);
-        } finally {
-            setIsAnalyzing(false);
-        }
-    };
-
-    useEffect(() => {
-        if (showAnalyzer) {
-            runAnalysis();
-        }
-    }, [showAnalyzer]);
-
-    // --- HANDLERS ---
-    const handleGithubImport = async () => alert("GitHub import requires backend OAuth integration. Currently disabled.");
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (type === 'avatar') setProfile({ ...profile, avatarUrl: reader.result as string });
-                if (type === 'banner') setProfile({ ...profile, bannerUrl: reader.result as string });
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const addSkill = () => { if (newSkill.trim() && !profile.skills.includes(newSkill)) { setProfile({ ...profile, skills: [...profile.skills, newSkill.trim()] }); setNewSkill(""); } };
-    const removeSkill = (skillToRemove: string) => setProfile({ ...profile, skills: profile.skills.filter(s => s !== skillToRemove) });
-
-    const addEducation = () => {
-        if (newEdu.school && newEdu.degree) {
-            setProfile({ ...profile, education: [...profile.education, { id: Date.now().toString(), ...newEdu }] });
-            setNewEdu({ school: "", degree: "", duration: "", details: "" });
-        }
-    };
-    const removeEducation = (id: string) => setProfile({ ...profile, education: profile.education.filter(e => e.id !== id) });
-
-    const addExperience = () => {
-        if (newExp.company && newExp.role) {
-            setProfile({ ...profile, experiences: [...profile.experiences, { id: Date.now().toString(), ...newExp }] });
-            setNewExp({ role: "", company: "", duration: "", description: "" });
-        }
-    };
-    const removeExperience = (id: string) => setProfile({ ...profile, experiences: profile.experiences.filter(e => e.id !== id) });
-
-    const addProject = () => {
-        if (newProj.name && newProj.description) {
-            const tagsArray = newProj.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
-            setProfile({ ...profile, projects: [...profile.projects, { id: Date.now().toString(), name: newProj.name, description: newProj.description, link: newProj.link, tags: tagsArray }] });
-            setNewProj({ name: "", description: "", link: "", tags: "" });
-        }
-    };
-    const removeProject = (id: string) => setProfile({ ...profile, projects: profile.projects.filter(p => p.id !== id) });
-
-    // Status Setup
-    const activeStatus = STATUS_STYLES[profile.availability || "Unavailable"];
-
-    // --- HIGH END LOADER ---
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-zinc-950 relative overflow-hidden flex flex-col items-center justify-center font-mono selection:bg-sky-500/30">
-                <div className="relative flex items-center justify-center w-20 h-20 mb-6">
-                    <div className="absolute inset-0 border-4 border-sky-500/20 rounded-full"></div>
-                    <div className="absolute inset-0 border-4 border-transparent border-t-sky-400 rounded-full animate-spin"></div>
-                    <Terminal className="w-8 h-8 text-sky-400 animate-pulse" />
-                </div>
-                <p className="text-sky-400 text-sm tracking-widest uppercase">Decypting Profile Matrix...</p>
-            </div>
-        );
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error("PDF Generation failed:", error);
+      alert("Failed to generate PDF. Make sure you installed html2pdf.js");
+    } finally {
+      setIsGeneratingPDF(false);
     }
+  };
 
-    // --- INITIALIZE EMPTY PROFILE STATE ---
-    if (!profile.name && !isEditing) {
-        return (
-            <div className="flex flex-col items-center justify-center w-full min-h-screen pt-16 bg-zinc-950 relative overflow-hidden px-4">
-                {/* Subtle, standard background to match AuthModal */}
-                <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-40 mix-blend-overlay"></div>
+  // ==========================================
+  // REAL BACKEND: FAST AI ANALYZER
+  // ==========================================
+  const runAnalysis = async () => {
+    setIsAnalyzing(true);
+    setAtsScore(null);
+    setSubScores(null);
+    setSuggestions([]);
+    setAiMatches([]);
 
-                <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 100 }} className="w-full max-w-md p-10 bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl relative z-10 text-center">
-                    <div className="flex justify-center mb-6">
-                        <div className="p-4 rounded-full bg-white/5 border border-white/10">
-                            <User className="w-8 h-8 text-white" />
-                        </div>
-                    </div>
-                    <h2 className="mb-2 text-2xl font-bold text-white font-outfit tracking-tight drop-shadow-md">Initialize Identity</h2>
-                    <p className="mb-8 text-sm text-zinc-400 font-sans">Your developer portfolio awaits setup.</p>
-                    <div className="space-y-4">
-                        <button onClick={handleGithubImport} disabled={isImporting} className="flex items-center justify-center w-full gap-2 px-4 py-3.5 text-sm font-medium transition-all rounded-xl disabled:opacity-50 bg-white/5 border border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">
-                            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Github size={18} /> Sync from GitHub</>}
-                        </button>
-                        
-                        <div className="flex items-center gap-4 py-2">
-                            <div className="flex-1 h-px bg-white/10"></div>
-                            <span className="text-[10px] tracking-widest text-zinc-500 uppercase font-medium">Or</span>
-                            <div className="flex-1 h-px bg-white/10"></div>
-                        </div>
-                        
-                        <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-full gap-2 px-4 py-3.5 text-sm font-bold transition-all rounded-xl bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg">
-                            <Edit3 size={18} /> Build Manually
-                        </button>
-                    </div>
-                </motion.div>
-            </div>
-        );
+    try {
+      // Read active session token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch(`/api/analyze-profile`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ profileData: profile }),
+      });
+
+      if (!response.ok) throw new Error("AI Backend failed");
+      const data = await response.json();
+
+      setAtsScore(data.atsScore ?? 0);
+      setSubScores(
+        data.subScores ?? {
+          skillRelevance: 0,
+          completeness: 0,
+          projectImpact: 0,
+        },
+      );
+      setSuggestions(data.suggestions ?? []);
+      setAiMatches(data.matches ?? []);
+    } catch (error: any) {
+      console.error("Analyzer failed", error);
+      setAtsScore(0);
+      setSubScores({ skillRelevance: 0, completeness: 0, projectImpact: 0 });
+      setSuggestions([`Could not reach the AI Mainframe: ${error.message}`]);
+      setAiMatches([
+        {
+          title: "Connection Failed",
+          reason: "Could not reach the AI Mainframe. Check backend server.",
+        },
+      ]);
+    } finally {
+      setIsAnalyzing(false);
     }
+  };
 
+  useEffect(() => {
+    if (showAnalyzer) {
+      runAnalysis();
+    }
+  }, [showAnalyzer]);
+
+  // --- HANDLERS ---
+  const handleGithubImport = async () =>
+    alert(
+      "GitHub import requires backend OAuth integration. Currently disabled.",
+    );
+
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "avatar" | "banner",
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === "avatar")
+          setProfile({ ...profile, avatarUrl: reader.result as string });
+        if (type === "banner")
+          setProfile({ ...profile, bannerUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addSkill = () => {
+    if (newSkill.trim() && !profile.skills.includes(newSkill)) {
+      setProfile({ ...profile, skills: [...profile.skills, newSkill.trim()] });
+      setNewSkill("");
+    }
+  };
+  const removeSkill = (skillToRemove: string) =>
+    setProfile({
+      ...profile,
+      skills: profile.skills.filter((s) => s !== skillToRemove),
+    });
+
+  const addEducation = () => {
+    if (newEdu.school && newEdu.degree) {
+      setProfile({
+        ...profile,
+        education: [
+          ...profile.education,
+          { id: Date.now().toString(), ...newEdu },
+        ],
+      });
+      setNewEdu({ school: "", degree: "", duration: "", details: "" });
+    }
+  };
+  const removeEducation = (id: string) =>
+    setProfile({
+      ...profile,
+      education: profile.education.filter((e) => e.id !== id),
+    });
+
+  const addExperience = () => {
+    if (newExp.company && newExp.role) {
+      setProfile({
+        ...profile,
+        experiences: [
+          ...profile.experiences,
+          { id: Date.now().toString(), ...newExp },
+        ],
+      });
+      setNewExp({ role: "", company: "", duration: "", description: "" });
+    }
+  };
+  const removeExperience = (id: string) =>
+    setProfile({
+      ...profile,
+      experiences: profile.experiences.filter((e) => e.id !== id),
+    });
+
+  const addProject = () => {
+    if (newProj.name && newProj.description) {
+      const tagsArray = newProj.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== "");
+      setProfile({
+        ...profile,
+        projects: [
+          ...profile.projects,
+          {
+            id: Date.now().toString(),
+            name: newProj.name,
+            description: newProj.description,
+            link: newProj.link,
+            tags: tagsArray,
+          },
+        ],
+      });
+      setNewProj({ name: "", description: "", link: "", tags: "" });
+    }
+  };
+  const removeProject = (id: string) =>
+    setProfile({
+      ...profile,
+      projects: profile.projects.filter((p) => p.id !== id),
+    });
+
+  // Status Setup
+  const activeStatus =
+    STATUS_STYLES[
+      profile.availability as keyof typeof STATUS_STYLES
+    ] || STATUS_STYLES["Unavailable"];
+
+  // --- HIGH END LOADER ---
+  if (isLoading) {
     return (
-        <div className="w-full min-h-screen bg-zinc-950 relative overflow-hidden pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans selection:bg-sky-500/30 relative">
-            <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+      <div className="min-h-screen bg-zinc-950 relative overflow-hidden flex flex-col items-center justify-center font-mono selection:bg-sky-500/30">
+        <div className="relative flex items-center justify-center w-20 h-20 mb-6">
+          <div className="absolute inset-0 border-4 border-sky-500/20 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-transparent border-t-sky-400 rounded-full animate-spin"></div>
+          <Terminal className="w-8 h-8 text-sky-400 animate-pulse" />
+        </div>
+        <p className="text-sky-400 text-sm tracking-widest uppercase">
+          Decypting Profile Matrix...
+        </p>
+      </div>
+    );
+  }
 
-            <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                animate="show"
-                className="max-w-5xl mx-auto space-y-6 relative z-10"
+  // --- INITIALIZE EMPTY PROFILE STATE ---
+  if (!profile.name && !isEditing) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full min-h-screen pt-16 bg-zinc-950 relative overflow-hidden px-4">
+        {/* Subtle, standard background to match AuthModal */}
+        <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-40 mix-blend-overlay"></div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 100 }}
+          className="w-full max-w-md p-10 bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl relative z-10 text-center"
+        >
+          <div className="flex justify-center mb-6">
+            <div className="p-4 rounded-full bg-white/5 border border-white/10">
+              <User className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h2 className="mb-2 text-2xl font-bold text-white font-outfit tracking-tight drop-shadow-md">
+            Initialize Identity
+          </h2>
+          <p className="mb-8 text-sm text-zinc-400 font-sans">
+            Your developer portfolio awaits setup.
+          </p>
+          <div className="space-y-4">
+            <button
+              onClick={handleGithubImport}
+              disabled={isImporting}
+              className="flex items-center justify-center w-full gap-2 px-4 py-3.5 text-sm font-medium transition-all rounded-xl disabled:opacity-50 bg-white/5 border border-white/10 text-zinc-300 hover:text-white hover:bg-white/10"
             >
-                {/* PROFILE CONTAINER HEADER */}
-                <motion.div variants={fadeUp} className="relative w-full overflow-hidden bento-card p-0 relative group bg-zinc-950">
-                    <div className="h-48 sm:h-64 relative overflow-hidden bg-zinc-900 rounded-t-2xl">
-                        {profile.bannerUrl ? (
-                            <img src={profile.bannerUrl} alt="Profile Banner" className="w-full h-full object-cover opacity-80" />
-                        ) : (
-                            <div className="absolute inset-0 bg-zinc-800"></div>
-                        )}
-                    </div>
+              {isImporting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Github size={18} /> Sync from GitHub
+                </>
+              )}
+            </button>
 
-                    <div className="px-6 pb-8 sm:px-8 relative">
-                        <div className="flex justify-between items-start">
-                            {/* Avatar overlapping banner on the left */}
-                            <div className="relative -mt-16 sm:-mt-20 z-10 p-1 bg-zinc-950 rounded-full inline-block">
-                                <div className={`flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-zinc-900 border-4 border-zinc-950 overflow-hidden relative group/avatar cursor-pointer`} onClick={() => setIsEditing(true)}>
-                                    {profile.avatarUrl ? <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <User className="w-12 h-12 text-zinc-500 sm:w-16 sm:h-16" />}
-                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center"><Edit3 className="w-6 h-6 text-white" /></div>
-                                </div>
-                                {/* STATUS INDICATOR DOT */}
-                                <div className={`absolute bottom-3 right-3 w-6 h-6 \${activeStatus.dot} rounded-full border-4 border-zinc-950`} title={profile.availability}></div>
-                            </div>
-                            
-                            {/* Action Buttons on the right */}
-                            <div className="hidden sm:flex flex-wrap gap-3 mt-4">
-                                <button onClick={() => setIsEditing(true)} className="px-5 py-2 text-sm font-bold transition-all rounded-full bg-zinc-100 text-zinc-950 hover:bg-white flex items-center gap-2">
-                                    <Edit3 className="w-4 h-4" /> Edit Profile
-                                </button>
-                                <button onClick={handleDownloadCV} disabled={isGeneratingPDF} className="px-5 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center gap-2 disabled:opacity-50">
-                                    {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                                    {isGeneratingPDF ? "Generating..." : "Download CV"}
-                                </button>
-                            </div>
-                        </div>
+            <div className="flex items-center gap-4 py-2">
+              <div className="flex-1 h-px bg-white/10"></div>
+              <span className="text-[10px] tracking-widest text-zinc-500 uppercase font-medium">
+                Or
+              </span>
+              <div className="flex-1 h-px bg-white/10"></div>
+            </div>
 
-                        <div className="mt-4 sm:mt-2">
-                            <h1 className="text-2xl font-bold text-white sm:text-3xl font-outfit tracking-tight">
-                                {profile.name || "Anonymous Developer"}
-                            </h1>
-                            <p className="mt-1 text-base text-zinc-300">{profile.headline || "Add a headline to stand out"}</p>
-                            
-                            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-zinc-400">
-                                {profile.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {profile.location}</span>}
-                                {profile.website && <a href={`https://\${profile.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sky-400 hover:underline"><LinkIcon className="w-3.5 h-3.5" /> {profile.website}</a>}
-                            </div>
-                            
-                            {/* Mobile action buttons */}
-                            <div className="flex sm:hidden flex-wrap gap-3 mt-6">
-                                <button onClick={() => setIsEditing(true)} className="flex-1 px-4 py-2 text-sm font-bold transition-all rounded-full bg-zinc-100 text-zinc-950 hover:bg-white flex items-center justify-center gap-2">
-                                    <Edit3 className="w-4 h-4" /> Edit
-                                </button>
-                                <button onClick={handleDownloadCV} disabled={isGeneratingPDF} className="flex-1 px-4 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 flex items-center justify-center gap-2">
-                                    <Download className="w-4 h-4" /> CV
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center justify-center w-full gap-2 px-4 py-3.5 text-sm font-bold transition-all rounded-xl bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg"
+            >
+              <Edit3 size={18} /> Build Manually
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
-                {/* CORE PROFILE GRID COLUMNS */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mt-6">
+  return (
+    <div className="w-full min-h-screen bg-zinc-950 relative overflow-hidden pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans selection:bg-sky-500/30 relative">
+      <div
+        className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      ></div>
 
-                    {/* MAIN TRACKS */}
-                    <div className="space-y-6 lg:col-span-2">
-                        {/* About/Bio */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-4 text-xl font-bold text-zinc-100 font-outfit tracking-tight">About</h2>
-                            <p className="leading-relaxed text-zinc-400 text-sm whitespace-pre-line">{profile.bio || "No bio added yet."}</p>
-                        </motion.div>
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="max-w-5xl mx-auto space-y-6 relative z-10"
+      >
+        {/* PROFILE CONTAINER HEADER */}
+        <motion.div
+          variants={fadeUp}
+          className="relative w-full overflow-hidden bento-card p-0 relative group bg-zinc-950"
+        >
+          <div className="h-48 sm:h-64 relative overflow-hidden bg-zinc-900 rounded-t-2xl">
+            {profile.bannerUrl ? (
+              <img
+                src={profile.bannerUrl}
+                alt="Profile Banner"
+                className="w-full h-full object-cover opacity-80"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-zinc-800"></div>
+            )}
+          </div>
 
-                        {/* Experience */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Experience</h2>
-                            <div className="space-y-6">
-                                {profile.experiences.length === 0 ? <p className="text-sm text-zinc-500">No experience added.</p> : profile.experiences.map((exp, idx) => (
-                                    <div key={exp.id} className="flex gap-4 group">
-                                        <div className="flex-shrink-0 mt-1">
-                                            <div className="w-12 h-12 bg-zinc-900 border border-white/10 rounded-md flex items-center justify-center text-zinc-400">
-                                                <Briefcase className="w-6 h-6" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-zinc-100 text-base">{exp.role}</h3>
-                                            <p className="text-zinc-300 text-sm">{exp.company}</p>
-                                            <p className="text-xs text-zinc-500 mt-1">{exp.duration}</p>
-                                            {exp.description && <p className="text-sm text-zinc-400 mt-3 leading-relaxed">{exp.description}</p>}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-
-                        {/* Education */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Education</h2>
-                            <div className="space-y-6">
-                                {profile.education.length === 0 ? <p className="text-sm text-zinc-500">No education added.</p> : profile.education.map((edu, idx) => (
-                                    <div key={edu.id} className="flex gap-4 group">
-                                        <div className="flex-shrink-0 mt-1">
-                                            <div className="w-12 h-12 bg-zinc-900 border border-white/10 rounded-md flex items-center justify-center text-zinc-400">
-                                                <GraduationCap className="w-6 h-6" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-zinc-100 text-base">{edu.school}</h3>
-                                            <p className="text-zinc-300 text-sm">{edu.degree}</p>
-                                            <p className="text-xs text-zinc-500 mt-1">{edu.duration}</p>
-                                            {edu.details && <p className="text-sm text-zinc-400 mt-2 leading-relaxed">{edu.details}</p>}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-
-                        {/* Projects */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Projects</h2>
-                            <div className="space-y-6">
-                                {profile.projects.length === 0 ? <p className="text-sm text-zinc-500">No projects added.</p> : profile.projects.map(proj => (
-                                    <div key={proj.id} className="border-b border-white/10 pb-6 last:border-0 last:pb-0">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold text-zinc-100 font-outfit text-base">{proj.name}</h3>
-                                            {proj.link && <a href={proj.link} target="_blank" rel="noreferrer" className="text-zinc-500 hover:text-white transition-colors"><LinkIcon className="w-4 h-4" /></a>}
-                                        </div>
-                                        <p className="text-sm text-zinc-400 mb-4 leading-relaxed">{proj.description}</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {proj.tags.map(tag => <span key={tag} className="text-[11px] px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-zinc-300">{tag}</span>)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* RIGHT PANEL - SIDEBAR */}
-                    <div className="space-y-6 lg:col-span-1 lg:sticky lg:top-24 h-fit">
-                        {/* Analytics Dashboard Card */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">Analytics & Tools</h2>
-                            <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 mt-1"><BrainCircuit className="w-5 h-5 text-zinc-400" /></div>
-                                <div>
-                                    <p className="text-sm font-medium text-white mb-1">AI Profile Analyzer</p>
-                                    <p className="text-xs text-zinc-500 mb-4">Get instant ATS scoring and resume feedback.</p>
-                                    <button onClick={() => setShowAnalyzer(true)} className="w-full px-4 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center justify-center gap-2">
-                                        Analyze Profile
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        {/* Tech Stack */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">Skills</h2>
-                            <div className="flex flex-wrap gap-2">
-                                {profile.skills.length === 0 ? <p className="text-sm text-zinc-500">No skills added.</p> : profile.skills.map((skill) => (
-                                    <span key={skill} className="px-3 py-1.5 text-xs font-medium text-zinc-200 bg-white/5 border border-white/10 rounded-full">{skill}</span>
-                                ))}
-                            </div>
-                        </motion.div>
-
-                        {/* Social Anchors */}
-                        <motion.div variants={fadeUp} className="bento-card p-6 bg-zinc-950">
-                            <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">Contact</h2>
-                            <div className="space-y-4">
-                                {profile.github && (
-                                    <a href={`https://\${profile.github}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-                                        <Github className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
-                                        <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">GitHub</span>
-                                    </a>
-                                )}
-                                {profile.linkedin && (
-                                    <a href={`https://linkedin.com/in/\${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-                                        <Linkedin className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
-                                        <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">LinkedIn</span>
-                                    </a>
-                                )}
-                                {profile.youtube && (
-                                    <a href={`https://youtube.com/@\${profile.youtube}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-                                        <Youtube className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
-                                        <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">YouTube</span>
-                                    </a>
-                                )}
-                                {!profile.github && !profile.linkedin && !profile.youtube && <p className="text-sm text-zinc-500">No profiles linked.</p>}
-                            </div>
-                        </motion.div>
-                    </div>
+          <div className="px-6 pb-8 sm:px-8 relative">
+            <div className="flex justify-between items-start">
+              {/* Avatar overlapping banner on the left */}
+              <div className="relative -mt-16 sm:-mt-20 z-10 p-1 bg-zinc-950 rounded-full inline-block">
+                <div
+                  className={`flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-zinc-900 border-4 border-zinc-950 overflow-hidden relative group/avatar cursor-pointer`}
+                  onClick={() => setIsEditing(true)}
+                >
+                  {profile.avatarUrl ? (
+                    <img
+                      src={profile.avatarUrl}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-12 h-12 text-zinc-500 sm:w-16 sm:h-16" />
+                  )}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
+                    <Edit3 className="w-6 h-6 text-white" />
+                  </div>
                 </div>
+                {/* STATUS INDICATOR DOT */}
+                <div
+                  className={`absolute bottom-3 right-3 w-6 h-6 \${activeStatus.dot} rounded-full border-4 border-zinc-950`}
+                  title={profile.availability}
+                ></div>
+              </div>
+
+              {/* Action Buttons on the right */}
+              <div className="hidden sm:flex flex-wrap gap-3 mt-4">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-5 py-2 text-sm font-bold transition-all rounded-full bg-zinc-100 text-zinc-950 hover:bg-white flex items-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4" /> Edit Profile
+                </button>
+                <button
+                  onClick={handleDownloadCV}
+                  disabled={isGeneratingPDF}
+                  className="px-5 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isGeneratingPDF ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  {isGeneratingPDF ? "Generating..." : "Download CV"}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 sm:mt-2">
+              <h1 className="text-2xl font-bold text-white sm:text-3xl font-outfit tracking-tight">
+                {profile.name || "Anonymous Developer"}
+              </h1>
+              <p className="mt-1 text-base text-zinc-300">
+                {profile.headline || "Add a headline to stand out"}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-zinc-400">
+                {profile.location && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" /> {profile.location}
+                  </span>
+                )}
+                {profile.website && (
+                  <a
+                    href={`https://\${profile.website}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 text-sky-400 hover:underline"
+                  >
+                    <LinkIcon className="w-3.5 h-3.5" /> {profile.website}
+                  </a>
+                )}
+              </div>
+
+              {/* Mobile action buttons */}
+              <div className="flex sm:hidden flex-wrap gap-3 mt-6">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex-1 px-4 py-2 text-sm font-bold transition-all rounded-full bg-zinc-100 text-zinc-950 hover:bg-white flex items-center justify-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4" /> Edit
+                </button>
+                <button
+                  onClick={handleDownloadCV}
+                  disabled={isGeneratingPDF}
+                  className="flex-1 px-4 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 flex items-center justify-center gap-2"
+                >
+                  <Download className="w-4 h-4" /> CV
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* CORE PROFILE GRID COLUMNS */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mt-6">
+          {/* MAIN TRACKS */}
+          <div className="space-y-6 lg:col-span-2">
+            {/* About/Bio */}
+            <motion.div
+              variants={fadeUp}
+              className="bento-card p-6 bg-zinc-950"
+            >
+              <h2 className="mb-4 text-xl font-bold text-zinc-100 font-outfit tracking-tight">
+                About
+              </h2>
+              <p className="leading-relaxed text-zinc-400 text-sm whitespace-pre-line">
+                {profile.bio || "No bio added yet."}
+              </p>
             </motion.div>
 
-            {/* --- SYSTEM CONFIGURATION POPUP OVERLAY --- */}
-            <AnimatePresence>
-                {isEditing && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl bento-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-                            <div className="flex justify-between items-center p-5 border-b border-white/10 bg-black/40 backdrop-blur-md">
-                                <h2 className="text-lg font-bold text-zinc-100 font-outfit flex items-center gap-2"><Edit3 className="w-5 h-5 text-zinc-400" /> Edit Profile</h2>
-                                <button onClick={() => setIsEditing(false)} className="text-zinc-400 hover:text-white transition-colors p-1"><X size={20} /></button>
-                            </div>
-
-                            <div className="p-6 overflow-y-auto space-y-8 flex-1 custom-scrollbar bg-zinc-950">
-                                <form id="editProfileForm" onSubmit={(e) => { e.preventDefault(); saveProfileToDatabase(); }} className="space-y-6">
-
-                                    {/* IMAGE UPLOADS & STATUS */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-2">
-                                        <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
-                                            <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Avatar Image</label>
-                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'avatar')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer transition-colors" />
-                                        </div>
-                                        <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
-                                            <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Banner Image</label>
-                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer transition-colors" />
-                                        </div>
-                                        {/* STATUS DROPDOWN */}
-                                        <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
-                                            <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Current Status</label>
-                                            <select
-                                                value={profile.availability}
-                                                onChange={e => setProfile({ ...profile, availability: e.target.value as any })}
-                                                className="w-full bg-zinc-950/50 border border-white/10 text-zinc-300 text-sm font-sans rounded-lg px-3 py-2 outline-none focus:border-zinc-500"
-                                            >
-                                                <option value="Seeking Internships">Seeking Internships</option>
-                                                <option value="Looking for Teammates">Looking for Teammates</option>
-                                                <option value="Building in Stealth">Building in Stealth</option>
-                                                <option value="Unavailable">Unavailable</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Full Name</label><input type="text" value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" required /></div>
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Headline</label><input type="text" value={profile.headline} onChange={e => setProfile({ ...profile, headline: e.target.value })} className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" /></div>
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">Location</label><input type="text" value={profile.location} onChange={e => setProfile({ ...profile, location: e.target.value })} className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" /></div>
-                                    <div><label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">About Me</label><textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} className="w-full h-32 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none transition-colors"></textarea></div>
-                                </form>
-
-                                <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2"><GraduationCap className="w-4 h-4 text-zinc-400" /> Education</label>
-                                    {profile.education.map(edu => (
-                                        <div key={edu.id} className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl">
-                                            <div><p className="text-sm font-bold text-white">{edu.school}</p><p className="text-xs text-zinc-400 mt-1">{edu.degree}</p></div>
-                                            <button type="button" onClick={() => removeEducation(edu.id)} className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"><X size={16} /></button>
-                                        </div>
-                                    ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
-                                        <input type="text" value={newEdu.school} onChange={e => setNewEdu({ ...newEdu, school: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="School/University" />
-                                        <input type="text" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Degree (e.g. B.Tech IT)" />
-                                        <input type="text" value={newEdu.duration} onChange={e => setNewEdu({ ...newEdu, duration: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Duration (e.g. 2025-2029)" />
-                                        <input type="text" value={newEdu.details} onChange={e => setNewEdu({ ...newEdu, details: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Details/GPA" />
-                                        <button type="button" onClick={addEducation} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Education</button>
-                                    </div>
-                                </div>
-
-                                <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2"><Briefcase className="w-4 h-4 text-zinc-400" /> Experience</label>
-                                    {profile.experiences.map(exp => (
-                                        <div key={exp.id} className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl">
-                                            <div><p className="text-sm font-bold text-white">{exp.role}</p><p className="text-xs text-zinc-400 mt-1">{exp.company}</p></div>
-                                            <button type="button" onClick={() => removeExperience(exp.id)} className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"><X size={16} /></button>
-                                        </div>
-                                    ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
-                                        <input type="text" value={newExp.role} onChange={e => setNewExp({ ...newExp, role: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Role/Title" />
-                                        <input type="text" value={newExp.company} onChange={e => setNewExp({ ...newExp, company: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Company" />
-                                        <input type="text" value={newExp.duration} onChange={e => setNewExp({ ...newExp, duration: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Duration (e.g. Jan 2026 - Present)" />
-                                        <textarea value={newExp.description} onChange={e => setNewExp({ ...newExp, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none" placeholder="Description of your work..."></textarea>
-                                        <button type="button" onClick={addExperience} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Experience</button>
-                                    </div>
-                                </div>
-
-                                <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2"><FolderGit2 className="w-4 h-4 text-zinc-400" /> Projects</label>
-                                    {profile.projects.map(proj => (
-                                        <div key={proj.id} className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl">
-                                            <div>
-                                                <p className="text-sm font-bold text-white">{proj.name}</p>
-                                                <p className="text-xs text-zinc-400 mt-1 line-clamp-1">{proj.description}</p>
-                                            </div>
-                                            <button type="button" onClick={() => removeProject(proj.id)} className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"><X size={16} /></button>
-                                        </div>
-                                    ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
-                                        <input type="text" value={newProj.name} onChange={e => setNewProj({ ...newProj, name: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Project Name" />
-                                        <input type="text" value={newProj.link} onChange={e => setNewProj({ ...newProj, link: e.target.value })} className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Project Link (URL)" />
-                                        <input type="text" value={newProj.tags} onChange={e => setNewProj({ ...newProj, tags: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Tags (comma separated)" />
-                                        <textarea value={newProj.description} onChange={e => setNewProj({ ...newProj, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none" placeholder="Short description..."></textarea>
-                                        <button type="button" onClick={addProject} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Project</button>
-                                    </div>
-                                </div>
-
-                                <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans tracking-wide">Tech Stack</label>
-                                    <div className="flex gap-3">
-                                        <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} className="flex-1 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500" placeholder="Type a skill & press Enter" />
-                                        <button type="button" onClick={addSkill} className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-sans font-bold hover:bg-white/10 transition-colors">Add</button>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 mt-4">
-                                        {profile.skills.map(skill => (
-                                            <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-200 bg-white/5 border border-white/10 rounded-full">
-                                                {skill} <button type="button" onClick={() => removeSkill(skill)} className="hover:text-white text-zinc-400 transition-colors"><X size={12} /></button>
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans tracking-wide">Social Links</label>
-                                    <div className="space-y-4">
-                                        <div className="relative">
-                                            <Github className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.github} onChange={e => setProfile({ ...profile, github: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="github.com/username" />
-                                        </div>
-                                        <div className="relative">
-                                            <Youtube className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="youtube.com/@channel" />
-                                        </div>
-                                        <div className="relative">
-                                            <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.linkedin} onChange={e => setProfile({ ...profile, linkedin: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="linkedin.com/in/username" />
-                                        </div>
-                                        <div className="relative">
-                                            <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                            <input type="text" value={profile.website} onChange={e => setProfile({ ...profile, website: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors" placeholder="yourportfolio.dev" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-5 border-t border-white/10 bg-black/40 backdrop-blur-md flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2.5 font-bold text-zinc-300 rounded-xl hover:bg-white/5 font-sans transition-colors">
-                                    Cancel
-                                </button>
-                                <button type="submit" form="editProfileForm" disabled={isSaving} className="px-8 py-2.5 font-bold text-zinc-950 rounded-xl bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center gap-2 transition-all">
-                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-zinc-950" /> : null}
-                                    {isSaving ? "Saving..." : "Save Profile"}
-                                </button>
-                            </div>
-                        </motion.div>
+            {/* Experience */}
+            <motion.div
+              variants={fadeUp}
+              className="bento-card p-6 bg-zinc-950"
+            >
+              <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">
+                Experience
+              </h2>
+              <div className="space-y-6">
+                {profile.experiences.length === 0 ? (
+                  <p className="text-sm text-zinc-500">No experience added.</p>
+                ) : (
+                  profile.experiences.map((exp, idx) => (
+                    <div key={exp.id} className="flex gap-4 group">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-12 h-12 bg-zinc-900 border border-white/10 rounded-md flex items-center justify-center text-zinc-400">
+                          <Briefcase className="w-6 h-6" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-zinc-100 text-base">
+                          {exp.role}
+                        </h3>
+                        <p className="text-zinc-300 text-sm">{exp.company}</p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          {exp.duration}
+                        </p>
+                        {exp.description && (
+                          <p className="text-sm text-zinc-400 mt-3 leading-relaxed">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                  ))
                 )}
-            </AnimatePresence>
+              </div>
+            </motion.div>
 
-                        {/* --- AI CORE DIAGNOSTIC DIALOG OVERLAY --- */}
-            <AnimatePresence>
-                {showAnalyzer && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }} 
-                            animate={{ opacity: 1, scale: 1, y: 0 }} 
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }} 
-                            className="w-full max-w-2xl bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-purple-500/30 rounded-2xl shadow-[0_0_50px_rgba(147,51,234,0.3)] overflow-hidden flex flex-col max-h-[90vh]"
+            {/* Education */}
+            <motion.div
+              variants={fadeUp}
+              className="bento-card p-6 bg-zinc-950"
+            >
+              <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">
+                Education
+              </h2>
+              <div className="space-y-6">
+                {profile.education.length === 0 ? (
+                  <p className="text-sm text-zinc-500">No education added.</p>
+                ) : (
+                  profile.education.map((edu, idx) => (
+                    <div key={edu.id} className="flex gap-4 group">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-12 h-12 bg-zinc-900 border border-white/10 rounded-md flex items-center justify-center text-zinc-400">
+                          <GraduationCap className="w-6 h-6" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-zinc-100 text-base">
+                          {edu.school}
+                        </h3>
+                        <p className="text-zinc-300 text-sm">{edu.degree}</p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          {edu.duration}
+                        </p>
+                        {edu.details && (
+                          <p className="text-sm text-zinc-400 mt-2 leading-relaxed">
+                            {edu.details}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+
+            {/* Projects */}
+            <motion.div
+              variants={fadeUp}
+              className="bento-card p-6 bg-zinc-950"
+            >
+              <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">
+                Projects
+              </h2>
+              <div className="space-y-6">
+                {profile.projects.length === 0 ? (
+                  <p className="text-sm text-zinc-500">No projects added.</p>
+                ) : (
+                  profile.projects.map((proj) => (
+                    <div
+                      key={proj.id}
+                      className="border-b border-white/10 pb-6 last:border-0 last:pb-0"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-zinc-100 font-outfit text-base">
+                          {proj.name}
+                        </h3>
+                        {proj.link && (
+                          <a
+                            href={proj.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-zinc-500 hover:text-white transition-colors"
+                          >
+                            <LinkIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                      <p className="text-sm text-zinc-400 mb-4 leading-relaxed">
+                        {proj.description}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {proj.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[11px] px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-zinc-300"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* RIGHT PANEL - SIDEBAR */}
+          <div className="space-y-6 lg:col-span-1 lg:sticky lg:top-24 h-fit">
+            {/* Analytics Dashboard Card */}
+            <motion.div
+              variants={fadeUp}
+              className="bento-card p-6 bg-zinc-950"
+            >
+              <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">
+                Analytics & Tools
+              </h2>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-1">
+                  <BrainCircuit className="w-5 h-5 text-zinc-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white mb-1">
+                    AI Profile Analyzer
+                  </p>
+                  <p className="text-xs text-zinc-500 mb-4">
+                    Get instant ATS scoring and resume feedback.
+                  </p>
+                  <button
+                    onClick={() => setShowAnalyzer(true)}
+                    className="w-full px-4 py-2 text-sm font-bold transition-all rounded-full bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center justify-center gap-2"
+                  >
+                    Analyze Profile
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Tech Stack */}
+            <motion.div
+              variants={fadeUp}
+              className="bento-card p-6 bg-zinc-950"
+            >
+              <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">
+                Skills
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.length === 0 ? (
+                  <p className="text-sm text-zinc-500">No skills added.</p>
+                ) : (
+                  profile.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-3 py-1.5 text-xs font-medium text-zinc-200 bg-white/5 border border-white/10 rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))
+                )}
+              </div>
+            </motion.div>
+
+            {/* Social Anchors */}
+            <motion.div
+              variants={fadeUp}
+              className="bento-card p-6 bg-zinc-950"
+            >
+              <h2 className="text-base font-bold text-zinc-100 font-outfit tracking-tight mb-4">
+                Contact
+              </h2>
+              <div className="space-y-4">
+                {profile.github && (
+                  <a
+                    href={`https://\${profile.github}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 group"
+                  >
+                    <Github className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
+                    <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">
+                      GitHub
+                    </span>
+                  </a>
+                )}
+                {profile.linkedin && (
+                  <a
+                    href={`https://linkedin.com/in/\${profile.linkedin}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 group"
+                  >
+                    <Linkedin className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
+                    <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">
+                      LinkedIn
+                    </span>
+                  </a>
+                )}
+                {profile.youtube && (
+                  <a
+                    href={`https://youtube.com/@\${profile.youtube}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 group"
+                  >
+                    <Youtube className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
+                    <span className="text-sm text-zinc-400 group-hover:text-white transition-colors hover:underline">
+                      YouTube
+                    </span>
+                  </a>
+                )}
+                {!profile.github && !profile.linkedin && !profile.youtube && (
+                  <p className="text-sm text-zinc-500">No profiles linked.</p>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* --- SYSTEM CONFIGURATION POPUP OVERLAY --- */}
+      <AnimatePresence>
+        {isEditing && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-3xl bento-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            >
+              <div className="flex justify-between items-center p-5 border-b border-white/10 bg-black/40 backdrop-blur-md">
+                <h2 className="text-lg font-bold text-zinc-100 font-outfit flex items-center gap-2">
+                  <Edit3 className="w-5 h-5 text-zinc-400" /> Edit Profile
+                </h2>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="text-zinc-400 hover:text-white transition-colors p-1"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto space-y-8 flex-1 custom-scrollbar bg-zinc-950">
+                <form
+                  id="editProfileForm"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    saveProfileToDatabase();
+                  }}
+                  className="space-y-6"
+                >
+                  {/* IMAGE UPLOADS & STATUS */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-2">
+                    <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
+                      <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">
+                        Avatar Image
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, "avatar")}
+                        className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer transition-colors"
+                      />
+                    </div>
+                    <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
+                      <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">
+                        Banner Image
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, "banner")}
+                        className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer transition-colors"
+                      />
+                    </div>
+                    {/* STATUS DROPDOWN */}
+                    <div className="p-4 border border-white/5 bg-zinc-900 rounded-xl">
+                      <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">
+                        Current Status
+                      </label>
+                      <select
+                        value={profile.availability}
+                        onChange={(e) =>
+                          setProfile({
+                            ...profile,
+                            availability: e.target.value as any,
+                          })
+                        }
+                        className="w-full bg-zinc-950/50 border border-white/10 text-zinc-300 text-sm font-sans rounded-lg px-3 py-2 outline-none focus:border-zinc-500"
+                      >
+                        <option value="Seeking Internships">
+                          Seeking Internships
+                        </option>
+                        <option value="Looking for Teammates">
+                          Looking for Teammates
+                        </option>
+                        <option value="Building in Stealth">
+                          Building in Stealth
+                        </option>
+                        <option value="Unavailable">Unavailable</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={profile.name}
+                      onChange={(e) =>
+                        setProfile({ ...profile, name: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">
+                      Headline
+                    </label>
+                    <input
+                      type="text"
+                      value={profile.headline}
+                      onChange={(e) =>
+                        setProfile({ ...profile, headline: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      value={profile.location}
+                      onChange={(e) =>
+                        setProfile({ ...profile, location: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-xs font-bold text-zinc-400 font-sans tracking-wide">
+                      About Me
+                    </label>
+                    <textarea
+                      value={profile.bio}
+                      onChange={(e) =>
+                        setProfile({ ...profile, bio: e.target.value })
+                      }
+                      className="w-full h-32 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none transition-colors"
+                    ></textarea>
+                  </div>
+                </form>
+
+                <div className="pt-8 border-t border-white/10">
+                  <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-zinc-400" />{" "}
+                    Education
+                  </label>
+                  {profile.education.map((edu) => (
+                    <div
+                      key={edu.id}
+                      className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-white">
+                          {edu.school}
+                        </p>
+                        <p className="text-xs text-zinc-400 mt-1">
+                          {edu.degree}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeEducation(edu.id)}
+                        className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
+                    <input
+                      type="text"
+                      value={newEdu.school}
+                      onChange={(e) =>
+                        setNewEdu({ ...newEdu, school: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="School/University"
+                    />
+                    <input
+                      type="text"
+                      value={newEdu.degree}
+                      onChange={(e) =>
+                        setNewEdu({ ...newEdu, degree: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Degree (e.g. B.Tech IT)"
+                    />
+                    <input
+                      type="text"
+                      value={newEdu.duration}
+                      onChange={(e) =>
+                        setNewEdu({ ...newEdu, duration: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Duration (e.g. 2025-2029)"
+                    />
+                    <input
+                      type="text"
+                      value={newEdu.details}
+                      onChange={(e) =>
+                        setNewEdu({ ...newEdu, details: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Details/GPA"
+                    />
+                    <button
+                      type="button"
+                      onClick={addEducation}
+                      className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" /> Add Education
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-white/10">
+                  <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-zinc-400" /> Experience
+                  </label>
+                  {profile.experiences.map((exp) => (
+                    <div
+                      key={exp.id}
+                      className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-white">
+                          {exp.role}
+                        </p>
+                        <p className="text-xs text-zinc-400 mt-1">
+                          {exp.company}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeExperience(exp.id)}
+                        className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
+                    <input
+                      type="text"
+                      value={newExp.role}
+                      onChange={(e) =>
+                        setNewExp({ ...newExp, role: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Role/Title"
+                    />
+                    <input
+                      type="text"
+                      value={newExp.company}
+                      onChange={(e) =>
+                        setNewExp({ ...newExp, company: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Company"
+                    />
+                    <input
+                      type="text"
+                      value={newExp.duration}
+                      onChange={(e) =>
+                        setNewExp({ ...newExp, duration: e.target.value })
+                      }
+                      className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Duration (e.g. Jan 2026 - Present)"
+                    />
+                    <textarea
+                      value={newExp.description}
+                      onChange={(e) =>
+                        setNewExp({ ...newExp, description: e.target.value })
+                      }
+                      className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none"
+                      placeholder="Description of your work..."
+                    ></textarea>
+                    <button
+                      type="button"
+                      onClick={addExperience}
+                      className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" /> Add Experience
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-white/10">
+                  <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans flex items-center gap-2">
+                    <FolderGit2 className="w-4 h-4 text-zinc-400" /> Projects
+                  </label>
+                  {profile.projects.map((proj) => (
+                    <div
+                      key={proj.id}
+                      className="flex justify-between items-start p-4 mb-3 bg-zinc-900/50 border border-white/10 rounded-xl"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-white">
+                          {proj.name}
+                        </p>
+                        <p className="text-xs text-zinc-400 mt-1 line-clamp-1">
+                          {proj.description}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeProject(proj.id)}
+                        className="text-zinc-500 hover:text-red-400 p-1 rounded-md transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-5 border border-dashed border-white/20 rounded-xl bg-zinc-900/20">
+                    <input
+                      type="text"
+                      value={newProj.name}
+                      onChange={(e) =>
+                        setNewProj({ ...newProj, name: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Project Name"
+                    />
+                    <input
+                      type="text"
+                      value={newProj.link}
+                      onChange={(e) =>
+                        setNewProj({ ...newProj, link: e.target.value })
+                      }
+                      className="px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Project Link (URL)"
+                    />
+                    <input
+                      type="text"
+                      value={newProj.tags}
+                      onChange={(e) =>
+                        setNewProj({ ...newProj, tags: e.target.value })
+                      }
+                      className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Tags (comma separated)"
+                    />
+                    <textarea
+                      value={newProj.description}
+                      onChange={(e) =>
+                        setNewProj({ ...newProj, description: e.target.value })
+                      }
+                      className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-zinc-500 resize-none"
+                      placeholder="Short description..."
+                    ></textarea>
+                    <button
+                      type="button"
+                      onClick={addProject}
+                      className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-white/5 text-zinc-300 border border-white/10 rounded-lg font-sans font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" /> Add Project
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-white/10">
+                  <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans tracking-wide">
+                    Tech Stack
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addSkill();
+                        }
+                      }}
+                      className="flex-1 px-4 py-2.5 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500"
+                      placeholder="Type a skill & press Enter"
+                    />
+                    <button
+                      type="button"
+                      onClick={addSkill}
+                      className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-sans font-bold hover:bg-white/10 transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {profile.skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-200 bg-white/5 border border-white/10 rounded-full"
+                      >
+                        {skill}{" "}
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          className="hover:text-white text-zinc-400 transition-colors"
                         >
-                            <div className="flex items-center gap-3 p-5 bg-black/40 backdrop-blur-md border-b border-white/10 shrink-0">
-                                <div className="p-2 bg-purple-500/10 rounded-lg">
-                                    <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
-                                </div>
-                                <h2 className="text-base font-bold text-zinc-100 font-outfit">ScholarSphere AI Engine</h2>
-                                <div className="flex-1"></div>
-                                <button 
-                                    onClick={runAnalysis} 
-                                    disabled={isAnalyzing} 
-                                    title="Re-run Analysis"
-                                    className="p-1.5 bg-white/5 border border-white/10 text-zinc-400 hover:text-white rounded-lg transition-colors disabled:opacity-50"
-                                >
-                                    <RefreshCw size={16} className={`${isAnalyzing ? 'animate-spin' : ''}`} />
-                                </button>
-                                <button onClick={() => setShowAnalyzer(false)} className="text-zinc-400 hover:text-white transition-colors p-1.5 bg-white/5 border border-white/10 rounded-lg"><X size={16} /></button>
-                            </div>
-                            
-                            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-                                {isAnalyzing ? (
-                                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                                        <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
-                                        <p className="text-purple-400 font-mono animate-pulse text-sm">Evaluating matrix parameters...</p>
-                                        <p className="text-zinc-500 text-xs font-mono">Scanning skills, completeness, projects and CGPA fit...</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-6">
-                                        {/* Score Diagnostic Row */}
-                                        <div className="flex flex-col sm:flex-row items-center gap-6 p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 shadow-inner">
-                                            <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
-                                                <svg className="w-full h-full -rotate-90">
-                                                    <circle cx="56" cy="56" r="40" fill="none" stroke="#1f2937" strokeWidth="8" />
-                                                    <circle 
-                                                        cx="56" 
-                                                        cy="56" 
-                                                        r="40" 
-                                                        fill="none" 
-                                                        stroke="currentColor" 
-                                                        strokeWidth="8" 
-                                                        strokeDasharray={2 * Math.PI * 40} 
-                                                        strokeDashoffset={2 * Math.PI * 40 - ((atsScore ?? 0) / 100) * (2 * Math.PI * 40)} 
-                                                        className={`${
-                                                            (atsScore ?? 0) >= 80 
-                                                                ? "text-green-400" 
-                                                                : (atsScore ?? 0) >= 55 
-                                                                ? "text-yellow-400" 
-                                                                : "text-red-500"
-                                                        } transition-all duration-1000 ease-out`}
-                                                    />
-                                                </svg>
-                                                <div className="absolute flex flex-col items-center">
-                                                    <span className="text-2xl font-extrabold text-white font-mono">{atsScore ?? 0}%</span>
-                                                    <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-wider">ATS MATCH</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex-1 space-y-2 w-full text-center sm:text-left">
-                                                <div className="text-white text-sm font-bold font-mono flex items-center justify-center sm:justify-start gap-1.5">
-                                                    <Award className="w-4 h-4 text-purple-400" /> ATS Matrix Rating
-                                                </div>
-                                                <p className="text-xs text-zinc-400 leading-relaxed font-mono">
-                                                    {(atsScore ?? 0) >= 80 
-                                                        ? "Excellent profile! Your details align well with standard recruitment screens." 
-                                                        : (atsScore ?? 0) >= 55 
-                                                        ? "Good foundation. Addressing the recommended suggestions will significantly boost your match rates." 
-                                                        : "High warning. Please flesh out your skills, projects, and experiences to improve visibility."}
-                                                </p>
-                                            </div>
-                                        </div>
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-                                        {/* Sub-scores grid */}
-                                        <div className="grid grid-cols-3 gap-3">
-                                            {[
-                                                { label: "Skill Fit", val: subScores?.skillRelevance ?? 0, icon: Code, color: "text-cyan-400" },
-                                                { label: "Profile Integrity", val: subScores?.completeness ?? 0, icon: GraduationCap, color: "text-purple-400" },
-                                                { label: "Project Power", val: subScores?.projectImpact ?? 0, icon: Briefcase, color: "text-amber-400" }
-                                            ].map((item, idx) => (
-                                                <div key={idx} className="p-3.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 flex flex-col items-center text-center font-mono">
-                                                    <item.icon className={`w-4 h-4 ${item.color} mb-2`} />
-                                                    <span className="text-[10px] text-zinc-500 leading-none">{item.label}</span>
-                                                    <span className="text-sm font-bold text-white mt-2">{item.val}%</span>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Suggestions checklist */}
-                                        {suggestions.length > 0 && (
-                                            <div className="pt-4 border-t border-white/10 font-mono">
-                                                <h3 className="text-amber-400 text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-1.5">
-                                                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" /> Actions to Boost Rating:
-                                                </h3>
-                                                <ul className="space-y-2">
-                                                    {suggestions.map((sug, idx) => (
-                                                        <li key={idx} className="text-xs text-zinc-300 flex items-start gap-2 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-lg">
-                                                            <span className="text-amber-500 font-bold mt-0.5">•</span>
-                                                            <span className="leading-relaxed">{sug}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        {/* Recommended Opportunities */}
-                                        {aiMatches.length > 0 && (
-                                            <div className="pt-4 border-t border-white/10 font-mono">
-                                                <h3 className="text-purple-400 text-xs font-bold mb-4 uppercase tracking-wider flex items-center gap-1.5">
-                                                    <Target className="w-4 h-4 text-purple-400 shrink-0" /> Recommended Matches & Paths:
-                                                </h3>
-                                                <div className="space-y-3">
-                                                    {aiMatches.map((match, idx) => (
-                                                        <div key={idx} className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl group hover:bg-purple-500/10 transition-colors">
-                                                            <div className="flex justify-between items-start gap-4">
-                                                                <div>
-                                                                    <div className="text-white font-bold text-sm leading-tight group-hover:text-purple-400 transition-colors">{match.title}</div>
-                                                                    <div className="text-zinc-400 text-xs mt-2 leading-relaxed">{match.reason}</div>
-                                                                </div>
-                                                                <ChevronRight className="w-4 h-4 text-purple-400 shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="p-4 border-t border-white/10 bg-black/40 backdrop-blur-md flex justify-end gap-3 shrink-0">
-                                <button 
-                                    onClick={() => setShowAnalyzer(false)} 
-                                    className="px-6 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg text-xs font-mono font-bold transition-all"
-                                >
-                                    Dismiss Diagnostics
-                                </button>
-                                <button 
-                                    onClick={runAnalysis} 
-                                    disabled={isAnalyzing} 
-                                    className="px-6 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)]"
-                                >
-                                    {isAnalyzing && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                                    {isAnalyzing ? "Recalculating..." : "Re-run Analysis"}
-                                </button>
-                            </div>
-                        </motion.div>
+                <div className="pt-8 border-t border-white/10">
+                  <label className="block mb-4 text-sm font-bold text-zinc-100 font-sans tracking-wide">
+                    Social Links
+                  </label>
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Github className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                      <input
+                        type="text"
+                        value={profile.github}
+                        onChange={(e) =>
+                          setProfile({ ...profile, github: e.target.value })
+                        }
+                        className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors"
+                        placeholder="github.com/username"
+                      />
                     </div>
-                )}
-            </AnimatePresence>
+                    <div className="relative">
+                      <Youtube className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                      <input
+                        type="text"
+                        value={profile.youtube}
+                        onChange={(e) =>
+                          setProfile({ ...profile, youtube: e.target.value })
+                        }
+                        className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors"
+                        placeholder="youtube.com/@channel"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                      <input
+                        type="text"
+                        value={profile.linkedin}
+                        onChange={(e) =>
+                          setProfile({ ...profile, linkedin: e.target.value })
+                        }
+                        className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors"
+                        placeholder="linkedin.com/in/username"
+                      />
+                    </div>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                      <input
+                        type="text"
+                        value={profile.website}
+                        onChange={(e) =>
+                          setProfile({ ...profile, website: e.target.value })
+                        }
+                        className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-zinc-500 transition-colors"
+                        placeholder="yourportfolio.dev"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-            <style>{`
+              <div className="p-5 border-t border-white/10 bg-black/40 backdrop-blur-md flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="px-6 py-2.5 font-bold text-zinc-300 rounded-xl hover:bg-white/5 font-sans transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="editProfileForm"
+                  disabled={isSaving}
+                  className="px-8 py-2.5 font-bold text-zinc-950 rounded-xl bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center gap-2 transition-all"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-zinc-950" />
+                  ) : null}
+                  {isSaving ? "Saving..." : "Save Profile"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* --- AI CORE DIAGNOSTIC DIALOG OVERLAY --- */}
+      <AnimatePresence>
+        {showAnalyzer && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="w-full max-w-2xl bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-purple-500/30 rounded-2xl shadow-[0_0_50px_rgba(147,51,234,0.3)] overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="flex items-center gap-3 p-5 bg-black/40 backdrop-blur-md border-b border-white/10 shrink-0">
+                <div className="p-2 bg-purple-500/10 rounded-lg">
+                  <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
+                </div>
+                <h2 className="text-base font-bold text-zinc-100 font-outfit">
+                  ScholarSphere AI Engine
+                </h2>
+                <div className="flex-1"></div>
+                <button
+                  onClick={runAnalysis}
+                  disabled={isAnalyzing}
+                  title="Re-run Analysis"
+                  className="p-1.5 bg-white/5 border border-white/10 text-zinc-400 hover:text-white rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw
+                    size={16}
+                    className={`${isAnalyzing ? "animate-spin" : ""}`}
+                  />
+                </button>
+                <button
+                  onClick={() => setShowAnalyzer(false)}
+                  className="text-zinc-400 hover:text-white transition-colors p-1.5 bg-white/5 border border-white/10 rounded-lg"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                {isAnalyzing ? (
+                  <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                    <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+                    <p className="text-purple-400 font-mono animate-pulse text-sm">
+                      Evaluating matrix parameters...
+                    </p>
+                    <p className="text-zinc-500 text-xs font-mono">
+                      Scanning skills, completeness, projects and CGPA fit...
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Score Diagnostic Row */}
+                    <div className="flex flex-col sm:flex-row items-center gap-6 p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 shadow-inner">
+                      <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+                        <svg className="w-full h-full -rotate-90">
+                          <circle
+                            cx="56"
+                            cy="56"
+                            r="40"
+                            fill="none"
+                            stroke="#1f2937"
+                            strokeWidth="8"
+                          />
+                          <circle
+                            cx="56"
+                            cy="56"
+                            r="40"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            strokeDasharray={2 * Math.PI * 40}
+                            strokeDashoffset={
+                              2 * Math.PI * 40 -
+                              ((atsScore ?? 0) / 100) * (2 * Math.PI * 40)
+                            }
+                            className={`${
+                              (atsScore ?? 0) >= 80
+                                ? "text-green-400"
+                                : (atsScore ?? 0) >= 55
+                                  ? "text-yellow-400"
+                                  : "text-red-500"
+                            } transition-all duration-1000 ease-out`}
+                          />
+                        </svg>
+                        <div className="absolute flex flex-col items-center">
+                          <span className="text-2xl font-extrabold text-white font-mono">
+                            {atsScore ?? 0}%
+                          </span>
+                          <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-wider">
+                            ATS MATCH
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-1 space-y-2 w-full text-center sm:text-left">
+                        <div className="text-white text-sm font-bold font-mono flex items-center justify-center sm:justify-start gap-1.5">
+                          <Award className="w-4 h-4 text-purple-400" /> ATS
+                          Matrix Rating
+                        </div>
+                        <p className="text-xs text-zinc-400 leading-relaxed font-mono">
+                          {(atsScore ?? 0) >= 80
+                            ? "Excellent profile! Your details align well with standard recruitment screens."
+                            : (atsScore ?? 0) >= 55
+                              ? "Good foundation. Addressing the recommended suggestions will significantly boost your match rates."
+                              : "High warning. Please flesh out your skills, projects, and experiences to improve visibility."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Sub-scores grid */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        {
+                          label: "Skill Fit",
+                          val: subScores?.skillRelevance ?? 0,
+                          icon: Code,
+                          color: "text-cyan-400",
+                        },
+                        {
+                          label: "Profile Integrity",
+                          val: subScores?.completeness ?? 0,
+                          icon: GraduationCap,
+                          color: "text-purple-400",
+                        },
+                        {
+                          label: "Project Power",
+                          val: subScores?.projectImpact ?? 0,
+                          icon: Briefcase,
+                          color: "text-amber-400",
+                        },
+                      ].map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 flex flex-col items-center text-center font-mono"
+                        >
+                          <item.icon className={`w-4 h-4 ${item.color} mb-2`} />
+                          <span className="text-[10px] text-zinc-500 leading-none">
+                            {item.label}
+                          </span>
+                          <span className="text-sm font-bold text-white mt-2">
+                            {item.val}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Suggestions checklist */}
+                    {suggestions.length > 0 && (
+                      <div className="pt-4 border-t border-white/10 font-mono">
+                        <h3 className="text-amber-400 text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-1.5">
+                          <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />{" "}
+                          Actions to Boost Rating:
+                        </h3>
+                        <ul className="space-y-2">
+                          {suggestions.map((sug, idx) => (
+                            <li
+                              key={idx}
+                              className="text-xs text-zinc-300 flex items-start gap-2 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-lg"
+                            >
+                              <span className="text-amber-500 font-bold mt-0.5">
+                                •
+                              </span>
+                              <span className="leading-relaxed">{sug}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Recommended Opportunities */}
+                    {aiMatches.length > 0 && (
+                      <div className="pt-4 border-t border-white/10 font-mono">
+                        <h3 className="text-purple-400 text-xs font-bold mb-4 uppercase tracking-wider flex items-center gap-1.5">
+                          <Target className="w-4 h-4 text-purple-400 shrink-0" />{" "}
+                          Recommended Matches & Paths:
+                        </h3>
+                        <div className="space-y-3">
+                          {aiMatches.map((match, idx) => (
+                            <div
+                              key={idx}
+                              className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl group hover:bg-purple-500/10 transition-colors"
+                            >
+                              <div className="flex justify-between items-start gap-4">
+                                <div>
+                                  <div className="text-white font-bold text-sm leading-tight group-hover:text-purple-400 transition-colors">
+                                    {match.title}
+                                  </div>
+                                  <div className="text-zinc-400 text-xs mt-2 leading-relaxed">
+                                    {match.reason}
+                                  </div>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-purple-400 shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 border-t border-white/10 bg-black/40 backdrop-blur-md flex justify-end gap-3 shrink-0">
+                <button
+                  onClick={() => setShowAnalyzer(false)}
+                  className="px-6 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg text-xs font-mono font-bold transition-all"
+                >
+                  Dismiss Diagnostics
+                </button>
+                <button
+                  onClick={runAnalysis}
+                  disabled={isAnalyzing}
+                  className="px-6 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)]"
+                >
+                  {isAnalyzing && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  )}
+                  {isAnalyzing ? "Recalculating..." : "Re-run Analysis"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
                 @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
                 .custom-scrollbar::-webkit-scrollbar { width: 6px; } 
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #30363d; border-radius: 10px; }
             `}</style>
-        </div>
-    );
+    </div>
+  );
 }
