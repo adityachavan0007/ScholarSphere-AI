@@ -58,26 +58,26 @@ export default function Navbar({
   }, []);
 
   return (
-    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl border rounded-full bg-black/60 backdrop-blur-md border-white/10 transition-all">
+    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl border rounded-full bg-[#09090b]/80 backdrop-blur-md border-zinc-800 transition-all shadow-lg">
       <div className="flex items-center justify-between h-14 px-4 mx-auto sm:px-6">
 
         {/* LOGO SECTION (Teleports to Home) */}
-        <div onClick={onNavigateHome} className="flex items-center gap-2 cursor-pointer group">
-          <div className="flex items-center justify-center w-8 h-8 transition-all border rounded-lg bg-sky-500/10 border-sky-500/30 group-hover:bg-sky-500/20 shadow-[0_0_10px_rgba(56,189,248,0.2)]">
-            <Terminal className="w-4 h-4 text-sky-400" />
+        <div onClick={onNavigateHome} className="flex items-center gap-2.5 cursor-pointer group">
+          <div className="flex items-center justify-center w-8 h-8 transition-all border rounded-lg bg-zinc-900 border-zinc-800 group-hover:bg-zinc-800">
+            <Terminal className="w-4 h-4 text-zinc-300" />
           </div>
-          <span className="text-xl font-bold text-white font-mono tracking-tight">
-            Scholar<span className="text-sky-400">Sphere</span>
+          <span className="text-xl font-bold text-white font-outfit tracking-tight">
+            Scholar<span className="text-zinc-500 font-light">Sphere</span>
           </span>
         </div>
 
         {/* DESKTOP NAVIGATION LINKS */}
-        <div className="hidden gap-3 lg:gap-4 md:flex items-center text-sm font-medium font-mono text-slate-400">
+        <div className="hidden gap-3 lg:gap-4 md:flex items-center text-sm font-medium text-zinc-400">
           {navLinks.map((link) => (
             <button
               key={link.name}
               onClick={link.action}
-              className="transition-all px-3 py-1.5 rounded-md border border-white/10 bg-white/5 text-slate-300 hover:border-sky-500/40 hover:bg-sky-500/10 hover:text-sky-300 hover:shadow-[0_0_15px_rgba(56,189,248,0.15)]"
+              className="transition-all px-3 py-1.5 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50"
             >
               {link.name}
             </button>
@@ -103,16 +103,15 @@ export default function Navbar({
             <div className="hidden sm:flex items-center gap-4">
               <button
                 onClick={() => onOpenAuth("login")}
-                className="text-sm font-mono font-medium text-slate-300 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-white/5"
+                className="text-sm font-medium text-zinc-400 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-zinc-800/50"
               >
                 Log In
               </button>
               <button
                 onClick={() => onOpenAuth("signup")}
-                className="relative px-5 py-2 text-sm font-mono font-medium text-white transition-all duration-300 border border-sky-500/50 rounded-lg group hover:border-sky-400 bg-sky-500/10 shadow-[0_0_15px_rgba(56,189,248,0.15)]"
+                className="relative px-5 py-2 text-sm font-medium text-zinc-950 transition-all duration-300 bg-zinc-100 rounded-full hover:bg-white hover:scale-105"
               >
                 <span className="relative z-10 font-bold">Sign Up</span>
-                <div className="absolute inset-0 w-full h-full transition-all duration-300 rounded-lg opacity-0 bg-sky-400/10 group-hover:opacity-100 group-hover:shadow-[0_0_20px_rgba(56,189,248,0.25)]"></div>
               </button>
             </div>
           ) : (
