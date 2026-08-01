@@ -58,7 +58,7 @@ export default function Navbar({
   }, []);
 
   return (
-    <nav className="fixed top-0 z-50 w-full border-b bg-[#030712]/80 backdrop-blur-xl border-white/5 transition-all">
+    <nav className="fixed top-0 z-50 w-full border-b bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] transition-all">
       <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
 
         {/* LOGO SECTION (Teleports to Home) */}

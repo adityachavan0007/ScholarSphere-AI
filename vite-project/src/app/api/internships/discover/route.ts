@@ -1,50 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { discoverOpportunities } from '@/lib/ai';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { getFromCache, setInCache } from '@/lib/cache';
+import { validateLinks } from '@/lib/linkValidator';
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 export async function GET(req: NextRequest) {
   try {
-    console.log("AI: Starting automated internship discovery...");
+    const CACHE_KEY = 'discover_internships';
+    const cachedData = getFromCache(CACHE_KEY);
     
-    // 1. Auto-Delete: Clear out old/expired internships
-    const now = new Date().toISOString();
-    await supabaseAdmin
-      .from('opportunities')
-      .delete()
-      .match({ type: 'internship' })
-      .lt('deadline_date', now);
+    if (cachedData) {
+      console.log("Serving internships from fast in-memory cache!");
+      const response = NextResponse.json({ success: true, count: cachedData.length, data: cachedData });
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      return response;
+    }
 
-    // 2. Get recommendations from AI
+    console.log("AI: Starting automated internship discovery...");
+    const now = new Date().toISOString();
+    
+    try {
+      await supabaseAdmin
+        .from('opportunities')
+        .delete()
+        .match({ type: 'internship' })
+        .lt('deadline_date', now);
+    } catch (e) {
+      console.warn("Could not delete old internships from DB, proceeding anyway...", e);
+    }
+
     const aiInternships = await discoverOpportunities('internship');
 
-    // 3. Map & Filter out hallucinated past years
-    const opportunities = aiInternships
-      .filter((i: any) => {
-        const year = new Date(i.date).getFullYear();
+    let opportunities = aiInternships
+      .filter((h: any) => {
+        const year = new Date(h.date).getFullYear();
         return year >= 2026; 
       })
-      .map((i: any) => ({
-        title: i.title,
+      .map((h: any) => ({
+        title: h.title,
         type: 'internship',
-        domain_tag: i.organizer,
-        deadline_date: new Date(i.date).toISOString(),
-        eligible_states: [i.mode],
-        match_score: i.matchScore,
-        eligible_degrees: i.tags,
-        status: i.status,
-        participants_count: i.participants,
-        link: i.link,
+        domain_tag: h.organizer,
+        deadline_date: new Date(h.date).toISOString(),
+        eligible_states: [h.mode],
+        match_score: h.matchScore,
+        eligible_degrees: h.tags,
+        status: h.status,
+        participants_count: h.participants,
+        link: h.link,
         updated_at: new Date().toISOString(),
       }));
 
-    // 4. Update the database
-    const { data, error } = await supabaseAdmin
-      .from('opportunities')
-      .upsert(opportunities, { onConflict: 'title' })
-      .select();
+    opportunities = await validateLinks(opportunities);
 
-    if (error) throw error;
-    const response = NextResponse.json({ success: true, count: data?.length, data });
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('opportunities')
+        .upsert(opportunities, { onConflict: 'title' })
+        .select();
+
+      if (!error && data) {
+        opportunities = data;
+      }
+    } catch (e) {
+      console.warn("DB Upsert failed. Falling back to AI data in memory.", e);
+    }
+
+    setInCache(CACHE_KEY, opportunities);
+
+    const response = NextResponse.json({ success: true, count: opportunities.length, data: opportunities });
     response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');

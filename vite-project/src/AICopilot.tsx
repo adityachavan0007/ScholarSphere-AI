@@ -99,7 +99,9 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
     };
 
     return (
-        <div className="flex w-full min-h-screen bg-[#131314] text-slate-200 font-sans">
+        <div className="flex w-full min-h-screen bg-black/95 text-slate-200 font-sans relative overflow-hidden">
+            {/* Subtle glow in background */}
+            <div className="absolute top-0 left-[20%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
             <div className={`flex flex-col w-full transition-all duration-300 ${activeArtifact ? "max-w-4xl mx-auto" : "max-w-3xl mx-auto"}`}>
                 
                 <div className="h-14 flex items-center px-6 shrink-0 border-b border-[#30363d]/50">
@@ -114,9 +116,9 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
                             {msg.sender === "ai" && <div className="w-8 h-8 mt-1 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30"><Bot size={16} className="text-indigo-400"/></div>}
                             
                             {msg.isThinking ? (
-                                <div className="px-5 py-3 bg-[#202124] rounded-2xl animate-pulse text-sm">Thinking...</div>
+                                <div className="px-5 py-3 glass-panel rounded-2xl animate-pulse text-sm">Thinking...</div>
                             ) : (
-                                <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-[15px] ${msg.sender === "user" ? "bg-indigo-600 text-white rounded-tr-sm" : "bg-[#202124] text-slate-200 rounded-tl-none"}`}>
+                                <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-[15px] shadow-lg border ${msg.sender === "user" ? "bg-indigo-600/80 backdrop-blur-md border-indigo-500/50 text-white rounded-tr-sm" : "glass-panel border-white/10 text-slate-200 rounded-tl-none"}`}>
                                     {msg.sender === "ai" ? renderFormattedText(msg.text || "") : msg.text}
                                     {msg.artifactTrigger && (
                                         <button onClick={() => setActiveArtifact(msg.artifactTrigger!)} className="block mt-3 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-medium transition-all">
@@ -133,8 +135,8 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
                 </div>
 
                 {/* Floating Input Bar */}
-                <div className="p-6 bg-[#131314]">
-                    <form onSubmit={(e) => { e.preventDefault(); executePrompt(inputValue); setInputValue(""); }} className="relative flex items-center bg-[#202124] rounded-2xl border border-[#30363d] focus-within:border-indigo-500 transition-all shadow-lg">
+                <div className="p-6 relative z-10">
+                    <form onSubmit={(e) => { e.preventDefault(); executePrompt(inputValue); setInputValue(""); }} className="relative flex items-center glass-panel rounded-2xl focus-within:border-indigo-400 focus-within:shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all">
                         <input 
                             value={inputValue} onChange={(e) => setInputValue(e.target.value)}
                             placeholder="Ask ScholarSphere AI..."
@@ -150,7 +152,7 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
             {/* Artifact Viewer */}
             <AnimatePresence>
                 {activeArtifact && (
-                    <motion.div initial={{ width: 0 }} animate={{ width: 450 }} exit={{ width: 0 }} className="h-screen bg-[#1a1b1e] border-l border-[#30363d] flex flex-col z-30 shadow-2xl">
+                    <motion.div initial={{ width: 0 }} animate={{ width: 450 }} exit={{ width: 0 }} className="h-screen bg-black/80 backdrop-blur-2xl border-l border-white/10 flex flex-col z-30 shadow-2xl relative">
                         <div className="flex justify-between items-center p-4 border-b border-[#30363d]">
                             <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">{activeArtifact.title}</span>
                             <button onClick={() => setActiveArtifact(null)}><X size={16} className="text-slate-400" /></button>

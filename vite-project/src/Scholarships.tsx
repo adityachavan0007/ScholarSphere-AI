@@ -11,6 +11,7 @@ export default function Scholarships() {
     const [isLoading, setIsLoading] = useState(true);
     const [scholarships, setScholarships] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState("match");
 
     // Pagination Architecture
     const [page, setPage] = useState(1);
@@ -51,13 +52,10 @@ export default function Scholarships() {
                         status: s.status || "Open",
                         type: s.tier || "Merit-Based",
                         link: s.link || "#",
-                        // NEW: Time mapping for automatic sorting
-                        rawDate: s.created_at ? new Date(s.created_at).getTime() : Date.now() - Math.random() * 10000000000,
-                        postedDate: s.created_at ? new Date(s.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "Just Now",
+                        link_verified: s.link_verified,
+                        rawDate: s.deadline_date ? new Date(s.deadline_date).getTime() : Infinity,
+                        postedDate: s.deadline_date ? new Date(s.deadline_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Upcoming",
                     }));
-
-                    // NEW: Automatically sort so the newest grants show up first!
-                    transformed.sort((a, b) => b.rawDate - a.rawDate);
 
                     setScholarships(transformed);
                 } else {
@@ -75,14 +73,25 @@ export default function Scholarships() {
 
     // --- CORE FAST-SEARCH ENGINE ---
     const processedData = useMemo(() => {
-        if (!searchQuery.trim()) return scholarships;
+        let filtered = scholarships;
+        if (searchQuery.trim()) {
+            filtered = scholarships.filter(s =>
+                s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                s.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                s.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+        }
 
-        return scholarships.filter(s =>
-            s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-    }, [searchQuery, scholarships]);
+        return [...filtered].sort((a, b) => {
+            if (sortBy === 'match') {
+                return b.matchScore - a.matchScore;
+            } else if (sortBy === 'date_asc') {
+                return a.rawDate - b.rawDate;
+            } else {
+                return b.rawDate - a.rawDate;
+            }
+        });
+    }, [searchQuery, scholarships, sortBy]);
 
     // Reset pagination when searching
     useEffect(() => {
@@ -119,9 +128,9 @@ export default function Scholarships() {
                     </div>
                 </motion.div>
 
-                {/* CLEAN SEARCH BAR */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="w-full mb-10">
-                    <div className="relative max-w-2xl">
+                {/* CLEAN SEARCH BAR & SORTING */}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="w-full mb-10 flex flex-col md:flex-row gap-4 items-center">
+                    <div className="relative flex-1 w-full max-w-2xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                         <input
                             type="text"
@@ -131,6 +140,15 @@ export default function Scholarships() {
                             className="w-full pl-12 pr-4 py-4 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-emerald-500/50 shadow-2xl transition-colors placeholder:text-slate-600"
                         />
                     </div>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="p-4 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-emerald-500/50 transition-colors cursor-pointer outline-none"
+                    >
+                        <option value="match">Sort By: Match Score</option>
+                        <option value="date_asc">Sort By: Deadline (Soonest)</option>
+                        <option value="date_desc">Sort By: Deadline (Latest)</option>
+                    </select>
                 </motion.div>
 
                 {/* DATA FEED RENDERER */}
@@ -140,7 +158,7 @@ export default function Scholarships() {
                         <p className="text-emerald-400 font-mono animate-pulse text-sm">Decrypting Financial Ledgers...</p>
                     </div>
                 ) : displayedScholarships.length === 0 ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-[#050b14]/50">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-black/60 backdrop-blur-md/50">
                         <Search className="w-10 h-10 text-slate-600 mb-4" />
                         <h3 className="text-white font-mono font-bold text-lg">No Grants Found</h3>
                         <p className="text-slate-500 font-mono text-sm mt-2">Adjust your search terms to find more funds.</p>
@@ -161,7 +179,9 @@ export default function Scholarships() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ type: "spring", stiffness: 100 }}
-                                    className="bg-[#0d1117] border border-[#30363d] hover:border-emerald-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col h-full"
+                                    whileHover={{ y: -10, rotateX: 5, rotateY: -5, scale: 1.02, zIndex: 10 }}
+                                    style={{ transformStyle: "preserve-3d" }}
+                                    className="glass-panel perspective-1000 transform-3d hover:border-emerald-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col h-full"
                                 >
                                     {/* Gold/Emerald Scanning Laser Effect on Hover */}
                                     <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent -translate-x-full group-hover:animate-[scan_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100"></div>
@@ -234,6 +254,7 @@ export default function Scholarships() {
                                     <div className="pt-4 border-t border-[#30363d] flex justify-between items-center">
                                         <button className="flex items-center gap-2 text-sm font-mono font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
                                             <Zap className="w-4 h-4" /> Eligibility Check
+                                            {scholarship.link_verified === false && <span className="text-[10px] text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded border border-orange-400/20 ml-2">Unverified Link</span>}
                                         </button>
                                         <a href={scholarship.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-bold font-mono hover:bg-emerald-400 transition-colors group-hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                                             Apply <ExternalLink className="w-4 h-4" />

@@ -163,11 +163,25 @@ export default function App() {
 
     // HOME PAGE
     return (
-      <div className="relative flex flex-col min-h-screen w-full bg-[#030712] items-center overflow-x-hidden selection:bg-sky-500/30 font-sans">
+      <div className="relative flex flex-col min-h-screen w-full bg-black items-center overflow-x-hidden selection:bg-sky-500/30 font-sans">
 
-        {/* Ambient Glow Effects */}
-        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15], x: [0, 40, 0], y: [0, -50, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[-5%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-sky-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
-        <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.25, 0.1], x: [0, -50, 0], y: [0, 40, 0] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
+        {/* 3D Perspective Grid */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-30 z-0" 
+          style={{
+            backgroundImage: `linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+            transform: 'perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px) scale(3)',
+            transformOrigin: 'top center',
+            maskImage: 'linear-gradient(to bottom, black 20%, transparent 80%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 20%, transparent 80%)'
+          }}
+        />
+
+        {/* Intense Ambient Glow Effects */}
+        <motion.div animate={{ scale: [1, 1.4, 1], opacity: [0.2, 0.5, 0.2], rotate: [0, 90, 0] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] min-w-[400px] min-h-[400px] bg-sky-500/30 rounded-full blur-[150px] pointer-events-none mix-blend-screen z-0" />
+        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.15, 0.4, 0.15], rotate: [0, -90, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "linear", delay: 2 }} className="absolute top-[30%] right-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-purple-600/30 rounded-full blur-[150px] pointer-events-none mix-blend-screen z-0" />
+        <motion.div animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.1, 0.3, 0.1] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 5 }} className="absolute bottom-[-10%] left-[20%] w-[40vw] h-[40vw] min-w-[300px] min-h-[300px] bg-indigo-500/20 rounded-full blur-[150px] pointer-events-none mix-blend-screen z-0" />
 
         <div className="relative z-10 w-full min-h-[100dvh] flex flex-col items-center justify-center px-4 pt-20 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, type: "spring", stiffness: 120, damping: 20 }} className="w-full max-w-5xl space-y-8 text-center">
@@ -191,15 +205,17 @@ export default function App() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-5">
               {!isLoggedIn ? (
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleOpenAuth("signup")} className="group inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-sky-600 to-blue-700 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_0_40px_rgba(2,132,199,0.5)] hover:shadow-[0_0_60px_rgba(2,132,199,0.7)] border border-white/10 transition-all font-mono">
-                  Initialize Account <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(2,132,199,0.8)" }} whileTap={{ scale: 0.95 }} onClick={() => handleOpenAuth("signup")} className="group relative inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-black text-white font-bold text-base sm:text-lg rounded-full border border-sky-500/50 shadow-[0_0_20px_rgba(2,132,199,0.4)] hover:border-sky-400 transition-all font-mono overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-sky-600/20 to-blue-700/20 group-hover:from-sky-500/40 group-hover:to-blue-600/40 transition-colors"></div>
+                  <span className="relative z-10 flex items-center gap-2">Initialize Account <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
                 </motion.button>
               ) : (
                 <>
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { setInitialAiPrompt(""); setCurrentPage("copilot"); }} className="group flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:shadow-[0_0_60px_rgba(147,51,234,0.6)] border border-purple-500/30 transition-all font-mono">
-                    <BrainCircuit className="w-5 h-5 animate-pulse" /> Launch Copilot <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(147,51,234,0.8)" }} whileTap={{ scale: 0.95 }} onClick={() => { setInitialAiPrompt(""); setCurrentPage("copilot"); }} className="group relative flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-black text-white font-bold text-base sm:text-lg rounded-full border border-purple-500/50 shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:border-purple-400 transition-all font-mono overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-indigo-700/20 group-hover:from-purple-500/40 group-hover:to-indigo-600/40 transition-colors"></div>
+                    <span className="relative z-10 flex items-center gap-2"><BrainCircuit className="w-5 h-5 animate-pulse text-purple-400" /> Launch Copilot <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
                   </motion.button>
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setCurrentPage("profile")} className="flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-[#21262d] text-slate-200 font-bold text-base sm:text-lg rounded-full border border-[#30363d] hover:bg-[#30363d] hover:text-white transition-all font-mono shadow-xl">
+                  <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.1)" }} whileTap={{ scale: 0.95 }} onClick={() => setCurrentPage("profile")} className="flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 glass-panel text-slate-200 font-bold text-base sm:text-lg rounded-full hover:text-white transition-all font-mono">
                     <UserIcon className="w-5 h-5" /> View Profile
                   </motion.button>
                 </>
@@ -220,40 +236,41 @@ export default function App() {
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} className="grid w-full max-w-6xl grid-cols-1 gap-6 mt-20 md:grid-cols-3 sm:gap-8">
 
-            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-sky-500/50 transition-all group shadow-2xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="flex items-center justify-center mb-6 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#21262d] border border-[#30363d] group-hover:scale-110 group-hover:rotate-3 group-hover:border-sky-500/30 group-hover:bg-sky-500/10 relative z-10">
-                <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-sky-400" />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -15, rotateX: 10, rotateY: -10, scale: 1.05, zIndex: 10 }} style={{ transformStyle: 'preserve-3d' }} className="glass-panel p-6 sm:p-8 rounded-2xl hover:neon-glow-sky transition-all duration-300 group shadow-2xl relative overflow-hidden cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="flex items-center justify-center mb-6 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-black/50 border border-sky-500/20 group-hover:border-sky-400 group-hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] group-hover:scale-110 group-hover:rotate-6 relative z-10 transform-3d">
+                <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-sky-400 drop-shadow-[0_0_10px_rgba(56,189,248,0.8)]" />
               </div>
-              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10">0-100 Fit Scoring</h3>
-              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 group-hover:text-slate-300 transition-colors">Discover opportunities ranked by an AI fit score tailored entirely to your unique student profile.</p>
+              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10" style={{ transform: 'translateZ(30px)' }}>0-100 Fit Scoring</h3>
+              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 group-hover:text-slate-200 transition-colors" style={{ transform: 'translateZ(20px)' }}>Discover opportunities ranked by an AI fit score tailored entirely to your unique student profile.</p>
             </motion.div>
 
             {/* THE SECURE AI QUICK PROMPT CARD */}
-            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-purple-500/50 transition-all group shadow-2xl relative overflow-hidden flex flex-col">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -15, scale: 1.05, zIndex: 10 }} style={{ transformStyle: 'preserve-3d' }} className="glass-panel p-6 sm:p-8 rounded-2xl hover:neon-glow-purple transition-all duration-300 group shadow-2xl relative overflow-hidden flex flex-col perspective-1000">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.15)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
 
-              <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className="flex items-center justify-center transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#21262d] border border-[#30363d] group-hover:scale-110 group-hover:-rotate-3 group-hover:border-purple-500/30 group-hover:bg-purple-500/10">
-                  <BrainCircuit className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
+              <div className="flex justify-between items-start mb-6 relative z-10 transform-3d" style={{ transform: 'translateZ(30px)' }}>
+                <div className="flex items-center justify-center transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-black/50 border border-purple-500/20 group-hover:border-purple-400 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.5)] group-hover:scale-110 group-hover:-rotate-6">
+                  <BrainCircuit className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
                 </div>
-                <span className="text-[10px] font-mono text-purple-400 border border-purple-500/30 bg-purple-500/10 px-2 py-1 rounded-md flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span> SECURE COMMS
+                <span className="text-[10px] font-mono text-purple-300 border border-purple-500/50 bg-purple-500/20 px-2 py-1 rounded-md flex items-center gap-1 shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse shadow-[0_0_5px_rgba(168,85,247,0.8)]"></span> SECURE COMMS
                 </span>
               </div>
 
-              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10">AI Copilot Engine</h3>
-              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 mb-6 group-hover:text-slate-300 transition-colors flex-grow">Command your personal AI. Draft cover letters, analyze skills, or fetch real-time opportunities directly from the mainframe.</p>
+              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10" style={{ transform: 'translateZ(40px)' }}>AI Copilot Engine</h3>
+              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 mb-6 group-hover:text-slate-200 transition-colors flex-grow" style={{ transform: 'translateZ(20px)' }}>Command your personal AI. Draft cover letters, analyze skills, or fetch real-time opportunities directly from the mainframe.</p>
 
-              <form onSubmit={handleQuickPrompt} className="relative z-10 mt-auto">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-500 font-mono font-bold">{">"}</span>
+              <form onSubmit={handleQuickPrompt} className="relative z-10 mt-auto" style={{ transform: 'translateZ(30px)' }}>
+                <div className="relative group/input">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400 font-mono font-bold group-focus-within/input:text-purple-300 group-focus-within/input:shadow-[0_0_5px_rgba(168,85,247,0.5)] transition-all">{">"}</span>
                   <input
                     type="text"
                     value={quickPromptText}
                     onChange={(e) => setQuickPromptText(e.target.value)}
                     placeholder={isLoggedIn ? "Type a command..." : "Click here to Log In..."}
-                    className="w-full pl-8 pr-12 py-3 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-purple-500/50 transition-colors shadow-inner cursor-pointer"
+                    className="w-full pl-8 pr-12 py-3 bg-black/60 border border-purple-500/30 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-purple-400 focus:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all shadow-inner cursor-text backdrop-blur-md"
                     onClick={(e) => {
                       if (!isLoggedIn) {
                         e.preventDefault();
@@ -263,7 +280,7 @@ export default function App() {
                   />
                   <button
                     type="submit"
-                    className={`absolute right-1.5 top-1.5 bottom-1.5 aspect-square flex items-center justify-center rounded-lg transition-colors ${isLoggedIn ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.3)]' : 'bg-[#30363d] text-slate-500 hover:text-white cursor-pointer'}`}
+                    className={`absolute right-1.5 top-1.5 bottom-1.5 aspect-square flex items-center justify-center rounded-lg transition-all ${isLoggedIn ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_15px_rgba(147,51,234,0.5)] hover:shadow-[0_0_25px_rgba(147,51,234,0.7)]' : 'bg-white/10 text-slate-400 hover:text-white cursor-pointer'}`}
                     onClick={(e) => {
                       if (!isLoggedIn) {
                         e.preventDefault();
@@ -277,13 +294,13 @@ export default function App() {
               </form>
             </motion.div>
 
-            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -8, scale: 1.02 }} className="bg-[#0d1117] p-6 sm:p-8 rounded-2xl border border-[#30363d] hover:border-indigo-500/50 transition-all group shadow-2xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="flex items-center justify-center mb-6 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#21262d] border border-[#30363d] group-hover:scale-110 group-hover:rotate-3 group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 relative z-10">
-                <LayoutDashboard className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-400" />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} whileHover={{ y: -15, rotateX: 10, rotateY: 10, scale: 1.05, zIndex: 10 }} style={{ transformStyle: 'preserve-3d' }} className="glass-panel p-6 sm:p-8 rounded-2xl hover:border-indigo-400 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all duration-300 group shadow-2xl relative overflow-hidden cursor-pointer perspective-1000">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="flex items-center justify-center mb-6 transition-transform duration-300 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-black/50 border border-indigo-500/20 group-hover:border-indigo-400 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] group-hover:scale-110 group-hover:rotate-6 relative z-10 transform-3d" style={{ transform: 'translateZ(30px)' }}>
+                <LayoutDashboard className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-400 drop-shadow-[0_0_10px_rgba(99,102,241,0.8)]" />
               </div>
-              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10">Easy Tracking</h3>
-              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 group-hover:text-slate-300 transition-colors">Keep your hunt organized. Save interesting opportunities and track what you've applied to.</p>
+              <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl font-mono relative z-10" style={{ transform: 'translateZ(30px)' }}>Easy Tracking</h3>
+              <p className="text-sm leading-relaxed sm:text-base text-slate-400 relative z-10 group-hover:text-slate-200 transition-colors" style={{ transform: 'translateZ(20px)' }}>Keep your hunt organized. Save interesting opportunities and track what you've applied to.</p>
             </motion.div>
 
           </motion.div>

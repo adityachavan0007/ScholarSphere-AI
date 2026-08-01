@@ -11,6 +11,7 @@ export default function Hackathons() {
     const [isLoading, setIsLoading] = useState(true);
     const [hackathons, setHackathons] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState("match");
 
     // Pagination Architecture
     const [page, setPage] = useState(1);
@@ -45,16 +46,16 @@ export default function Hackathons() {
                         title: h.title || "Untitled Hackathon",
                         organizer: h.domain_tag || "Partner Org",
                         date: h.deadline_date ? new Date(h.deadline_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Upcoming",
+                        rawDate: h.deadline_date ? new Date(h.deadline_date).getTime() : Infinity,
                         mode: h.eligible_states?.[0] || "Online",
                         matchScore: h.match_score || Math.floor(Math.random() * (98 - 75 + 1) + 75), // Fallback if score is missing
                         tags: h.eligible_degrees || [],
                         status: h.status || "Registering",
                         participants: h.participants_count || 0,
-                        link: h.link || "#"
+                        link: h.link || "#",
+                        link_verified: h.link_verified
                     }));
 
-                    // Sort by highest match score by default
-                    transformed.sort((a, b) => b.matchScore - a.matchScore);
                     setHackathons(transformed);
                 } else {
                     setHackathons([]);
@@ -71,14 +72,26 @@ export default function Hackathons() {
 
     // --- CORE FAST-SEARCH ENGINE ---
     const processedData = useMemo(() => {
-        if (!searchQuery.trim()) return hackathons;
+        let filtered = hackathons;
+        
+        if (searchQuery.trim()) {
+            filtered = hackathons.filter(h =>
+                h.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                h.organizer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                h.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+        }
 
-        return hackathons.filter(h =>
-            h.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            h.organizer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            h.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-    }, [searchQuery, hackathons]);
+        return [...filtered].sort((a, b) => {
+            if (sortBy === 'match') {
+                return b.matchScore - a.matchScore;
+            } else if (sortBy === 'date_asc') {
+                return a.rawDate - b.rawDate;
+            } else {
+                return b.rawDate - a.rawDate;
+            }
+        });
+    }, [searchQuery, hackathons, sortBy]);
 
     // Reset pagination when searching
     useEffect(() => {
@@ -116,9 +129,9 @@ export default function Hackathons() {
                     </div>
                 </motion.div>
 
-                {/* CLEAN SEARCH BAR */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="w-full mb-10">
-                    <div className="relative max-w-2xl">
+                {/* CLEAN SEARCH BAR & SORTING */}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="w-full mb-10 flex flex-col md:flex-row gap-4 items-center">
+                    <div className="relative flex-1 w-full max-w-2xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                         <input
                             type="text"
@@ -128,6 +141,15 @@ export default function Hackathons() {
                             className="w-full pl-12 pr-4 py-4 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 shadow-2xl transition-colors placeholder:text-slate-600"
                         />
                     </div>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="p-4 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors cursor-pointer outline-none"
+                    >
+                        <option value="match">Sort By: Match Score</option>
+                        <option value="date_asc">Sort By: Deadline (Soonest)</option>
+                        <option value="date_desc">Sort By: Deadline (Latest)</option>
+                    </select>
                 </motion.div>
 
                 {/* DATA FEED RENDERER */}
@@ -137,7 +159,7 @@ export default function Hackathons() {
                         <p className="text-cyan-400 font-mono animate-pulse text-sm">Querying Database...</p>
                     </div>
                 ) : displayedHackathons.length === 0 ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-[#050b14]/50">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-black/60 backdrop-blur-md/50">
                         <Search className="w-10 h-10 text-slate-600 mb-4" />
                         <h3 className="text-white font-mono font-bold text-lg">No Results Found</h3>
                         <p className="text-slate-500 font-mono text-sm mt-2">Try adjusting your search query.</p>
@@ -158,7 +180,9 @@ export default function Hackathons() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ type: "spring", stiffness: 100 }}
-                                    className="bg-[#0d1117] border border-[#30363d] hover:border-cyan-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col"
+                                    whileHover={{ y: -10, rotateX: 5, rotateY: -5, scale: 1.02, zIndex: 10 }}
+                                    style={{ transformStyle: "preserve-3d" }}
+                                    className="glass-panel perspective-1000 transform-3d hover:border-cyan-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col"
                                 >
                                     <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent -translate-x-full group-hover:animate-[scan_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100"></div>
 
@@ -217,6 +241,7 @@ export default function Hackathons() {
                                     <div className="pt-4 border-t border-[#30363d] flex justify-between items-center">
                                         <a href={hackathon.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-mono font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
                                             <Zap className="w-4 h-4" /> View Details
+                                            {hackathon.link_verified === false && <span className="text-[10px] text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded border border-orange-400/20 ml-2">Unverified Link</span>}
                                         </a>
                                         <a href={hackathon.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg text-sm font-bold font-mono hover:bg-white hover:text-slate-900 transition-all">
                                             Apply <ExternalLink className="w-4 h-4" />

@@ -37,9 +37,9 @@ export default function TerminalDemo({ onExecute }: TerminalDemoProps) {
                 <p className="text-slate-400">Enter your core skills and see what the AI finds in milliseconds.</p>
             </div>
 
-            <div className="w-full overflow-hidden bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+            <div className="w-full overflow-hidden glass-panel border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                 {/* Fake Mac/VS Code Header */}
-                <div className="flex items-center gap-2 px-4 py-3 bg-[#161b22] border-b border-[#30363d]">
+                <div className="flex items-center gap-2 px-4 py-3 bg-black/40 backdrop-blur-md border-b border-white/10">
                     <div className="flex gap-2">
                         <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                         <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>

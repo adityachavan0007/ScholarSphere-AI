@@ -11,6 +11,7 @@ export default function Internships() {
     const [isLoading, setIsLoading] = useState(true);
     const [internships, setInternships] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState("match");
 
     // Pagination Architecture
     const [page, setPage] = useState(1);
@@ -52,13 +53,10 @@ export default function Internships() {
                         status: i.status || "Actively Hiring",
                         tier: i.tier || "Startup",
                         link: i.link || "#",
-                        // NEW: Time mapping for automatic sorting
-                        rawDate: i.created_at ? new Date(i.created_at).getTime() : Date.now() - Math.random() * 10000000000,
-                        postedDate: i.created_at ? new Date(i.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "Just Now",
+                        link_verified: i.link_verified,
+                        rawDate: i.deadline_date ? new Date(i.deadline_date).getTime() : Infinity,
+                        postedDate: i.deadline_date ? new Date(i.deadline_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Upcoming",
                     }));
-
-                    // NEW: Automatically sort so the newest dates show up first!
-                    transformed.sort((a, b) => b.rawDate - a.rawDate);
 
                     setInternships(transformed);
                 } else {
@@ -76,14 +74,25 @@ export default function Internships() {
 
     // --- CORE FAST-SEARCH ENGINE ---
     const processedData = useMemo(() => {
-        if (!searchQuery.trim()) return internships;
+        let filtered = internships;
+        if (searchQuery.trim()) {
+            filtered = internships.filter(i =>
+                i.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                i.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                i.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+        }
 
-        return internships.filter(i =>
-            i.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            i.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            i.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-    }, [searchQuery, internships]);
+        return [...filtered].sort((a, b) => {
+            if (sortBy === 'match') {
+                return b.matchScore - a.matchScore;
+            } else if (sortBy === 'date_asc') {
+                return a.rawDate - b.rawDate;
+            } else {
+                return b.rawDate - a.rawDate;
+            }
+        });
+    }, [searchQuery, internships, sortBy]);
 
     // Reset pagination when searching
     useEffect(() => {
@@ -121,9 +130,9 @@ export default function Internships() {
                     </div>
                 </motion.div>
 
-                {/* CLEAN SEARCH BAR */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="w-full mb-10">
-                    <div className="relative max-w-2xl">
+                {/* CLEAN SEARCH BAR & SORTING */}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="w-full mb-10 flex flex-col md:flex-row gap-4 items-center">
+                    <div className="relative flex-1 w-full max-w-2xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                         <input
                             type="text"
@@ -133,6 +142,15 @@ export default function Internships() {
                             className="w-full pl-12 pr-4 py-4 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-indigo-500/50 shadow-2xl transition-colors placeholder:text-slate-600"
                         />
                     </div>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="p-4 bg-[#050b14] border border-[#30363d] rounded-xl text-white font-mono text-sm focus:outline-none focus:border-indigo-500/50 transition-colors cursor-pointer outline-none"
+                    >
+                        <option value="match">Sort By: Match Score</option>
+                        <option value="date_asc">Sort By: Deadline (Soonest)</option>
+                        <option value="date_desc">Sort By: Deadline (Latest)</option>
+                    </select>
                 </motion.div>
 
                 {/* DATA FEED RENDERER */}
@@ -142,7 +160,7 @@ export default function Internships() {
                         <p className="text-indigo-400 font-mono animate-pulse text-sm">Compiling Employer Matrices...</p>
                     </div>
                 ) : displayedInternships.length === 0 ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-[#050b14]/50">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-black/60 backdrop-blur-md/50">
                         <Code className="w-10 h-10 text-slate-600 mb-4" />
                         <h3 className="text-white font-mono font-bold text-lg">No Roles Found</h3>
                         <p className="text-slate-500 font-mono text-sm mt-2">Try adjusting your tech stack filters.</p>
@@ -163,7 +181,9 @@ export default function Internships() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ type: "spring", stiffness: 100 }}
-                                    className="bg-[#0d1117] border border-[#30363d] hover:border-indigo-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col h-full"
+                                    whileHover={{ y: -10, rotateX: 5, rotateY: -5, scale: 1.02, zIndex: 10 }}
+                                    style={{ transformStyle: "preserve-3d" }}
+                                    className="glass-panel perspective-1000 transform-3d hover:border-indigo-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col h-full"
                                 >
                                     <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-indigo-400 to-transparent -translate-x-full group-hover:animate-[scan_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100"></div>
 
@@ -246,6 +266,7 @@ export default function Internships() {
                                     <div className="pt-4 border-t border-[#30363d] flex justify-between items-center">
                                         <a href={internship.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-mono font-bold text-slate-400 hover:text-white transition-colors">
                                             <Briefcase className="w-4 h-4" /> View Details
+                                            {internship.link_verified === false && <span className="text-[10px] text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded border border-orange-400/20 ml-2">Unverified Link</span>}
                                         </a>
                                         <div className="flex gap-3">
                                             <a href={internship.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold font-mono hover:bg-indigo-500 transition-colors group-hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]">

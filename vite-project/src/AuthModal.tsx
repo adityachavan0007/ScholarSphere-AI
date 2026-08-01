@@ -118,7 +118,7 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="w-full max-w-md bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden relative z-10"
+                    className="w-full max-w-md glass-panel rounded-2xl overflow-hidden relative z-10 border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
                 >
                     {/* Dynamic Glowing Edge based on context */}
                     <div className={`absolute top-0 left-0 w-full h-1 ${view === "login" ? "bg-gradient-to-r from-sky-500 to-blue-600 shadow-[0_0_15px_rgba(14,165,233,0.5)]" :
@@ -127,7 +127,7 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                         }`}></div>
 
                     {/* Terminal Header */}
-                    <div className="flex items-center justify-between px-5 py-4 bg-[#161b22] border-b border-[#30363d]">
+                    <div className="flex items-center justify-between px-5 py-4 bg-black/40 border-b border-white/10 backdrop-blur-md">
                         <div className="flex gap-2.5">
                             <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_5px_rgba(239,68,68,0.5)]"></div>
                             <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_5px_rgba(234,179,8,0.5)]"></div>

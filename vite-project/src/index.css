@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @layer base {
-
     html,
     body,
     #root {
@@ -9,17 +8,40 @@
         padding: 0;
         width: 100%;
         min-height: 100vh;
-        background-color: #030712;
+        background-color: #000000;
         color: #ffffff;
-        /* Smooth scrolling for your scroll indicator */
         scroll-behavior: smooth;
     }
 
-    /* Hides horizontal scrollbar but keeps vertical scrolling */
     body {
         overflow-x: hidden;
     }
+    
     button {
         cursor: pointer;
+    }
+}
+
+@layer utilities {
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+    .transform-3d {
+        transform-style: preserve-3d;
+    }
+    .glass-panel {
+        background-color: rgba(13, 17, 23, 0.6);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    }
+    .neon-glow-sky {
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        border: 1px solid rgba(56, 189, 248, 0.5);
+    }
+    .neon-glow-purple {
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+        border: 1px solid rgba(168, 85, 247, 0.5);
     }
 }
