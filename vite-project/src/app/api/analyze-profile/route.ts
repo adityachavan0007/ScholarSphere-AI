@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '../../../../backend/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -158,7 +158,7 @@ Return a JSON object with this exact structure:
           }
         ] 
       }, 
-      { status: 200, headers: CORS_HEADERS }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }

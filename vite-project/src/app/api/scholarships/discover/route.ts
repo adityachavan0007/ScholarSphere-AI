@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { discoverOpportunities } from '../../../../../backend/lib/ai';
-import { supabaseAdmin } from '../../../../../backend/lib/supabase';
+import { discoverOpportunities } from '@/lib/ai';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function GET(req: NextRequest) {
   try {

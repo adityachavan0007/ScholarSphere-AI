@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '../../../../backend/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Helper to get user from session (Mock for now until auth is fully setup)
 async function getUser(req: NextRequest) {

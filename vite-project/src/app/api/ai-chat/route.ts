@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { chatWithAI } from '../../../../backend/lib/ai';
-import { supabaseAdmin } from '../../../../backend/lib/supabase';
+import { chatWithAI } from '@/lib/ai';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5173',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
@@ -64,8 +64,16 @@ export async function POST(req: NextRequest) {
   try {
     const { prompt, history } = await req.json();
 
-    if (!prompt) {
-      return NextResponse.json({ error: 'Prompt is required' }, { status: 400, headers: CORS_HEADERS });
+    if (!prompt || typeof prompt !== 'string') {
+      return NextResponse.json({ error: 'Valid prompt string is required' }, { status: 400, headers: CORS_HEADERS });
+    }
+
+    if (prompt.length > 1000) {
+      return NextResponse.json({ error: 'Prompt exceeds maximum length of 1000 characters' }, { status: 400, headers: CORS_HEADERS });
+    }
+
+    if (history && !Array.isArray(history)) {
+      return NextResponse.json({ error: 'History must be an array' }, { status: 400, headers: CORS_HEADERS });
     }
 
     // Optional: Get user context for better responses
@@ -84,7 +92,7 @@ export async function POST(req: NextRequest) {
         }
     }
 
-    // The systemInstruction is already handled in backend/lib/ai.ts
+    // The systemInstruction is already handled in @/lib/ai.ts
     // We only pass the actual conversation history here.
     // We filter history to ensure it starts with 'user' if possible, 
     // or just pass it directly if Gemini handles the initial 'model' message.

@@ -43,6 +43,10 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
 
     const executePrompt = async (text: string) => {
         if (!text.trim()) return;
+        if (text.length > 1000) {
+            alert("Your prompt is too long. Please limit it to 1000 characters.");
+            return;
+        }
 
         const userMsg: Message = { id: Date.now().toString(), sender: "user", text };
         setMessages(prev => [...prev, userMsg]);
@@ -52,7 +56,7 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
         setMessages(prev => [...prev, { id: thinkingId, sender: "ai", isThinking: true }]);
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || "";
+            const API_URL = import.meta.env.NEXT_PUBLIC_APP_URL || "";
             const response = await fetch(`${API_URL}/api/ai-chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

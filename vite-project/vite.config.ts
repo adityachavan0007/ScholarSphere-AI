@@ -16,4 +16,5 @@ export default defineConfig({
       },
     },
   },
+  envPrefix: 'NEXT_PUBLIC_',
 })

@@ -11,6 +11,28 @@ const nextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        // Apply these headers to all routes in the application.
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:;",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
