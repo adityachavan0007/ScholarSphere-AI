@@ -27,7 +27,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [authView, setAuthView] = useState<"login" | "signup">("signup");
+  const [authView, setAuthView] = useState<"login" | "signup" | "update_password">("signup");
 
   // --- QUICK PROMPT STATE ---
   const [initialAiPrompt, setInitialAiPrompt] = useState("");
@@ -47,9 +47,18 @@ export default function App() {
           setIsLoggedIn(!!session);
           
           // Automatic Routing based on Auth Events
-          if (_event === 'SIGNED_IN') {
-            setIsModalOpen(false);
-            setCurrentPage("profile");
+          if (_event === 'PASSWORD_RECOVERY') {
+            setAuthView("update_password");
+            setIsModalOpen(true);
+          } else if (_event === 'SIGNED_IN') {
+            // Only route to profile if they are not in the middle of updating a password
+            setAuthView((currentView) => {
+               if (currentView !== "update_password") {
+                  setIsModalOpen(false);
+                  setCurrentPage("profile");
+               }
+               return currentView;
+            });
           } else if (_event === 'SIGNED_OUT') {
             setCurrentPage("home");
           }
@@ -77,7 +86,7 @@ export default function App() {
   }, [isLoggedIn, currentPage]);
 
   // --- HANDLERS ---
-  const handleOpenAuth = (view: "login" | "signup") => {
+  const handleOpenAuth = (view: "login" | "signup" | "update_password") => {
     setAuthView(view);
     setIsModalOpen(true);
   };
