@@ -90,9 +90,9 @@ export default function Navbar({
           {isLoggedIn && (
             <button
               onClick={onNavigateCopilot}
-              className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 transition-all bg-purple-500/10 px-3 py-1.5 rounded-md border border-purple-500/30 hover:border-purple-500/50 shadow-[0_0_15px_rgba(147,51,234,0.15)] group"
+              className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors bg-white/5 px-3 py-1.5 rounded-md border border-white/5 hover:border-white/10 hover:bg-white/10"
             >
-              <BrainCircuit className="w-4 h-4 animate-pulse group-hover:text-purple-300" /> /ai_copilot
+              <BrainCircuit className="w-4 h-4" /> AI Copilot
             </button>
           )}
         </div>
@@ -119,11 +119,11 @@ export default function Navbar({
             <div className="hidden sm:block relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-mono font-medium text-sky-400 transition-all border border-sky-500/30 rounded-lg bg-sky-500/5 hover:bg-sky-500/15 group shadow-[0_0_10px_rgba(56,189,248,0.1)]"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-300 transition-colors border border-white/10 rounded-lg bg-white/5 hover:bg-white/10 hover:text-white"
               >
-                <UserIcon size={16} className="text-sky-400" />
-                <span>~/profile</span>
-                <ChevronDown size={14} className={`text-sky-400 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`} />
+                <UserIcon size={16} />
+                <span>Profile</span>
+                <ChevronDown size={14} className={`transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`} />
               </button>
 
               <AnimatePresence>
@@ -195,9 +195,9 @@ export default function Navbar({
                 <>
                   <button
                     onClick={() => { onNavigateCopilot(); setIsMenuOpen(false); }}
-                    className="text-left text-purple-400 py-3 px-4 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center gap-2 mb-2"
+                    className="text-left text-zinc-300 py-3 px-4 rounded-lg bg-white/5 border border-white/10 flex items-center gap-2 mb-2 hover:bg-white/10 hover:text-white"
                   >
-                    <BrainCircuit className="w-4 h-4" /> /ai_copilot
+                    <BrainCircuit className="w-4 h-4" /> AI Copilot
                   </button>
                   <button
                     onClick={() => { onNavigateProfile(); setIsMenuOpen(false); }}

@@ -355,30 +355,30 @@ export default function Profile() {
     if (!profile.name && !isEditing) {
         return (
             <div className="flex flex-col items-center justify-center w-full min-h-screen pt-16 bg-zinc-950 relative overflow-hidden px-4">
-                <div className="absolute inset-0 z-0 pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-30 mix-blend-overlay"></div>
-                <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[120px] -translate-y-1/2 -translate-x-1/2 pointer-events-none z-0"></div>
+                {/* Subtle, standard background to match AuthModal */}
+                <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-40 mix-blend-overlay"></div>
 
-                <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 100 }} className="bento-card p-10 text-center max-w-md w-full relative z-10 border border-white/10 shadow-2xl bg-zinc-950/80 backdrop-blur-xl">
+                <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 100 }} className="w-full max-w-md p-10 bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl relative z-10 text-center">
                     <div className="flex justify-center mb-6">
-                        <div className="p-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
-                            <Terminal className="w-10 h-10 text-cyan-400" />
+                        <div className="p-4 rounded-full bg-white/5 border border-white/10">
+                            <User className="w-8 h-8 text-white" />
                         </div>
                     </div>
-                    <h2 className="mb-2 text-2xl font-bold text-zinc-100 font-outfit tracking-tight drop-shadow-md">Initialize Identity</h2>
+                    <h2 className="mb-2 text-2xl font-bold text-white font-outfit tracking-tight drop-shadow-md">Initialize Identity</h2>
                     <p className="mb-8 text-sm text-zinc-400 font-sans">Your developer portfolio awaits setup.</p>
-                    <div className="space-y-5">
-                        <button onClick={handleGithubImport} disabled={isImporting} className="flex items-center justify-center w-full gap-3 px-4 py-3.5 text-sm font-medium transition-all rounded-xl disabled:opacity-50 font-mono bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-                            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Github size={18} /> git clone --github</>}
+                    <div className="space-y-4">
+                        <button onClick={handleGithubImport} disabled={isImporting} className="flex items-center justify-center w-full gap-2 px-4 py-3.5 text-sm font-medium transition-all rounded-xl disabled:opacity-50 bg-white/5 border border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">
+                            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Github size={18} /> Sync from GitHub</>}
                         </button>
                         
                         <div className="flex items-center gap-4 py-2">
-                            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-zinc-800"></div>
-                            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">Or</span>
-                            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-zinc-800"></div>
+                            <div className="flex-1 h-px bg-white/10"></div>
+                            <span className="text-[10px] tracking-widest text-zinc-500 uppercase font-medium">Or</span>
+                            <div className="flex-1 h-px bg-white/10"></div>
                         </div>
                         
-                        <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-full gap-3 px-4 py-3.5 text-sm font-medium transition-all rounded-xl font-mono bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-                            <Edit3 size={18} /> ./enter_matrix.sh
+                        <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-full gap-2 px-4 py-3.5 text-sm font-bold transition-all rounded-xl bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg">
+                            <Edit3 size={18} /> Build Manually
                         </button>
                     </div>
                 </motion.div>
