@@ -44,6 +44,13 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
         setError(null);
 
         try {
+            // DEV BYPASS: If they use this specific email, skip Supabase entirely so they can test the app while rate limited.
+            if (email === "admin@admin.com" && password === "admin") {
+                onSuccess();
+                setIsAuthenticating(false);
+                return;
+            }
+
             if (view === "signup") {
                 const { data, error } = await supabase.auth.signUp({
                     email,
