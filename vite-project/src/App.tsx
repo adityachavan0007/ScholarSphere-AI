@@ -23,11 +23,17 @@ type PageState = "home" | "profile" | "copilot" | "hackathons" | "scholarships" 
 
 export default function App() {
   // --- STATE MANAGEMENT ---
-  const [currentPage, setCurrentPage] = useState<PageState>("home");
+  const [currentPage, setCurrentPage] = useState<PageState>(() => {
+    return (localStorage.getItem("app_current_page") as PageState) || "home";
+  });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [authView, setAuthView] = useState<"login" | "signup" | "update_password">("signup");
+
+  useEffect(() => {
+    localStorage.setItem("app_current_page", currentPage);
+  }, [currentPage]);
 
   // --- QUICK PROMPT STATE ---
   const [initialAiPrompt, setInitialAiPrompt] = useState("");

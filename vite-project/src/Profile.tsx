@@ -55,7 +55,17 @@ const STATUS_STYLES = {
 
 export default function Profile() {
     // --- STATE ---
-    const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
+    const [profile, setProfile] = useState<ProfileData>(() => {
+        try {
+            const saved = localStorage.getItem('profile_draft');
+            if (saved) return JSON.parse(saved);
+        } catch (e) {}
+        return EMPTY_PROFILE;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('profile_draft', JSON.stringify(profile));
+    }, [profile]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);

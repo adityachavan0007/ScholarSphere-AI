@@ -39,6 +39,8 @@ export default function Navbar({
   // REAL BACKEND SIGN OUT
   const handleSignOut = async () => {
     try {
+      localStorage.removeItem('profile_draft');
+      localStorage.removeItem('app_current_page');
       // App.tsx onAuthStateChange will catch this and route to home automatically
       await supabase.auth.signOut();
     } catch (error) {
