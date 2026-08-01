@@ -50,7 +50,7 @@ const STATUS_STYLES = {
     "Seeking Internships": { color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/50", glow: "shadow-[0_0_30px_rgba(34,197,94,0.4)]", dot: "bg-green-500" },
     "Looking for Teammates": { color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/50", glow: "shadow-[0_0_30px_rgba(59,130,246,0.4)]", dot: "bg-blue-500" },
     "Building in Stealth": { color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/50", glow: "shadow-[0_0_30px_rgba(168,85,247,0.4)]", dot: "bg-purple-500" },
-    "Unavailable": { color: "text-slate-400", bg: "bg-slate-500/10", border: "border-white/10", glow: "", dot: "bg-slate-500" },
+    "Unavailable": { color: "text-zinc-400", bg: "bg-slate-500/10", border: "border-white/10", glow: "", dot: "bg-slate-500" },
 };
 
 export default function Profile() {
@@ -340,7 +340,7 @@ export default function Profile() {
     // --- HIGH END LOADER ---
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-black/95 relative overflow-hidden flex flex-col items-center justify-center font-mono selection:bg-sky-500/30">
+            <div className="min-h-screen bg-zinc-950 relative overflow-hidden flex flex-col items-center justify-center font-mono selection:bg-sky-500/30">
                 <div className="relative flex items-center justify-center w-20 h-20 mb-6">
                     <div className="absolute inset-0 border-4 border-sky-500/20 rounded-full"></div>
                     <div className="absolute inset-0 border-4 border-transparent border-t-sky-400 rounded-full animate-spin"></div>
@@ -354,22 +354,31 @@ export default function Profile() {
     // --- INITIALIZE EMPTY PROFILE STATE ---
     if (!profile.name && !isEditing) {
         return (
-            <div className="flex flex-col items-center justify-center w-full min-h-screen pt-16 bg-black/95 relative overflow-hidden px-4">
-                <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 100 }} className="w-full max-w-md p-8 text-center bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+            <div className="flex flex-col items-center justify-center w-full min-h-screen pt-16 bg-zinc-950 relative overflow-hidden px-4">
+                <div className="absolute inset-0 z-0 pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-30 mix-blend-overlay"></div>
+                <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[120px] -translate-y-1/2 -translate-x-1/2 pointer-events-none z-0"></div>
+
+                <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 100 }} className="bento-card p-10 text-center max-w-md w-full relative z-10 border border-white/10 shadow-2xl bg-zinc-950/80 backdrop-blur-xl">
                     <div className="flex justify-center mb-6">
-                        <div className="p-4 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/10 border border-sky-500/30 shadow-inner">
-                            <User className="w-10 h-10 text-sky-400" />
+                        <div className="p-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
+                            <Terminal className="w-10 h-10 text-cyan-400" />
                         </div>
                     </div>
-                    <h2 className="mb-2 text-2xl font-bold text-white font-mono tracking-tight">Initialize Identity</h2>
-                    <p className="mb-8 text-sm text-slate-400">Your developer portfolio awaits setup.</p>
-                    <div className="space-y-4">
-                        <button onClick={handleGithubImport} disabled={isImporting} className="flex items-center justify-center w-full gap-3 px-4 py-3 text-sm font-bold text-white transition-all bg-[#21262d] hover:bg-[#30363d] border border-white/10 rounded-xl disabled:opacity-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-                            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Github size={18} /> Sync from GitHub</>}
+                    <h2 className="mb-2 text-2xl font-bold text-zinc-100 font-outfit tracking-tight drop-shadow-md">Initialize Identity</h2>
+                    <p className="mb-8 text-sm text-zinc-400 font-sans">Your developer portfolio awaits setup.</p>
+                    <div className="space-y-5">
+                        <button onClick={handleGithubImport} disabled={isImporting} className="flex items-center justify-center w-full gap-3 px-4 py-3.5 text-sm font-medium transition-all rounded-xl disabled:opacity-50 font-mono bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+                            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Github size={18} /> git clone --github</>}
                         </button>
-                        <div className="flex items-center gap-4 py-2"><div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#30363d]"></div><span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase">Or Build Manually</span><div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#30363d]"></div></div>
-                        <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-full gap-3 px-4 py-3 text-sm font-bold text-white transition-all bg-sky-600 hover:bg-sky-500 rounded-xl shadow-[0_0_20px_rgba(2,132,199,0.3)] hover:shadow-[0_0_30px_rgba(2,132,199,0.5)]">
-                            <Edit3 size={18} /> Enter Setup Matrix
+                        
+                        <div className="flex items-center gap-4 py-2">
+                            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-zinc-800"></div>
+                            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">Or</span>
+                            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-zinc-800"></div>
+                        </div>
+                        
+                        <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-full gap-3 px-4 py-3.5 text-sm font-medium transition-all rounded-xl font-mono bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                            <Edit3 size={18} /> ./enter_matrix.sh
                         </button>
                     </div>
                 </motion.div>
@@ -378,7 +387,7 @@ export default function Profile() {
     }
 
     return (
-        <div className="w-full min-h-screen bg-black/95 relative overflow-hidden pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans selection:bg-sky-500/30 relative">
+        <div className="w-full min-h-screen bg-zinc-950 relative overflow-hidden pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans selection:bg-sky-500/30 relative">
             <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
 
             <motion.div
@@ -388,8 +397,8 @@ export default function Profile() {
                 className="max-w-5xl mx-auto space-y-8 relative z-10"
             >
                 {/* PROFILE CONTAINER HEADER */}
-                <motion.div variants={fadeUp} className="relative w-full overflow-hidden bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-sky-500/30 transition-colors duration-500 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] group">
-                    <div className="h-32 sm:h-56 relative overflow-hidden bg-[#050b14]">
+                <motion.div variants={fadeUp} className="relative w-full overflow-hidden bento-card p-0 relative group">
+                    <div className="h-32 sm:h-56 relative overflow-hidden bg-zinc-950">
                         {profile.bannerUrl ? (
                             <img src={profile.bannerUrl} alt="Profile Banner" className="w-full h-full object-cover opacity-60 mix-blend-screen group-hover:scale-105 transition-transform duration-700" />
                         ) : (
@@ -413,14 +422,14 @@ export default function Profile() {
                             </div>
 
                             <div className="flex flex-wrap gap-3 mt-6 sm:mt-0">
-                                <button onClick={handleDownloadCV} disabled={isGeneratingPDF} className="px-5 py-2.5 text-sm font-bold font-mono transition-all border rounded-xl bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-2 disabled:opacity-50">
+                                <button onClick={handleDownloadCV} disabled={isGeneratingPDF} className="px-5 py-2.5 text-sm font-bold font-mono transition-all border rounded-xl bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center gap-2 disabled:opacity-50">
                                     {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                                     {isGeneratingPDF ? "Generating PDF..." : "Download CV"}
                                 </button>
-                                <button onClick={() => setIsEditing(true)} className="px-5 py-2.5 text-sm font-bold font-mono transition-all border rounded-xl bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-2">
+                                <button onClick={() => setIsEditing(true)} className="px-5 py-2.5 text-sm font-bold font-mono transition-all border rounded-xl bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white flex items-center gap-2">
                                     <Edit3 className="w-4 h-4" /> Edit
                                 </button>
-                                <button onClick={() => setShowAnalyzer(true)} className="px-5 py-2.5 text-sm font-bold text-white transition-all rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] border border-purple-500/30 flex items-center gap-2 font-mono">
+                                <button onClick={() => setShowAnalyzer(true)} className="pill-button bg-zinc-100 text-zinc-950 hover:bg-white overflow-hidden relative flex items-center gap-2 font-mono">
                                     <BrainCircuit className="w-4 h-4 animate-pulse" /> Analyzer
                                 </button>
                             </div>
@@ -428,7 +437,7 @@ export default function Profile() {
 
                         <div className="mt-8">
                             <div className="flex items-center gap-4 mb-2">
-                                <h1 className="text-3xl font-extrabold text-transparent sm:text-4xl font-mono bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
+                                <h1 className="text-3xl font-extrabold text-transparent sm:text-4xl font-outfit bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
                                     {profile.name || "Anonymous Developer"}
                                 </h1>
                                 {/* STATUS BADGE */}
@@ -438,7 +447,7 @@ export default function Profile() {
                             </div>
                             <p className="mt-2 text-lg text-sky-400 font-mono tracking-wide">{profile.headline || "Add a headline to stand out"}</p>
 
-                            <div className="flex flex-wrap items-center gap-4 mt-5 text-sm text-slate-400 font-mono">
+                            <div className="flex flex-wrap items-center gap-4 mt-5 text-sm text-zinc-400 font-mono">
                                 {profile.location && <span className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-lg"><MapPin className="w-3.5 h-3.5" /> {profile.location}</span>}
                             </div>
                         </div>
@@ -452,24 +461,24 @@ export default function Profile() {
                     <div className="space-y-8 lg:col-span-2">
 
                         {/* About/Bio */}
-                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
-                            <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-white font-mono tracking-tight"><span className="text-sky-400">{">"}</span> about_me.md</h2>
-                            <p className="leading-relaxed text-slate-400 text-sm sm:text-base whitespace-pre-line">{profile.bio || "No bio added yet."}</p>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><span className="text-sky-400">{">"}</span> about_me.md</h2>
+                            <p className="leading-relaxed text-zinc-400 text-sm sm:text-base whitespace-pre-line">{profile.bio || "No bio added yet."}</p>
                         </motion.div>
 
                         {/* Education Timeline */}
-                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
-                            <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-white font-mono tracking-tight"><GraduationCap className="w-6 h-6 text-blue-400" /> Education Matrix</h2>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><GraduationCap className="w-6 h-6 text-blue-400" /> Education Matrix</h2>
                             <div className="relative space-y-8 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-500/50 before:via-[#30363d] before:to-transparent">
-                                {profile.education.length === 0 ? <p className="text-sm text-slate-500 ml-8 font-mono">No education matrix initialized.</p> : profile.education.map((edu, idx) => (
+                                {profile.education.length === 0 ? <p className="text-sm text-zinc-500 ml-8 font-mono">No education matrix initialized.</p> : profile.education.map((edu, idx) => (
                                     <div key={edu.id} className="relative pl-8 group">
                                         <div className="absolute w-4 h-4 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-full left-[4px] top-1.5 border-2 border-blue-500 z-10 group-hover:bg-blue-500 transition-colors duration-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
-                                        <div className="bg-[#010409] border border-white/10 p-6 rounded-2xl group-hover:border-blue-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative overflow-hidden">
+                                        <div className="bg-zinc-950/50 border border-white/10 p-6 rounded-2xl group-hover:border-blue-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative overflow-hidden">
                                             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                                            <h3 className="font-bold text-white text-lg group-hover:text-blue-400 transition-colors">{edu.school}</h3>
+                                            <h3 className="font-bold text-zinc-100 text-lg font-outfit group-hover:text-blue-400 transition-colors">{edu.school}</h3>
                                             <p className="text-sky-400 font-medium text-sm mt-1">{edu.degree}</p>
-                                            <p className="text-xs text-slate-500 mt-3 flex items-center gap-1.5 font-mono"><Calendar className="w-3.5 h-3.5" /> {edu.duration}</p>
-                                            {edu.details && <p className="text-sm text-slate-400 mt-4 leading-relaxed border-t border-white/10 pt-4">{edu.details}</p>}
+                                            <p className="text-xs text-zinc-500 mt-3 flex items-center gap-1.5 font-mono"><Calendar className="w-3.5 h-3.5" /> {edu.duration}</p>
+                                            {edu.details && <p className="text-sm text-zinc-400 mt-4 leading-relaxed border-t border-white/10 pt-4">{edu.details}</p>}
                                         </div>
                                     </div>
                                 ))}
@@ -477,18 +486,18 @@ export default function Profile() {
                         </motion.div>
 
                         {/* Experience Timeline */}
-                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
-                            <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-white font-mono tracking-tight"><Briefcase className="w-6 h-6 text-indigo-400" /> Experience Log</h2>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><Briefcase className="w-6 h-6 text-indigo-400" /> Experience Log</h2>
                             <div className="relative space-y-8 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-500/50 before:via-[#30363d] before:to-transparent">
-                                {profile.experiences.length === 0 ? <p className="text-sm text-slate-500 ml-8 font-mono">No experience logs found.</p> : profile.experiences.map((exp, idx) => (
+                                {profile.experiences.length === 0 ? <p className="text-sm text-zinc-500 ml-8 font-mono">No experience logs found.</p> : profile.experiences.map((exp, idx) => (
                                     <div key={exp.id} className="relative pl-8 group">
                                         <div className="absolute w-4 h-4 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-full left-[4px] top-1.5 border-2 border-indigo-500 z-10 group-hover:bg-indigo-500 transition-colors duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
-                                        <div className="bg-[#010409] border border-white/10 p-6 rounded-2xl group-hover:border-indigo-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] relative overflow-hidden">
+                                        <div className="bg-zinc-950/50 border border-white/10 p-6 rounded-2xl group-hover:border-indigo-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] relative overflow-hidden">
                                             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                                            <h3 className="font-bold text-white text-lg group-hover:text-indigo-400 transition-colors">{exp.role}</h3>
+                                            <h3 className="font-bold text-zinc-100 text-lg font-outfit group-hover:text-indigo-400 transition-colors">{exp.role}</h3>
                                             <p className="text-indigo-400 font-medium text-sm mt-1">{exp.company}</p>
-                                            <p className="text-xs text-slate-500 mt-3 flex items-center gap-1.5 font-mono"><Calendar className="w-3.5 h-3.5" /> {exp.duration}</p>
-                                            {exp.description && <p className="text-sm text-slate-400 mt-4 leading-relaxed border-t border-white/10 pt-4">{exp.description}</p>}
+                                            <p className="text-xs text-zinc-500 mt-3 flex items-center gap-1.5 font-mono"><Calendar className="w-3.5 h-3.5" /> {exp.duration}</p>
+                                            {exp.description && <p className="text-sm text-zinc-400 mt-4 leading-relaxed border-t border-white/10 pt-4">{exp.description}</p>}
                                         </div>
                                     </div>
                                 ))}
@@ -496,19 +505,19 @@ export default function Profile() {
                         </motion.div>
 
                         {/* Projects */}
-                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
-                            <h2 className="flex items-center gap-3 mb-8 text-xl font-bold text-white font-mono tracking-tight"><FolderGit2 className="w-6 h-6 text-green-400" /> Featured Projects</h2>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-8 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><FolderGit2 className="w-6 h-6 text-green-400" /> Featured Projects</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                {profile.projects.length === 0 ? <p className="text-sm text-slate-500 col-span-2 font-mono">No projects added.</p> : profile.projects.map(proj => (
-                                    <div key={proj.id} className="p-6 border rounded-2xl bg-[#010409] border-white/10 hover:border-green-500/50 transition-all group flex flex-col h-full shadow-lg relative overflow-hidden">
+                                {profile.projects.length === 0 ? <p className="text-sm text-zinc-500 col-span-2 font-mono">No projects added.</p> : profile.projects.map(proj => (
+                                    <div key={proj.id} className="p-6 border rounded-2xl bg-zinc-950/50 border-white/10 hover:border-green-500/50 transition-all group flex flex-col h-full shadow-lg relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-green-400 to-transparent -translate-x-full group-hover:animate-[scan_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100"></div>
                                         <div className="flex justify-between items-start mb-3">
-                                            <h3 className="font-bold text-white font-mono text-base group-hover:text-green-400 transition-colors">{proj.name}</h3>
-                                            {proj.link && <a href={proj.link} target="_blank" rel="noreferrer"><LinkIcon className="w-4 h-4 text-slate-500 hover:text-green-400 transition-colors" /></a>}
+                                            <h3 className="font-bold text-zinc-100 font-outfit text-base group-hover:text-green-400 transition-colors">{proj.name}</h3>
+                                            {proj.link && <a href={proj.link} target="_blank" rel="noreferrer"><LinkIcon className="w-4 h-4 text-zinc-500 hover:text-green-400 transition-colors" /></a>}
                                         </div>
-                                        <p className="text-sm text-slate-400 mb-6 flex-grow leading-relaxed">{proj.description}</p>
+                                        <p className="text-sm text-zinc-400 mb-6 flex-grow leading-relaxed">{proj.description}</p>
                                         <div className="flex flex-wrap gap-2 mt-auto">
-                                            {proj.tags.map(tag => <span key={tag} className="text-[10px] font-mono px-2 py-1 bg-white/5 border border-white/10 rounded-md text-slate-300">{tag}</span>)}
+                                            {proj.tags.map(tag => <span key={tag} className="text-[10px] font-mono px-2 py-1 bg-white/5 border border-white/10 rounded-md text-zinc-300">{tag}</span>)}
                                         </div>
                                     </div>
                                 ))}
@@ -519,44 +528,44 @@ export default function Profile() {
                     {/* RIGHT PANEL CHIPS - STICKY FOR HIGH END UX */}
                     <div className="space-y-8 lg:sticky lg:top-24 h-fit">
                         {/* Tech Stack */}
-                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
-                            <h2 className="flex items-center gap-3 mb-6 text-xl font-bold text-white font-mono tracking-tight"><Code className="w-6 h-6 text-purple-400" /> Tech Stack</h2>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="flex items-center gap-3 mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight"><Code className="w-6 h-6 text-purple-400" /> Tech Stack</h2>
                             <div className="flex flex-wrap gap-2">
-                                {profile.skills.length === 0 ? <p className="text-sm text-slate-500 font-mono">No skills added.</p> : profile.skills.map((skill) => (
+                                {profile.skills.length === 0 ? <p className="text-sm text-zinc-500 font-mono">No skills added.</p> : profile.skills.map((skill) => (
                                     <span key={skill} className="px-3.5 py-1.5 text-xs font-mono font-medium text-sky-300 bg-sky-500/10 border border-sky-500/20 rounded-lg">{skill}</span>
                                 ))}
                             </div>
                         </motion.div>
 
                         {/* Social Anchors */}
-                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
-                            <h2 className="mb-6 text-xl font-bold text-white font-mono tracking-tight">Access Nodes</h2>
+                        <motion.div variants={fadeUp} className="bento-card p-8">
+                            <h2 className="mb-6 text-xl font-bold text-zinc-100 font-outfit tracking-tight">Access Nodes</h2>
                             <div className="space-y-3">
                                 {profile.github && (
-                                    <a href={`https://${profile.github}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-[#010409] border-white/10 hover:border-slate-400 transition-all group shadow-sm">
-                                        <Github className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
-                                        <span className="text-sm font-mono text-slate-300 group-hover:text-white transition-colors">{profile.github}</span>
+                                    <a href={`https://${profile.github}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-slate-400 transition-all group shadow-sm">
+                                        <Github className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.github}</span>
                                     </a>
                                 )}
                                 {profile.youtube && (
-                                    <a href={`https://youtube.com/@${profile.youtube}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-[#010409] border-white/10 hover:border-red-500/50 transition-all group shadow-sm">
+                                    <a href={`https://youtube.com/@${profile.youtube}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-red-500/50 transition-all group shadow-sm">
                                         <Youtube className="w-5 h-5 text-red-500" />
-                                        <span className="text-sm font-mono text-slate-300 group-hover:text-white transition-colors">{profile.youtube}</span>
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.youtube}</span>
                                     </a>
                                 )}
                                 {profile.linkedin && (
-                                    <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-[#010409] border-white/10 hover:border-blue-500/50 transition-all group shadow-sm">
+                                    <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-blue-500/50 transition-all group shadow-sm">
                                         <Linkedin className="w-5 h-5 text-blue-500" />
-                                        <span className="text-sm font-mono text-slate-300 group-hover:text-white transition-colors">{profile.linkedin}</span>
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.linkedin}</span>
                                     </a>
                                 )}
                                 {profile.website && (
-                                    <a href={`https://${profile.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-[#010409] border-white/10 hover:border-sky-500/50 transition-all group shadow-sm">
+                                    <a href={`https://${profile.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-950/50 border-white/10 hover:border-sky-500/50 transition-all group shadow-sm">
                                         <LinkIcon className="w-5 h-5 text-sky-400" />
-                                        <span className="text-sm font-mono text-slate-300 group-hover:text-white transition-colors">{profile.website}</span>
+                                        <span className="text-sm font-mono text-zinc-300 group-hover:text-white transition-colors">{profile.website}</span>
                                     </a>
                                 )}
-                                {!profile.github && !profile.youtube && !profile.website && <p className="text-sm text-slate-500 font-mono">No nodes linked.</p>}
+                                {!profile.github && !profile.youtube && !profile.website && <p className="text-sm text-zinc-500 font-mono">No nodes linked.</p>}
                             </div>
                         </motion.div>
                     </div>
@@ -568,32 +577,32 @@ export default function Profile() {
             <AnimatePresence>
                 {isEditing && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl bento-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
                             <div className="flex justify-between items-center p-5 border-b border-white/10 bg-black/40 backdrop-blur-md">
-                                <h2 className="text-lg font-bold text-white font-mono flex items-center gap-2"><Edit3 className="w-5 h-5 text-sky-400" /> System Configuration</h2>
-                                <button onClick={() => setIsEditing(false)} className="text-slate-400 hover:text-white transition-colors p-1"><X size={20} /></button>
+                                <h2 className="text-lg font-bold text-zinc-100 font-outfit flex items-center gap-2"><Edit3 className="w-5 h-5 text-sky-400" /> System Configuration</h2>
+                                <button onClick={() => setIsEditing(false)} className="text-zinc-400 hover:text-white transition-colors p-1"><X size={20} /></button>
                             </div>
 
-                            <div className="p-6 overflow-y-auto space-y-8 flex-1 custom-scrollbar bg-[#050b14]">
+                            <div className="p-6 overflow-y-auto space-y-8 flex-1 custom-scrollbar bg-zinc-950">
                                 <form id="editProfileForm" onSubmit={(e) => { e.preventDefault(); saveProfileToDatabase(); }} className="space-y-5">
 
                                     {/* IMAGE UPLOADS & STATUS */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-2">
                                         <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
-                                            <label className="block mb-2 text-xs text-slate-400 font-mono uppercase tracking-wider">Avatar Image</label>
-                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'avatar')} className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-sky-500/10 file:text-sky-400 hover:file:bg-sky-500/20 cursor-pointer transition-colors" />
+                                            <label className="block mb-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">Avatar Image</label>
+                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'avatar')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-sky-500/10 file:text-sky-400 hover:file:bg-sky-500/20 cursor-pointer transition-colors" />
                                         </div>
                                         <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
-                                            <label className="block mb-2 text-xs text-slate-400 font-mono uppercase tracking-wider">Banner Image</label>
-                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer transition-colors" />
+                                            <label className="block mb-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">Banner Image</label>
+                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} className="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer transition-colors" />
                                         </div>
                                         {/* STATUS DROPDOWN */}
                                         <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
-                                            <label className="block mb-2 text-xs text-slate-400 font-mono uppercase tracking-wider">Current Status</label>
+                                            <label className="block mb-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">Current Status</label>
                                             <select
                                                 value={profile.availability}
                                                 onChange={e => setProfile({ ...profile, availability: e.target.value as any })}
-                                                className="w-full bg-[#010409] border border-white/10 text-slate-300 text-xs font-mono rounded-lg px-3 py-2 outline-none focus:border-sky-500"
+                                                className="w-full bg-zinc-950/50 border border-white/10 text-zinc-300 text-xs font-mono rounded-lg px-3 py-2 outline-none focus:border-sky-500"
                                             >
                                                 <option value="Seeking Internships">Seeking Internships</option>
                                                 <option value="Looking for Teammates">Looking for Teammates</option>
@@ -603,21 +612,21 @@ export default function Profile() {
                                         </div>
                                     </div>
 
-                                    <div><label className="block mb-1.5 text-xs text-slate-400 font-mono uppercase tracking-wider">Full Name</label><input type="text" value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} className="w-full px-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" required /></div>
-                                    <div><label className="block mb-1.5 text-xs text-slate-400 font-mono uppercase tracking-wider">Headline</label><input type="text" value={profile.headline} onChange={e => setProfile({ ...profile, headline: e.target.value })} className="w-full px-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" /></div>
-                                    <div><label className="block mb-1.5 text-xs text-slate-400 font-mono uppercase tracking-wider">Location</label><input type="text" value={profile.location} onChange={e => setProfile({ ...profile, location: e.target.value })} className="w-full px-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" /></div>
-                                    <div><label className="block mb-1.5 text-xs text-slate-400 font-mono uppercase tracking-wider">About Me (Markdown)</label><textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} className="w-full h-32 px-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-sky-500 resize-none transition-colors"></textarea></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">Full Name</label><input type="text" value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} className="w-full px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" required /></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">Headline</label><input type="text" value={profile.headline} onChange={e => setProfile({ ...profile, headline: e.target.value })} className="w-full px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" /></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">Location</label><input type="text" value={profile.location} onChange={e => setProfile({ ...profile, location: e.target.value })} className="w-full px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" /></div>
+                                    <div><label className="block mb-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">About Me (Markdown)</label><textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} className="w-full h-32 px-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-sans text-sm outline-none focus:border-sky-500 resize-none transition-colors"></textarea></div>
                                 </form>
 
                                 <div className="pt-8 border-t border-white/10">
                                     <label className="block mb-4 text-sm font-bold text-blue-400 font-mono flex items-center gap-2"><GraduationCap className="w-4 h-4" /> EDUCATION_ARRAY</label>
                                     {profile.education.map(edu => (
                                         <div key={edu.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
-                                            <div><p className="text-sm font-bold text-white">{edu.school}</p><p className="text-xs text-slate-400 mt-1">{edu.degree}</p></div>
+                                            <div><p className="text-sm font-bold text-white">{edu.school}</p><p className="text-xs text-zinc-400 mt-1">{edu.degree}</p></div>
                                             <button type="button" onClick={() => removeEducation(edu.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-[#010409]">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-zinc-950/50">
                                         <input type="text" value={newEdu.school} onChange={e => setNewEdu({ ...newEdu, school: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="School/University" />
                                         <input type="text" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Degree (e.g. B.Tech IT)" />
                                         <input type="text" value={newEdu.duration} onChange={e => setNewEdu({ ...newEdu, duration: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Duration (e.g. 2025-2029)" />
@@ -630,11 +639,11 @@ export default function Profile() {
                                     <label className="block mb-4 text-sm font-bold text-indigo-400 font-mono flex items-center gap-2"><Briefcase className="w-4 h-4" /> EXPERIENCE_ARRAY</label>
                                     {profile.experiences.map(exp => (
                                         <div key={exp.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
-                                            <div><p className="text-sm font-bold text-white">{exp.role}</p><p className="text-xs text-slate-400 mt-1">{exp.company}</p></div>
+                                            <div><p className="text-sm font-bold text-white">{exp.role}</p><p className="text-xs text-zinc-400 mt-1">{exp.company}</p></div>
                                             <button type="button" onClick={() => removeExperience(exp.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-[#010409]">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-zinc-950/50">
                                         <input type="text" value={newExp.role} onChange={e => setNewExp({ ...newExp, role: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Role/Title" />
                                         <input type="text" value={newExp.company} onChange={e => setNewExp({ ...newExp, company: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Company" />
                                         <input type="text" value={newExp.duration} onChange={e => setNewExp({ ...newExp, duration: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Duration (e.g. Jan 2026 - Present)" />
@@ -649,12 +658,12 @@ export default function Profile() {
                                         <div key={proj.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
                                             <div>
                                                 <p className="text-sm font-bold text-white">{proj.name}</p>
-                                                <p className="text-xs text-slate-400 mt-1 line-clamp-1">{proj.description}</p>
+                                                <p className="text-xs text-zinc-400 mt-1 line-clamp-1">{proj.description}</p>
                                             </div>
                                             <button type="button" onClick={() => removeProject(proj.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-[#010409]">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-zinc-950/50">
                                         <input type="text" value={newProj.name} onChange={e => setNewProj({ ...newProj, name: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Name" />
                                         <input type="text" value={newProj.link} onChange={e => setNewProj({ ...newProj, link: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Link (URL)" />
                                         <input type="text" value={newProj.tags} onChange={e => setNewProj({ ...newProj, tags: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Tags (comma separated)" />
@@ -664,9 +673,9 @@ export default function Profile() {
                                 </div>
 
                                 <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-xs text-slate-400 font-mono font-bold uppercase tracking-wider">Tech Stack</label>
+                                    <label className="block mb-4 text-xs text-zinc-400 font-mono font-bold uppercase tracking-wider">Tech Stack</label>
                                     <div className="flex gap-3">
-                                        <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} className="flex-1 px-4 py-2.5 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500" placeholder="Type a skill & press Enter" />
+                                        <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} className="flex-1 px-4 py-2.5 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500" placeholder="Type a skill & press Enter" />
                                         <button type="button" onClick={addSkill} className="px-6 py-2.5 bg-[#21262d] border border-white/10 rounded-xl text-white font-mono font-bold hover:bg-[#30363d] transition-colors">Add</button>
                                     </div>
                                     <div className="flex flex-wrap gap-2 mt-4">
@@ -679,30 +688,30 @@ export default function Profile() {
                                 </div>
 
                                 <div className="pt-8 border-t border-white/10">
-                                    <label className="block mb-4 text-xs text-slate-400 font-mono font-bold uppercase tracking-wider">Social Links</label>
+                                    <label className="block mb-4 text-xs text-zinc-400 font-mono font-bold uppercase tracking-wider">Social Links</label>
                                     <div className="space-y-4">
                                         <div className="relative">
-                                            <Github className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                            <input type="text" value={profile.github} onChange={e => setProfile({ ...profile, github: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-slate-500 transition-colors" placeholder="github.com/username" />
+                                            <Github className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                            <input type="text" value={profile.github} onChange={e => setProfile({ ...profile, github: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-slate-500 transition-colors" placeholder="github.com/username" />
                                         </div>
                                         <div className="relative">
                                             <Youtube className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
-                                            <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-red-500 transition-colors" placeholder="youtube.com/@channel" />
+                                            <input type="text" value={profile.youtube} onChange={e => setProfile({ ...profile, youtube: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-red-500 transition-colors" placeholder="youtube.com/@channel" />
                                         </div>
                                         <div className="relative">
                                             <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
-                                            <input type="text" value={profile.linkedin} onChange={e => setProfile({ ...profile, linkedin: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-blue-500 transition-colors" placeholder="linkedin.com/in/username" />
+                                            <input type="text" value={profile.linkedin} onChange={e => setProfile({ ...profile, linkedin: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-blue-500 transition-colors" placeholder="linkedin.com/in/username" />
                                         </div>
                                         <div className="relative">
                                             <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-500" />
-                                            <input type="text" value={profile.website} onChange={e => setProfile({ ...profile, website: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#010409] border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" placeholder="yourportfolio.dev" />
+                                            <input type="text" value={profile.website} onChange={e => setProfile({ ...profile, website: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-zinc-950/50 border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-sky-500 transition-colors" placeholder="yourportfolio.dev" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="p-5 border-t border-white/10 bg-black/40 backdrop-blur-md flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2.5 font-bold text-slate-300 rounded-xl hover:bg-white/5 font-mono transition-colors">
+                                <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2.5 font-bold text-zinc-300 rounded-xl hover:bg-white/5 font-mono transition-colors">
                                     Cancel
                                 </button>
                                 <button type="submit" form="editProfileForm" disabled={isSaving} className="px-8 py-2.5 font-bold text-white rounded-xl bg-sky-600 hover:bg-sky-500 shadow-[0_0_20px_rgba(2,132,199,0.3)] disabled:opacity-50 flex items-center gap-2 transition-all">
@@ -729,17 +738,17 @@ export default function Profile() {
                                 <div className="p-2 bg-purple-500/10 rounded-lg">
                                     <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
                                 </div>
-                                <h2 className="text-base font-bold text-white font-mono">ScholarSphere AI Engine</h2>
+                                <h2 className="text-base font-bold text-zinc-100 font-outfit">ScholarSphere AI Engine</h2>
                                 <div className="flex-1"></div>
                                 <button 
                                     onClick={runAnalysis} 
                                     disabled={isAnalyzing} 
                                     title="Re-run Analysis"
-                                    className="p-1.5 bg-white/5 border border-white/10 text-slate-400 hover:text-white rounded-lg transition-colors disabled:opacity-50"
+                                    className="p-1.5 bg-white/5 border border-white/10 text-zinc-400 hover:text-white rounded-lg transition-colors disabled:opacity-50"
                                 >
                                     <RefreshCw size={16} className={`${isAnalyzing ? 'animate-spin' : ''}`} />
                                 </button>
-                                <button onClick={() => setShowAnalyzer(false)} className="text-slate-400 hover:text-white transition-colors p-1.5 bg-white/5 border border-white/10 rounded-lg"><X size={16} /></button>
+                                <button onClick={() => setShowAnalyzer(false)} className="text-zinc-400 hover:text-white transition-colors p-1.5 bg-white/5 border border-white/10 rounded-lg"><X size={16} /></button>
                             </div>
                             
                             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
@@ -747,7 +756,7 @@ export default function Profile() {
                                     <div className="flex flex-col items-center justify-center py-20 space-y-4">
                                         <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
                                         <p className="text-purple-400 font-mono animate-pulse text-sm">Evaluating matrix parameters...</p>
-                                        <p className="text-slate-500 text-xs font-mono">Scanning skills, completeness, projects and CGPA fit...</p>
+                                        <p className="text-zinc-500 text-xs font-mono">Scanning skills, completeness, projects and CGPA fit...</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-6">
@@ -776,14 +785,14 @@ export default function Profile() {
                                                 </svg>
                                                 <div className="absolute flex flex-col items-center">
                                                     <span className="text-2xl font-extrabold text-white font-mono">{atsScore ?? 0}%</span>
-                                                    <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">ATS MATCH</span>
+                                                    <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-wider">ATS MATCH</span>
                                                 </div>
                                             </div>
                                             <div className="flex-1 space-y-2 w-full text-center sm:text-left">
                                                 <div className="text-white text-sm font-bold font-mono flex items-center justify-center sm:justify-start gap-1.5">
                                                     <Award className="w-4 h-4 text-purple-400" /> ATS Matrix Rating
                                                 </div>
-                                                <p className="text-xs text-slate-400 leading-relaxed font-mono">
+                                                <p className="text-xs text-zinc-400 leading-relaxed font-mono">
                                                     {(atsScore ?? 0) >= 80 
                                                         ? "Excellent profile! Your details align well with standard recruitment screens." 
                                                         : (atsScore ?? 0) >= 55 
@@ -802,7 +811,7 @@ export default function Profile() {
                                             ].map((item, idx) => (
                                                 <div key={idx} className="p-3.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 flex flex-col items-center text-center font-mono">
                                                     <item.icon className={`w-4 h-4 ${item.color} mb-2`} />
-                                                    <span className="text-[10px] text-slate-500 leading-none">{item.label}</span>
+                                                    <span className="text-[10px] text-zinc-500 leading-none">{item.label}</span>
                                                     <span className="text-sm font-bold text-white mt-2">{item.val}%</span>
                                                 </div>
                                             ))}
@@ -816,7 +825,7 @@ export default function Profile() {
                                                 </h3>
                                                 <ul className="space-y-2">
                                                     {suggestions.map((sug, idx) => (
-                                                        <li key={idx} className="text-xs text-slate-300 flex items-start gap-2 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-lg">
+                                                        <li key={idx} className="text-xs text-zinc-300 flex items-start gap-2 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-lg">
                                                             <span className="text-amber-500 font-bold mt-0.5">•</span>
                                                             <span className="leading-relaxed">{sug}</span>
                                                         </li>
@@ -837,7 +846,7 @@ export default function Profile() {
                                                             <div className="flex justify-between items-start gap-4">
                                                                 <div>
                                                                     <div className="text-white font-bold text-sm leading-tight group-hover:text-purple-400 transition-colors">{match.title}</div>
-                                                                    <div className="text-slate-400 text-xs mt-2 leading-relaxed">{match.reason}</div>
+                                                                    <div className="text-zinc-400 text-xs mt-2 leading-relaxed">{match.reason}</div>
                                                                 </div>
                                                                 <ChevronRight className="w-4 h-4 text-purple-400 shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
                                                             </div>
