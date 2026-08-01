@@ -195,18 +195,25 @@ export default function Scholarships() {
                         )}
                     </motion.div>
                 ) : (
-                    <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+                    <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12 perspective-1000">
                         <AnimatePresence>
                             {displayedScholarships.map((scholarship) => (
                                 <motion.div
                                     layout
                                     key={scholarship.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    className="bg-zinc-950/60 backdrop-blur-md border border-white/10 rounded-2xl p-6 flex flex-col hover:border-emerald-500/30 transition-colors"
+                                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                                    whileHover={{ scale: 1.02, rotateY: 2, rotateX: 2, zIndex: 10 }}
+                                    className="bg-zinc-900/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-6 relative overflow-hidden group flex flex-col h-full"
+                                    style={{ transformStyle: 'preserve-3d' }}
                                 >
-                                    <div className="flex justify-between items-start mb-4">
+                                    {/* Glassmorphism Background Gradients */}
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 transition-all duration-700 group-hover:bg-emerald-400/20 group-hover:scale-110 z-0 pointer-events-none"></div>
+                                    <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 transform-origin-left z-0 pointer-events-none"></div>
+
+                                    <div className="relative z-10 flex justify-between items-start mb-4" style={{ transform: 'translateZ(20px)' }}>
                                         <div className="pr-4">
                                             <h2 className="text-xl font-bold text-white font-outfit leading-tight group-hover:text-emerald-400 transition-colors line-clamp-2">{scholarship.title}</h2>
                                             <p className="text-sm text-slate-400 mt-1 font-sans">{scholarship.provider}</p>
@@ -222,7 +229,7 @@ export default function Scholarships() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap gap-4 mb-6 text-sm text-slate-300 font-sans">
+                                    <div className="relative z-10 flex flex-wrap gap-4 mb-6 text-sm text-slate-300 font-sans" style={{ transform: 'translateZ(30px)' }}>
                                         <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
                                             <Banknote className="w-4 h-4 text-emerald-400" />
                                             <span>{scholarship.amount}</span>
@@ -237,7 +244,7 @@ export default function Scholarships() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap gap-2 mb-6">
+                                    <div className="relative z-10 flex flex-wrap gap-2 mb-6" style={{ transform: 'translateZ(40px)' }}>
                                         {scholarship.tags.slice(0, 4).map((tag: string) => (
                                             <span key={tag} className="px-2.5 py-1 text-[11px] font-sans font-medium text-slate-400 bg-white/5 border border-white/5 rounded">
                                                 {tag}
@@ -245,7 +252,7 @@ export default function Scholarships() {
                                         ))}
                                     </div>
 
-                                    <div className="mt-auto pt-5 border-t border-white/5 flex justify-end">
+                                    <div className="relative z-10 mt-auto pt-5 border-t border-white/5 flex justify-end" style={{ transform: 'translateZ(20px)' }}>
                                         <button 
                                             onClick={() => handleApply(scholarship)} 
                                             className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-bold font-sans hover:bg-emerald-500 transition-all"
