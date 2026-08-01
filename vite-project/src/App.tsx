@@ -240,52 +240,6 @@ export default function App() {
                 </div>
               </div>
               
-              {/* Mock Dashboard UI inside Bento 1 */}
-              <div className="relative z-10 w-full mt-6 bg-zinc-950/80 backdrop-blur-md rounded-2xl border border-white/5 overflow-hidden flex flex-col p-4 shadow-inner" style={{ transform: 'translateZ(40px)' }}>
-                 <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
-                    <div className="flex items-center gap-3">
-                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]"></div>
-                       <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase font-sans">Scanning Network...</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20 font-sans">98% Match Found</span>
-                 </div>
-                 <div className="flex flex-col gap-2">
-                    {/* Mock Item 1 */}
-                    <motion.div whileHover={{ scale: 1.01, backgroundColor: "rgba(255,255,255,0.05)" }} className="flex items-center justify-between bg-white/[0.02] rounded-xl p-2.5 border border-white/5 cursor-pointer transition-colors relative overflow-hidden">
-                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-xl"></div>
-                       <div className="flex items-center gap-3 ml-2">
-                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
-                             <Code className="w-4 h-4 text-blue-400" />
-                          </div>
-                          <div>
-                             <div className="text-[13px] text-white font-semibold font-sans flex items-center gap-2">
-                               Global AI Hackathon <span className="px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider bg-zinc-800 text-zinc-400">Online</span>
-                             </div>
-                             <div className="text-[10px] text-slate-400 mt-0.5 font-sans">Matches: React, Node, Python • Closes in 2d</div>
-                          </div>
-                       </div>
-                       <div className="text-emerald-400 font-outfit font-bold text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.5)] flex flex-col items-end leading-none">
-                         99<span className="text-[9px] text-emerald-500/80 uppercase mt-0.5">Fit Score</span>
-                       </div>
-                    </motion.div>
-                    {/* Mock Item 2 */}
-                    <motion.div whileHover={{ scale: 1.01, backgroundColor: "rgba(255,255,255,0.05)" }} className="flex items-center justify-between bg-white/[0.02] rounded-xl p-2.5 border border-white/5 cursor-pointer transition-colors opacity-80 hover:opacity-100 relative overflow-hidden">
-                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500/60 rounded-l-xl"></div>
-                       <div className="flex items-center gap-3 ml-2">
-                          <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center border border-purple-500/20 shrink-0">
-                             <GraduationCap className="w-4 h-4 text-purple-400" />
-                          </div>
-                          <div>
-                             <div className="text-[13px] text-white font-semibold font-sans">Women in Tech Scholarship</div>
-                             <div className="text-[10px] text-slate-400 mt-0.5 font-sans">Matches: CS Major, Junior • Closes in 12d</div>
-                          </div>
-                       </div>
-                       <div className="text-emerald-400/80 font-outfit font-bold text-lg flex flex-col items-end leading-none">
-                         85<span className="text-[9px] text-emerald-500/60 uppercase mt-0.5">Fit Score</span>
-                       </div>
-                    </motion.div>
-                 </div>
-              </div>
             </motion.div>
 
             {/* Bento Item 2 - AI Copilot */}
@@ -335,26 +289,6 @@ export default function App() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3 font-outfit tracking-tight drop-shadow-md">Central Dashboard</h3>
                 <p className="text-slate-300 font-sans text-sm leading-relaxed">Save interesting opportunities and effortlessly track what you've applied to in one unified dashboard.</p>
-              </div>
-              <div className="relative z-10 mt-6 flex flex-col gap-2" style={{ transform: 'translateZ(30px)' }}>
-                 <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl p-3 border border-white/5 shadow-inner transition-all hover:bg-white/[0.05]">
-                    <div className="w-10 h-10 rounded bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 shrink-0">
-                       <span className="text-cyan-400 font-bold font-outfit">12</span>
-                    </div>
-                    <div className="flex-1">
-                       <div className="text-xs font-bold text-white uppercase tracking-wider font-sans">Saved Items</div>
-                       <div className="text-[10px] text-slate-400 mt-0.5 font-sans">Ready to apply</div>
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl p-3 border border-white/5 shadow-inner transition-all hover:bg-white/[0.05]">
-                    <div className="w-10 h-10 rounded bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
-                       <span className="text-emerald-400 font-bold font-outfit">3</span>
-                    </div>
-                    <div className="flex-1">
-                       <div className="text-xs font-bold text-white uppercase tracking-wider font-sans">Applications</div>
-                       <div className="text-[10px] text-slate-400 mt-0.5 font-sans">Currently in progress</div>
-                    </div>
-                 </div>
               </div>
             </motion.div>
 

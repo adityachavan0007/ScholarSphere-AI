@@ -24,29 +24,7 @@ export default function Footer() {
                         </p>
                     </div>
 
-                    {/* About Us Column */}
-                    <div className="flex flex-col gap-6 md:pl-4">
-                        <h4 className="text-white font-semibold text-[17px]">About Us</h4>
-                        <ul className="flex flex-col gap-4">
-                            <li><a href="#" className="text-zinc-300/80 hover:text-white transition-colors text-[15px]">Company History</a></li>
-                            <li><a href="#" className="text-zinc-300/80 hover:text-white transition-colors text-[15px]">Meet the Team</a></li>
-                            <li><a href="#" className="text-zinc-300/80 hover:text-white transition-colors text-[15px]">Employee Handbook</a></li>
-                            <li><a href="#" className="text-zinc-300/80 hover:text-white transition-colors text-[15px]">Careers</a></li>
-                        </ul>
-                    </div>
 
-                    {/* Helpful Links Column */}
-                    <div className="flex flex-col gap-6">
-                        <h4 className="text-white font-semibold text-[17px]">Helpful Links</h4>
-                        <ul className="flex flex-col gap-4">
-                            <li><a href="#" className="text-zinc-300/80 hover:text-white transition-colors text-[15px]">FAQs</a></li>
-                            <li><a href="#" className="text-zinc-300/80 hover:text-white transition-colors text-[15px]">Support</a></li>
-                            <li className="flex items-center gap-2">
-                                <a href="#" className="text-zinc-300/80 hover:text-white transition-colors text-[15px]">Live Chat</a>
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-12"></div>
-                            </li>
-                        </ul>
-                    </div>
 
                     {/* Contact Us Column */}
                     <div className="flex flex-col gap-6">
@@ -78,13 +56,7 @@ export default function Footer() {
 
                 {/* Bottom Section - Socials & Copyright */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative z-20">
-                    <div className="flex items-center gap-6">
-                        <a href="#" className="text-zinc-400 hover:text-white transition-colors"><Facebook className="w-5 h-5" strokeWidth={1.5} /></a>
-                        <a href="#" className="text-zinc-400 hover:text-white transition-colors"><Instagram className="w-5 h-5" strokeWidth={1.5} /></a>
-                        <a href="#" className="text-zinc-400 hover:text-white transition-colors"><Twitter className="w-5 h-5" strokeWidth={1.5} /></a>
-                        <a href="#" className="text-zinc-400 hover:text-white transition-colors"><Dribbble className="w-5 h-5" strokeWidth={1.5} /></a>
-                        <a href="#" className="text-zinc-400 hover:text-white transition-colors"><Globe className="w-5 h-5" strokeWidth={1.5} /></a>
-                    </div>
+                        {/* Social icons removed pending real accounts */}
                     <div className="text-zinc-300/80 text-[14px]">
                         © 2026 ScholarSphere AI. All rights reserved.
                     </div>

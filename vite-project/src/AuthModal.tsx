@@ -220,9 +220,6 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                                             {view === "login" ? "Sign Up" : "Log In"}
                                         </button>
                                     </p>
-                                    <p className="text-[11px] text-zinc-500 mt-6 leading-relaxed max-w-[300px] mx-auto">
-                                        By proceeding, you agree to creating a ScholarSphere account subject to our <a href="#" className="text-zinc-300 hover:underline">Terms of Service</a> and <a href="#" className="text-zinc-300 hover:underline">Privacy Policy</a>.
-                                    </p>
                                 </div>
                             </>
                         )}
