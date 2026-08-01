@@ -139,7 +139,8 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                         {verificationSent ? (
                             <>
                                 <h2 className="text-xl font-semibold text-white mb-2 font-inter tracking-tight">Check your email</h2>
-                                <p className="text-sm text-zinc-400 mb-6 text-center">We sent a verification link to <span className="text-white">{email}</span>.</p>
+                                <p className="text-sm text-zinc-400 mb-2 text-center">We sent a verification link to <span className="text-white">{email}</span>.</p>
+                                <p className="text-xs text-zinc-500 mb-6 text-center italic">Tip: If you don't receive it, you might already have an account.</p>
                                 <button
                                     onClick={() => { setVerificationSent(false); setView("login"); }}
                                     className="w-full py-2.5 px-4 bg-white text-black text-sm font-medium rounded-md hover:bg-zinc-200 transition-colors"
