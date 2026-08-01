@@ -112,12 +112,12 @@ const EMPTY_PROFILE: ProfileData = {
 
 // --- ANIMATION VARIANTS ---
 const staggerContainer = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 1 },
   show: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 1, y: 20 },
   show: {
     opacity: 1,
     y: 0,
