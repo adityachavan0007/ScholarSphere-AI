@@ -45,6 +45,14 @@ export default function App() {
 
         const { data } = supabase.auth.onAuthStateChange((_event, session) => {
           setIsLoggedIn(!!session);
+          
+          // Automatic Routing based on Auth Events
+          if (_event === 'SIGNED_IN') {
+            setIsModalOpen(false);
+            setCurrentPage("profile");
+          } else if (_event === 'SIGNED_OUT') {
+            setCurrentPage("home");
+          }
         });
         authSubscription = data.subscription;
       } catch (error) {

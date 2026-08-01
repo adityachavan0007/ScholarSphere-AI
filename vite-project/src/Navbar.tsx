@@ -39,8 +39,8 @@ export default function Navbar({
   // REAL BACKEND SIGN OUT
   const handleSignOut = async () => {
     try {
+      // App.tsx onAuthStateChange will catch this and route to home automatically
       await supabase.auth.signOut();
-      window.location.href = "/"; // Instant redirect, clears all state safely
     } catch (error) {
       console.error("Error signing out:", error);
     }

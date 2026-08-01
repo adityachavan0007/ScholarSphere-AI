@@ -62,10 +62,12 @@ export default function AuthModal({ isOpen, onClose, initialView = "signup", onS
                     if (profileError) console.error("Error creating profile:", profileError);
                 }
 
-                if (data.user && !data.session) {
-                    setVerificationSent(true);
-                } else if (data.session) {
+                // If session exists (Email Confirmations OFF), log them in instantly.
+                // If session is null (Email Confirmations ON), show the verification screen.
+                if (data.session) {
                     onSuccess();
+                } else if (data.user) {
+                    setVerificationSent(true);
                 }
 
             } else if (view === "login") {
