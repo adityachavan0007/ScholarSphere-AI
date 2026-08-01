@@ -355,7 +355,7 @@ export default function Profile() {
     if (!profile.name && !isEditing) {
         return (
             <div className="flex flex-col items-center justify-center w-full min-h-screen pt-16 bg-black/95 relative overflow-hidden px-4">
-                <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 100 }} className="w-full max-w-md p-8 text-center glass-panel/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 100 }} className="w-full max-w-md p-8 text-center bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                     <div className="flex justify-center mb-6">
                         <div className="p-4 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/10 border border-sky-500/30 shadow-inner">
                             <User className="w-10 h-10 text-sky-400" />
@@ -388,7 +388,7 @@ export default function Profile() {
                 className="max-w-5xl mx-auto space-y-8 relative z-10"
             >
                 {/* PROFILE CONTAINER HEADER */}
-                <motion.div variants={fadeUp} className="relative w-full overflow-hidden glass-panel/80 backdrop-blur-xl border border-white/10 hover:border-sky-500/30 transition-colors duration-500 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] group">
+                <motion.div variants={fadeUp} className="relative w-full overflow-hidden bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-sky-500/30 transition-colors duration-500 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] group">
                     <div className="h-32 sm:h-56 relative overflow-hidden bg-[#050b14]">
                         {profile.bannerUrl ? (
                             <img src={profile.bannerUrl} alt="Profile Banner" className="w-full h-full object-cover opacity-60 mix-blend-screen group-hover:scale-105 transition-transform duration-700" />
@@ -402,7 +402,7 @@ export default function Profile() {
                     <div className="px-6 pb-8 sm:px-10">
                         <div className="flex flex-col items-start justify-between sm:flex-row sm:items-end">
                             <div className="relative flex items-end -mt-16 sm:-mt-20">
-                                <div className={`p-2 glass-panel rounded-3xl border ${activeStatus.border} ${activeStatus.glow} relative cursor-pointer transition-all duration-500`} onClick={() => setIsEditing(true)}>
+                                <div className={`p-2 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-3xl border ${activeStatus.border} ${activeStatus.glow} relative cursor-pointer transition-all duration-500`} onClick={() => setIsEditing(true)}>
                                     <div className={`flex items-center justify-center w-28 h-28 sm:w-36 sm:h-36 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/20 border border-white/10 transition-all overflow-hidden relative shadow-inner group/avatar`}>
                                         {profile.avatarUrl ? <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <Terminal className="w-12 h-12 text-sky-400 sm:w-14 sm:h-14" />}
                                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center"><Edit3 className="w-6 h-6 text-white" /></div>
@@ -452,18 +452,18 @@ export default function Profile() {
                     <div className="space-y-8 lg:col-span-2">
 
                         {/* About/Bio */}
-                        <motion.div variants={fadeUp} className="p-8 glass-panel/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
+                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
                             <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-white font-mono tracking-tight"><span className="text-sky-400">{">"}</span> about_me.md</h2>
                             <p className="leading-relaxed text-slate-400 text-sm sm:text-base whitespace-pre-line">{profile.bio || "No bio added yet."}</p>
                         </motion.div>
 
                         {/* Education Timeline */}
-                        <motion.div variants={fadeUp} className="p-8 glass-panel/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
+                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
                             <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-white font-mono tracking-tight"><GraduationCap className="w-6 h-6 text-blue-400" /> Education Matrix</h2>
                             <div className="relative space-y-8 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-500/50 before:via-[#30363d] before:to-transparent">
                                 {profile.education.length === 0 ? <p className="text-sm text-slate-500 ml-8 font-mono">No education matrix initialized.</p> : profile.education.map((edu, idx) => (
                                     <div key={edu.id} className="relative pl-8 group">
-                                        <div className="absolute w-4 h-4 glass-panel rounded-full left-[4px] top-1.5 border-2 border-blue-500 z-10 group-hover:bg-blue-500 transition-colors duration-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                                        <div className="absolute w-4 h-4 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-full left-[4px] top-1.5 border-2 border-blue-500 z-10 group-hover:bg-blue-500 transition-colors duration-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
                                         <div className="bg-[#010409] border border-white/10 p-6 rounded-2xl group-hover:border-blue-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative overflow-hidden">
                                             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                                             <h3 className="font-bold text-white text-lg group-hover:text-blue-400 transition-colors">{edu.school}</h3>
@@ -477,12 +477,12 @@ export default function Profile() {
                         </motion.div>
 
                         {/* Experience Timeline */}
-                        <motion.div variants={fadeUp} className="p-8 glass-panel/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
+                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
                             <h2 className="flex items-center gap-3 mb-10 text-xl font-bold text-white font-mono tracking-tight"><Briefcase className="w-6 h-6 text-indigo-400" /> Experience Log</h2>
                             <div className="relative space-y-8 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-500/50 before:via-[#30363d] before:to-transparent">
                                 {profile.experiences.length === 0 ? <p className="text-sm text-slate-500 ml-8 font-mono">No experience logs found.</p> : profile.experiences.map((exp, idx) => (
                                     <div key={exp.id} className="relative pl-8 group">
-                                        <div className="absolute w-4 h-4 glass-panel rounded-full left-[4px] top-1.5 border-2 border-indigo-500 z-10 group-hover:bg-indigo-500 transition-colors duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                                        <div className="absolute w-4 h-4 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-full left-[4px] top-1.5 border-2 border-indigo-500 z-10 group-hover:bg-indigo-500 transition-colors duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
                                         <div className="bg-[#010409] border border-white/10 p-6 rounded-2xl group-hover:border-indigo-500/50 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] relative overflow-hidden">
                                             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                                             <h3 className="font-bold text-white text-lg group-hover:text-indigo-400 transition-colors">{exp.role}</h3>
@@ -496,7 +496,7 @@ export default function Profile() {
                         </motion.div>
 
                         {/* Projects */}
-                        <motion.div variants={fadeUp} className="p-8 glass-panel/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
+                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
                             <h2 className="flex items-center gap-3 mb-8 text-xl font-bold text-white font-mono tracking-tight"><FolderGit2 className="w-6 h-6 text-green-400" /> Featured Projects</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 {profile.projects.length === 0 ? <p className="text-sm text-slate-500 col-span-2 font-mono">No projects added.</p> : profile.projects.map(proj => (
@@ -519,7 +519,7 @@ export default function Profile() {
                     {/* RIGHT PANEL CHIPS - STICKY FOR HIGH END UX */}
                     <div className="space-y-8 lg:sticky lg:top-24 h-fit">
                         {/* Tech Stack */}
-                        <motion.div variants={fadeUp} className="p-8 glass-panel/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
+                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
                             <h2 className="flex items-center gap-3 mb-6 text-xl font-bold text-white font-mono tracking-tight"><Code className="w-6 h-6 text-purple-400" /> Tech Stack</h2>
                             <div className="flex flex-wrap gap-2">
                                 {profile.skills.length === 0 ? <p className="text-sm text-slate-500 font-mono">No skills added.</p> : profile.skills.map((skill) => (
@@ -529,7 +529,7 @@ export default function Profile() {
                         </motion.div>
 
                         {/* Social Anchors */}
-                        <motion.div variants={fadeUp} className="p-8 glass-panel/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
+                        <motion.div variants={fadeUp} className="p-8 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none/80 backdrop-blur-xl border border-white/10 hover:border-[#4b5563] transition-colors rounded-3xl shadow-xl">
                             <h2 className="mb-6 text-xl font-bold text-white font-mono tracking-tight">Access Nodes</h2>
                             <div className="space-y-3">
                                 {profile.github && (
@@ -568,7 +568,7 @@ export default function Profile() {
             <AnimatePresence>
                 {isEditing && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl glass-panel border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-3xl bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
                             <div className="flex justify-between items-center p-5 border-b border-white/10 bg-black/40 backdrop-blur-md">
                                 <h2 className="text-lg font-bold text-white font-mono flex items-center gap-2"><Edit3 className="w-5 h-5 text-sky-400" /> System Configuration</h2>
                                 <button onClick={() => setIsEditing(false)} className="text-slate-400 hover:text-white transition-colors p-1"><X size={20} /></button>
@@ -579,16 +579,16 @@ export default function Profile() {
 
                                     {/* IMAGE UPLOADS & STATUS */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-2">
-                                        <div className="p-4 border border-white/10 glass-panel rounded-xl">
+                                        <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
                                             <label className="block mb-2 text-xs text-slate-400 font-mono uppercase tracking-wider">Avatar Image</label>
                                             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'avatar')} className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-sky-500/10 file:text-sky-400 hover:file:bg-sky-500/20 cursor-pointer transition-colors" />
                                         </div>
-                                        <div className="p-4 border border-white/10 glass-panel rounded-xl">
+                                        <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
                                             <label className="block mb-2 text-xs text-slate-400 font-mono uppercase tracking-wider">Banner Image</label>
                                             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer transition-colors" />
                                         </div>
                                         {/* STATUS DROPDOWN */}
-                                        <div className="p-4 border border-white/10 glass-panel rounded-xl">
+                                        <div className="p-4 border border-white/10 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-xl">
                                             <label className="block mb-2 text-xs text-slate-400 font-mono uppercase tracking-wider">Current Status</label>
                                             <select
                                                 value={profile.availability}
@@ -612,16 +612,16 @@ export default function Profile() {
                                 <div className="pt-8 border-t border-white/10">
                                     <label className="block mb-4 text-sm font-bold text-blue-400 font-mono flex items-center gap-2"><GraduationCap className="w-4 h-4" /> EDUCATION_ARRAY</label>
                                     {profile.education.map(edu => (
-                                        <div key={edu.id} className="flex justify-between items-start p-4 mb-3 glass-panel border border-white/10 rounded-xl">
+                                        <div key={edu.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
                                             <div><p className="text-sm font-bold text-white">{edu.school}</p><p className="text-xs text-slate-400 mt-1">{edu.degree}</p></div>
                                             <button type="button" onClick={() => removeEducation(edu.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-[#010409]">
-                                        <input type="text" value={newEdu.school} onChange={e => setNewEdu({ ...newEdu, school: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="School/University" />
-                                        <input type="text" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Degree (e.g. B.Tech IT)" />
-                                        <input type="text" value={newEdu.duration} onChange={e => setNewEdu({ ...newEdu, duration: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Duration (e.g. 2025-2029)" />
-                                        <input type="text" value={newEdu.details} onChange={e => setNewEdu({ ...newEdu, details: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Details/GPA" />
+                                        <input type="text" value={newEdu.school} onChange={e => setNewEdu({ ...newEdu, school: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="School/University" />
+                                        <input type="text" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Degree (e.g. B.Tech IT)" />
+                                        <input type="text" value={newEdu.duration} onChange={e => setNewEdu({ ...newEdu, duration: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Duration (e.g. 2025-2029)" />
+                                        <input type="text" value={newEdu.details} onChange={e => setNewEdu({ ...newEdu, details: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="Details/GPA" />
                                         <button type="button" onClick={addEducation} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-lg font-mono font-bold hover:bg-blue-500/20 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Node</button>
                                     </div>
                                 </div>
@@ -629,16 +629,16 @@ export default function Profile() {
                                 <div className="pt-8 border-t border-white/10">
                                     <label className="block mb-4 text-sm font-bold text-indigo-400 font-mono flex items-center gap-2"><Briefcase className="w-4 h-4" /> EXPERIENCE_ARRAY</label>
                                     {profile.experiences.map(exp => (
-                                        <div key={exp.id} className="flex justify-between items-start p-4 mb-3 glass-panel border border-white/10 rounded-xl">
+                                        <div key={exp.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
                                             <div><p className="text-sm font-bold text-white">{exp.role}</p><p className="text-xs text-slate-400 mt-1">{exp.company}</p></div>
                                             <button type="button" onClick={() => removeExperience(exp.id)} className="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-md transition-colors"><X size={14} /></button>
                                         </div>
                                     ))}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-[#010409]">
-                                        <input type="text" value={newExp.role} onChange={e => setNewExp({ ...newExp, role: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Role/Title" />
-                                        <input type="text" value={newExp.company} onChange={e => setNewExp({ ...newExp, company: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Company" />
-                                        <input type="text" value={newExp.duration} onChange={e => setNewExp({ ...newExp, duration: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Duration (e.g. Jan 2026 - Present)" />
-                                        <textarea value={newExp.description} onChange={e => setNewExp({ ...newExp, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 glass-panel border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-indigo-500 resize-none" placeholder="Description of your work..."></textarea>
+                                        <input type="text" value={newExp.role} onChange={e => setNewExp({ ...newExp, role: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Role/Title" />
+                                        <input type="text" value={newExp.company} onChange={e => setNewExp({ ...newExp, company: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Company" />
+                                        <input type="text" value={newExp.duration} onChange={e => setNewExp({ ...newExp, duration: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-indigo-500" placeholder="Duration (e.g. Jan 2026 - Present)" />
+                                        <textarea value={newExp.description} onChange={e => setNewExp({ ...newExp, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-indigo-500 resize-none" placeholder="Description of your work..."></textarea>
                                         <button type="button" onClick={addExperience} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 rounded-lg font-mono font-bold hover:bg-indigo-500/20 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Node</button>
                                     </div>
                                 </div>
@@ -646,7 +646,7 @@ export default function Profile() {
                                 <div className="pt-8 border-t border-white/10">
                                     <label className="block mb-4 text-sm font-bold text-green-400 font-mono flex items-center gap-2"><FolderGit2 className="w-4 h-4" /> PROJECT_ARRAY</label>
                                     {profile.projects.map(proj => (
-                                        <div key={proj.id} className="flex justify-between items-start p-4 mb-3 glass-panel border border-white/10 rounded-xl">
+                                        <div key={proj.id} className="flex justify-between items-start p-4 mb-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-xl">
                                             <div>
                                                 <p className="text-sm font-bold text-white">{proj.name}</p>
                                                 <p className="text-xs text-slate-400 mt-1 line-clamp-1">{proj.description}</p>
@@ -655,10 +655,10 @@ export default function Profile() {
                                         </div>
                                     ))}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 border border-dashed border-white/10 rounded-xl bg-[#010409]">
-                                        <input type="text" value={newProj.name} onChange={e => setNewProj({ ...newProj, name: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Name" />
-                                        <input type="text" value={newProj.link} onChange={e => setNewProj({ ...newProj, link: e.target.value })} className="px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Link (URL)" />
-                                        <input type="text" value={newProj.tags} onChange={e => setNewProj({ ...newProj, tags: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 glass-panel border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Tags (comma separated)" />
-                                        <textarea value={newProj.description} onChange={e => setNewProj({ ...newProj, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 glass-panel border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-green-500 resize-none" placeholder="Short description..."></textarea>
+                                        <input type="text" value={newProj.name} onChange={e => setNewProj({ ...newProj, name: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Name" />
+                                        <input type="text" value={newProj.link} onChange={e => setNewProj({ ...newProj, link: e.target.value })} className="px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Project Link (URL)" />
+                                        <input type="text" value={newProj.tags} onChange={e => setNewProj({ ...newProj, tags: e.target.value })} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-mono text-sm outline-none focus:border-green-500" placeholder="Tags (comma separated)" />
+                                        <textarea value={newProj.description} onChange={e => setNewProj({ ...newProj, description: e.target.value })} className="col-span-1 sm:col-span-2 h-20 px-4 py-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-white/10 rounded-lg text-white font-sans text-sm outline-none focus:border-green-500 resize-none" placeholder="Short description..."></textarea>
                                         <button type="button" onClick={addProject} className="col-span-1 sm:col-span-2 px-4 py-2.5 bg-green-500/10 text-green-400 border border-green-500/30 rounded-lg font-mono font-bold hover:bg-green-500/20 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Node</button>
                                     </div>
                                 </div>
@@ -723,7 +723,7 @@ export default function Profile() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }} 
                             animate={{ opacity: 1, scale: 1, y: 0 }} 
                             exit={{ opacity: 0, scale: 0.9, y: 20 }} 
-                            className="w-full max-w-2xl glass-panel border border-purple-500/30 rounded-2xl shadow-[0_0_50px_rgba(147,51,234,0.3)] overflow-hidden flex flex-col max-h-[90vh]"
+                            className="w-full max-w-2xl bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border border-purple-500/30 rounded-2xl shadow-[0_0_50px_rgba(147,51,234,0.3)] overflow-hidden flex flex-col max-h-[90vh]"
                         >
                             <div className="flex items-center gap-3 p-5 bg-black/40 backdrop-blur-md border-b border-white/10 shrink-0">
                                 <div className="p-2 bg-purple-500/10 rounded-lg">

@@ -116,9 +116,9 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
                             {msg.sender === "ai" && <div className="w-8 h-8 mt-1 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30"><Bot size={16} className="text-indigo-400"/></div>}
                             
                             {msg.isThinking ? (
-                                <div className="px-5 py-3 glass-panel rounded-2xl animate-pulse text-sm">Thinking...</div>
+                                <div className="px-5 py-3 bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-2xl animate-pulse text-sm">Thinking...</div>
                             ) : (
-                                <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-[15px] shadow-lg border ${msg.sender === "user" ? "bg-indigo-600/80 backdrop-blur-md border-indigo-500/50 text-white rounded-tr-sm" : "glass-panel border-white/10 text-slate-200 rounded-tl-none"}`}>
+                                <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-[15px] shadow-lg border ${msg.sender === "user" ? "bg-indigo-600/80 backdrop-blur-md border-indigo-500/50 text-white rounded-tr-sm" : "bg-[#0a0a0a] border border-[#1a1a1a] shadow-none border-white/10 text-slate-200 rounded-tl-none"}`}>
                                     {msg.sender === "ai" ? renderFormattedText(msg.text || "") : msg.text}
                                     {msg.artifactTrigger && (
                                         <button onClick={() => setActiveArtifact(msg.artifactTrigger!)} className="block mt-3 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-medium transition-all">
@@ -136,7 +136,7 @@ export default function AICopilot({ initialPrompt }: { initialPrompt?: string })
 
                 {/* Floating Input Bar */}
                 <div className="p-6 relative z-10">
-                    <form onSubmit={(e) => { e.preventDefault(); executePrompt(inputValue); setInputValue(""); }} className="relative flex items-center glass-panel rounded-2xl focus-within:border-indigo-400 focus-within:shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all">
+                    <form onSubmit={(e) => { e.preventDefault(); executePrompt(inputValue); setInputValue(""); }} className="relative flex items-center bg-[#0a0a0a] border border-[#1a1a1a] shadow-none rounded-2xl focus-within:border-indigo-400 focus-within:shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all">
                         <input 
                             value={inputValue} onChange={(e) => setInputValue(e.target.value)}
                             placeholder="Ask ScholarSphere AI..."

@@ -159,7 +159,7 @@ export default function Hackathons() {
                         <p className="text-cyan-400 font-mono animate-pulse text-sm">Querying Database...</p>
                     </div>
                 ) : displayedHackathons.length === 0 ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-black/60 backdrop-blur-md/50">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#30363d] rounded-2xl bg-[#0a0a0a]/50">
                         <Search className="w-10 h-10 text-slate-600 mb-4" />
                         <h3 className="text-white font-mono font-bold text-lg">No Results Found</h3>
                         <p className="text-slate-500 font-mono text-sm mt-2">Try adjusting your search query.</p>
@@ -180,9 +180,9 @@ export default function Hackathons() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ type: "spring", stiffness: 100 }}
-                                    whileHover={{ y: -10, rotateX: 5, rotateY: -5, scale: 1.02, zIndex: 10 }}
-                                    style={{ transformStyle: "preserve-3d" }}
-                                    className="glass-panel perspective-1000 transform-3d hover:border-cyan-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col"
+                                    whileHover={{ y: -5, scale: 1.02 }}
+                                    
+                                    className="bg-[#0a0a0a] border border-[#1a1a1a] shadow-none   hover:border-cyan-500/40 rounded-2xl p-6 relative overflow-hidden group shadow-xl flex flex-col"
                                 >
                                     <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent -translate-x-full group-hover:animate-[scan_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100"></div>
 
