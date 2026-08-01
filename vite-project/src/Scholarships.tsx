@@ -121,6 +121,13 @@ export default function Scholarships() {
 
     return (
         <div className="w-full min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-emerald-500/30 relative overflow-hidden bg-black">
+
+            {/* HORIZON GLOW BACKGROUND - EMERALD */}
+            <div className="absolute top-0 left-0 w-full h-[60vh] overflow-hidden pointer-events-none z-0">
+               <div className="absolute top-[-40%] left-1/2 -translate-x-1/2 w-[150vw] md:w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-zinc-950/0 to-transparent blur-3xl opacity-60"></div>
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 2 }} className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[100vw] md:w-[60vw] h-[30vh] bg-gradient-to-b from-emerald-400/5 to-transparent blur-2xl opacity-50"></motion.div>
+            </div>
+
             <div className="max-w-7xl mx-auto relative z-10 flex flex-col h-full mt-6">
 
                 {/* HEADER SECTION */}
@@ -201,61 +208,70 @@ export default function Scholarships() {
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="pr-4">
-                                                {scholarship.amount}
-                                            </p>
+                                            <h2 className="text-xl font-bold text-white font-outfit leading-tight group-hover:text-emerald-400 transition-colors line-clamp-2">{scholarship.title}</h2>
+                                            <p className="text-sm text-slate-400 mt-1 font-sans">{scholarship.provider}</p>
+                                        </div>
+                                        <div className="shrink-0">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider border ${
+                                                scholarship.status === 'OPEN' 
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' 
+                                                : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                                            }`}>
+                                                {scholarship.status}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    <div className="relative z-10 flex items-center gap-2.5 text-sm text-slate-300 mb-6 bg-white/[0.03] p-2.5 rounded-xl border border-white/5 shadow-inner" style={{ transform: 'translateZ(40px)' }}>
-                                        <div className="w-7 h-7 rounded bg-red-500/10 flex items-center justify-center border border-red-500/20 shrink-0"><Calendar className="w-3.5 h-3.5 text-red-400" /></div>
-                                        <span className="text-slate-400 font-sans text-xs">Deadline:</span>
-                                        <span className="text-white font-sans font-medium truncate text-xs">{scholarship.deadline}</span>
+                                    <div className="flex flex-wrap gap-4 mb-6 text-sm text-slate-300 font-sans">
+                                        <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
+                                            <Banknote className="w-4 h-4 text-emerald-400" />
+                                            <span>{scholarship.amount}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="w-4 h-4 text-slate-500" />
+                                            <span>{scholarship.deadline}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Building2 className="w-4 h-4 text-slate-500" />
+                                            <span>{scholarship.type}</span>
+                                        </div>
                                     </div>
 
-                                    <div className="relative z-10 flex flex-wrap gap-2 mt-auto mb-6" style={{ transform: 'translateZ(40px)' }}>
-                                        {scholarship.tags.slice(0, 3).map((tag: string) => (
-                                            <span key={tag} className="px-3 py-1.5 text-[10px] font-sans font-medium text-slate-300 bg-white/[0.05] border border-white/10 rounded-lg flex items-center gap-1 shadow-inner">
-                                                <CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> {tag}
+                                    <div className="flex flex-wrap gap-2 mb-6">
+                                        {scholarship.tags.slice(0, 4).map((tag: string) => (
+                                            <span key={tag} className="px-2.5 py-1 text-[11px] font-sans font-medium text-slate-400 bg-white/5 border border-white/5 rounded">
+                                                {tag}
                                             </span>
                                         ))}
-                                        {scholarship.tags.length > 3 && (
-                                            <span className="px-3 py-1.5 text-[10px] font-sans font-medium text-slate-500 bg-white/[0.02] border border-white/5 rounded-lg shadow-inner">
-                                                +{scholarship.tags.length - 3} more
-                                            </span>
-                                        )}
                                     </div>
 
-                                    <div className="relative z-10 pt-5 border-t border-white/10 flex justify-between items-center" style={{ transform: 'translateZ(20px)' }}>
-                                        <button className="flex items-center gap-1.5 text-sm font-sans font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-                                            <Zap className="w-4 h-4 fill-emerald-400/20" /> Eligibility Check
-                                            {scholarship.link_verified === false && <span className="text-[9px] font-bold text-orange-400 bg-orange-400/10 px-2 py-1 rounded-md border border-orange-400/20 ml-2 uppercase tracking-wide">Unverified</span>}
+                                    <div className="mt-auto pt-5 border-t border-white/5 flex justify-end">
+                                        <button 
+                                            onClick={() => handleApply(scholarship)} 
+                                            className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-bold font-sans hover:bg-emerald-500 transition-all"
+                                        >
+                                            Apply Now <ExternalLink className="w-4 h-4" />
                                         </button>
-                                        <a href={scholarship.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl text-sm font-bold font-sans hover:bg-white hover:text-black transition-all shadow-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-                                            Apply <ExternalLink className="w-4 h-4" />
-                                        </a>
                                     </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>
-
-                        {/* PAGINATION / LOAD MORE BUTTON */}
-                        {hasMoreData && (
-                            <div className="col-span-1 md:col-span-2 xl:col-span-3 flex justify-center mt-10 relative z-20">
-                                <button
-                                    onClick={() => setPage(p => p + 1)}
-                                    className="px-8 py-3.5 bg-zinc-900/80 backdrop-blur-md border border-emerald-500/30 text-emerald-400 font-sans font-bold text-sm rounded-2xl hover:bg-emerald-500/10 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all flex items-center gap-2 group"
-                                >
-                                    <Zap className="w-4 h-4 group-hover:scale-110 transition-transform fill-emerald-400/20" />
-                                    Load More Grants
-                                </button>
-                            </div>
-                        )}
                     </motion.div>
                 )}
+
+                {/* PAGINATION / LOAD MORE BUTTON */}
+                {hasMoreData && (
+                    <div className="flex justify-center mt-4 mb-12">
+                        <button
+                            onClick={() => setPage(p => p + 1)}
+                            className="px-6 py-3 bg-zinc-900 border border-emerald-500/30 text-emerald-400 font-sans font-bold text-sm rounded-xl hover:bg-emerald-500/10 transition-all flex items-center gap-2 group"
+                        >
+                            <Zap className="w-4 h-4 group-hover:scale-110 transition-transform fill-emerald-400/20" />
+                            Load More
+                        </button>
+                    </div>
+                )}
             </div>
-            <style>{`
-        @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-      `}</style>
         </div>
     );
 }
